@@ -337,7 +337,7 @@ void Turret::Periodic()
         // auto turretVel = GetVelocity();
         // frc::SmartDashboard::PutNumber("/Turret/GM", double(GetMeasurement()));
         // frc::SmartDashboard::PutNumber("/Turret/FB", double(fb));
-        frc::SmartDashboard::PutNumber("/Turret/ff_vel  ", double(velocity));
+        // frc::SmartDashboard::PutNumber("/Turret/ff_vel  ", double(velocity));
 
         frc::SmartDashboard::PutNumber("/Turret/Voltage", double(v));
         break;
