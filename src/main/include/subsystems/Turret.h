@@ -29,6 +29,8 @@
 #include <string_view>
 #include <vector>
 
+#include <frc/DriverStation.h>
+
 #include "Constants.hpp"
 #include <frc/DigitalInput.h>
 #include <frc/RobotBase.h>
@@ -112,6 +114,7 @@ public:
   void SetAngle(units::degree_t angle, units::degrees_per_second_t velocity = 0_deg_per_s);
   void Zero();
   void HoldPosition();
+  void UpdateGoal(const frc::Pose2d &robotPose);
   void Reset()
   {
     m_controller.Reset();

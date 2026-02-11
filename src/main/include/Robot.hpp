@@ -69,6 +69,8 @@ public:
     void SimulationInit() override;
     void SimulationPeriodic() override;
 
+    void CheckActiveHub();
+
 private:
     // Have it empty by default so that if testing teleop it
     // doesn't have undefined behavior and potentially crash.

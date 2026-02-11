@@ -19,6 +19,8 @@
 #include <units/voltage.h>
 #include <units/moment_of_inertia.h>
 
+#include <frc/DriverStation.h>
+
 #include <rev/SparkBase.h>
 #include <frc2/command/PIDCommand.h>
 #include <frc2/command/PIDSubsystem.h>

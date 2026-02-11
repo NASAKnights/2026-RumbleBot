@@ -355,6 +355,27 @@ void Turret::Periodic()
         SimulationPeriodic();
     }
     m_motor.SetVoltage(v);
+
+    std::string GameData;
+    GameData = frc::DriverStation::GetGameSpecificMessage();
+    if(GameData.length() > 0)
+    {
+        switch (GameData[0])
+        {
+            case 'B' :
+                //blue case code
+                break;
+        
+            case 'R' :
+                //red case code
+                break;
+            default :
+                //this is corrupt data
+                break;
+        }
+    } else {
+        //code for no data recieved yet
+    }
 }
 
 TurretConstants::TurretState Turret::GetState()
@@ -428,6 +449,22 @@ void Turret::UpdateFieldVisuals()
         m_turretObject->SetPose(defaultPose);
         m_lastTurretPose = defaultPose;
     }
+}
+
+void Turret::UpdateGoal(const frc::Pose2d &robotPose)
+{
+    // elif (Alliance = HubStatus)
+    // {
+    //     //able to shoot
+    //     //switch goal pose to hub
+    // } else {
+    //     //passing
+    //     if (robotPose IsIn bottom)
+    //     {
+    //         //switchgoal bot color
+    //     }
+        
+    // }
 }
 
 frc::Pose2d Turret::CalculateTurretPose(const frc::Pose2d &robotPose)
