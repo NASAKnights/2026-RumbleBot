@@ -281,6 +281,31 @@ void Robot::UpdateDashboard()
     frc::SmartDashboard::PutNumber("Robot/PDH Total Current", m_pdh.GetTotalCurrent());
 }
 
+void Robot::CheckActiveHub()
+{
+    std::string GameData;
+    GameData = frc::DriverStation::GetGameSpecificMessage();
+    if(GameData.length() > 0)
+    {
+        switch (GameData[0])
+        {
+            case 'B' :
+                //blue case code
+                break;
+        
+            case 'R' :
+                //red case code
+                break;
+            default :
+                //this is corrupt data
+                break;
+        }
+    } else {
+        //code for no data recieved yet
+    }
+
+    units::time::second_t matchtimer = frc::DriverStation::GetMatchTime();
+}
 #ifndef RUNNING_FRC_TESTS
 int main()
 {

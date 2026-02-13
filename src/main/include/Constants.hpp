@@ -188,7 +188,7 @@ namespace MathUtilNK
 
 namespace FieldConstants {
 
-    
+
     const frc::Translation2d kBlueHub{4.625594_m, 4.034536_m};
     const frc::Translation2d kRedHub{11.915394_m, 4.034536_m};
 
@@ -206,5 +206,8 @@ namespace FieldConstants {
     const FieldZone kBlueAllianceZone{{0.0_m, 0.0_m}, {4.625594_m, 8.069326_m}};
     const FieldZone kRedAllianceZone{{11.915394_m, 0.0_m}, {16.540988_m, 8.069326_m}};
     const FieldZone kNeutralZone{{4.625594_m, 0.0_m}, {11.915394_m, 8.069326_m}};
+
+    const FieldZone kBlueNeutralZone{{4.625594_m, 0.0_m}, {16.540988_m, 8.069326_m}};
+    const FieldZone kRedNeutralZone{{0.0_m, 0.0_m}, {11.915394_m, 8.069326_m}};
 
 }

@@ -92,7 +92,20 @@ namespace TurretConstants
   const double kYOffset = 0.0;
   const double kZOffset = 0.0;
   const units::degree_t kAngleOffset(0.0);
-  const units::volt_t kMaxVoltage = 4.0_V;
+  const units::volt_t kMaxVoltage = 4.0_V; 
+
+  std::vector<double> BlueHubCoords = {4.625594, 4.034536, 0.0}; //in meters
+  std::vector<double> TopBlueCoords = {1.11252, 6.930136, 0.0};
+  std::vector<double> BottomBlueCoords = {1.11252, 2.010664, 0.0};
+
+  std::vector<double> RedHubCoords = {11.915394, 4.034536, 0.0};
+  std::vector<double> TopRedCoords = {15.428468, 6.930136, 0.0};
+  std::vector<double> BottomRedCoords = {15.428468, 2.010664, 0.0};
+
+  const units::length::meter_t BlueAllianceZoneX = 4.625594_m;
+  const units::length::meter_t MidFieldLine = 4.034536_m;
+  const units::length::meter_t RedAllianceZoneX = 11.915394_m;
+
 
 } // namespace TurretConstants
 
@@ -114,7 +127,7 @@ public:
   void SetAngle(units::degree_t angle, units::degrees_per_second_t velocity = 0_deg_per_s);
   void Zero();
   void HoldPosition();
-  void UpdateGoal(const frc::Pose2d &robotPose);
+  void UpdateTurretGoal(const frc::Pose2d &robotPose);
   void Reset()
   {
     m_controller.Reset();
@@ -197,4 +210,6 @@ private:
   int64_t m_lastPoseUpdateTime = 0;
   std::optional<frc::Pose2d> m_lastValidPose;
   wpi::log::BooleanLogEntry m_PoseStaleLog;
+
+  std::vector<double> TurretGoal = {0.0, 0.0, 0.0};
 };

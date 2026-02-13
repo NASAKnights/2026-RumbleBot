@@ -451,7 +451,7 @@ void Turret::UpdateFieldVisuals()
     }
 }
 
-void Turret::UpdateGoal(const frc::Pose2d &robotPose)
+void Turret::UpdateTurretGoal(const frc::Pose2d &robotPose)
 {
     // elif (Alliance = HubStatus)
     // {
@@ -462,9 +462,67 @@ void Turret::UpdateGoal(const frc::Pose2d &robotPose)
     //     if (robotPose IsIn bottom)
     //     {
     //         //switchgoal bot color
-    //     }
-        
+    //     }   
     // }
+
+    frc::Pose2d turretPose = CalculateTurretPose(robotPose);
+    units::length::meter_t TurretX = turretPose.X();
+    units::length::meter_t TurretY = turretPose.Y();
+
+
+    // if (RobotPose > FieldConstants::kBlueAllianceZone && RobotPose < FieldConstants::kBlueAllianceZone && frc::DriverStation::GetAlliance = "blue")
+    // {
+    //     TurretGoal = TurretConstants::BlueHubCoords;
+    // } 
+    // else if (RobotPose > FieldConstants::kBlueNeutralZone && RobotPose < FieldConstants::kBlueNeutralZone && frc::DriverStation::GetAlliance = "blue") //y coords above/equalTo halfway point
+    // {
+    //     TurretGoal = TurretConstants::TopBlueCoords;
+    // } 
+    // else if (RobotPose > FieldConstants::kBlueNeutralZone && RobotPose < FieldConstants::kBlueNeutralZone && frc::DriverStation::GetAlliance = "blue")//y coords below halfway point
+    // {
+    //     TurretGoal = TurretConstants::BottomBlueCoords;
+    // } 
+    // else if (RobotPose > FieldConstants::kRedAllianceZone && RobotPose < FieldConstants::kRedAllianceZone && frc::DriverStation::GetAlliance = "red")
+    // {
+    //     TurretGoal = TurretConstants::RedHubCoords;
+    // } 
+    // else if (RobotPose > FieldConstants::kRedNeutralZone && RobotPose < FieldConstants::kRedNeutralZone && frc::DriverStation::GetAlliance = "red") //y coords above/equal to halfway point
+    // {
+    //     TurretGoal = TurretConstants::TopRedCoords;
+    // }
+    // else if (RobotPose > FieldConstants::kRedNeutralZone && RobotPose < FieldConstants::kRedNeutralZone && frc::DriverStation::GetAlliance = "red") //y below halfway point
+    // {
+    //     TurretGoal = TurretConstants::BottomRedCoords;
+    // }
+
+    frc::DriverStation::Alliance AllianceColor = frc::DriverStation::GetAlliance().value();
+
+    if (TurretX < TurretConstants::BlueAllianceZoneX && AllianceColor == frc::DriverStation::Alliance::kBlue)
+    {
+        TurretGoal = TurretConstants::BlueHubCoords;
+    } 
+    else if (TurretX >= TurretConstants::BlueAllianceZoneX && TurretY >= TurretConstants::MidFieldLine && AllianceColor == frc::DriverStation::Alliance::kBlue)
+    {
+        TurretGoal = TurretConstants::TopBlueCoords;
+    }
+    else if (TurretX >= TurretConstants::BlueAllianceZoneX && TurretY < TurretConstants::MidFieldLine && AllianceColor == frc::DriverStation::Alliance::kBlue)
+    {
+        TurretGoal = TurretConstants::BottomBlueCoords;
+    }
+    else if (TurretX > TurretConstants::RedAllianceZoneX && AllianceColor == frc::DriverStation::Alliance::kRed)
+    {
+        TurretGoal = TurretConstants::RedHubCoords;
+    }
+    else if (TurretX <= TurretConstants::RedAllianceZoneX && TurretY >= TurretConstants::MidFieldLine && AllianceColor == frc::DriverStation::Alliance::kRed)
+    {
+        TurretGoal = TurretConstants::TopRedCoords;
+    }
+    else if (TurretX <= TurretConstants::RedAllianceZoneX && TurretY < TurretConstants::MidFieldLine && AllianceColor == frc::DriverStation::Alliance::kRed)
+    {
+        TurretGoal = TurretConstants::BottomRedCoords;
+    }
+    
+    
 }
 
 frc::Pose2d Turret::CalculateTurretPose(const frc::Pose2d &robotPose)
