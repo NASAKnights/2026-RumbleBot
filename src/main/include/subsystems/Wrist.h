@@ -56,7 +56,8 @@ namespace WristConstants
     const std::array<double, 1> kSimNoise = {0.0087};
     const frc::DCMotor kSimMotor = frc::DCMotor::NEO550(1);
 
-    const double kGearRatio = 81.0; // gear ratio for motor to arm
+    // const double kGearRatio = 81.0; // gear ratio for motor to arm
+    const double kGearRatio = 1.0; //using absolute encoder -> 
     const units::moment_of_inertia::kilogram_square_meter_t kmoi =
         units::moment_of_inertia::kilogram_square_meter_t(0.00902);
     const units::length::meter_t kWristLength = units::length::meter_t(0.1778);
@@ -64,6 +65,7 @@ namespace WristConstants
     const units::angle::radian_t kmaxAngle = 95_deg;
     const bool kGravity = true;
     const units::angle::radian_t kWristStartAngle = units::angle::radian_t(0.0);
+    const double kAbsoluteOffset = 0.0; // TODO: find offset
 
 } // namespace ArmConstants
 
@@ -103,7 +105,8 @@ private:
     wpi::log::DoubleLogEntry m_MotorCurrentLog;
     wpi::log::DoubleLogEntry m_MotorVoltageLog;
     frc::Timer *m_timer;
-    rev::spark::SparkRelativeEncoder m_encoder;
+    // rev::spark::SparkRelativeEncoder m_encoder;
+    rev::spark::SparkAbsoluteEncoder m_encoder;
     float Wrist_Angle;
 
     bool speed;

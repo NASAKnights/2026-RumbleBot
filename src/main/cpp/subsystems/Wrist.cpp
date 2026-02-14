@@ -13,7 +13,8 @@ Wrist::Wrist() : m_controller(
                      frc::TrapezoidProfile<units::degrees>::Constraints(WristConstants::kArmVelLimit, WristConstants::kArmAccelLimit), 5_ms),
                  m_motor(WristConstants::kAngleMotorId, rev::spark::SparkLowLevel::MotorType::kBrushless), m_feedforward(WristConstants::kFFks, WristConstants::kFFkg, WristConstants::kFFkV,
                                                                                                                          WristConstants::kFFkA),
-                 m_encoder{m_motor.GetEncoder()},
+                //  m_encoder{m_motor.GetEncoder()},
+                 m_encoder{m_motor.GetAbsoluteEncoder()},
 
                  m_WristSim(WristConstants::kSimMotor, WristConstants::kGearRatio, WristConstants::kmoi,
                             WristConstants::kWristLength, WristConstants::kminAngle, WristConstants::kmaxAngle,
@@ -22,7 +23,9 @@ Wrist::Wrist() : m_controller(
     m_controller.SetIZone(WristConstants::kIZone);
     rev::spark::SparkBaseConfig config;
     config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kBrake);
-    config.encoder.PositionConversionFactor(360 / 81.0);
+    // config.encoder.PositionConversionFactor(360 / 81.0);
+    config.absoluteEncoder.PositionConversionFactor(360.0);
+    config.absoluteEncoder.ZeroOffset(WristConstants::kAbsoluteOffset);
     config.SmartCurrentLimit(30, 0, 20000);
 
     m_motor.Configure(config, rev::spark::SparkMax::ResetMode::kResetSafeParameters, rev::spark::SparkMax::PersistMode::kPersistParameters);
@@ -137,16 +140,16 @@ void Wrist::Periodic()
         break;
     }
     }
-    if (m_motor.GetForwardLimitSwitch().Get())
-    {
-        m_encoder.SetPosition(106.0);
-        if (m_WristState == WristConstants::ZEROING)
-        {
-            // m_goal = 0.1_m;
-            m_WristState = WristConstants::HOLD;
-            SetAngle(105.0);
-        }
-    }
+    // if (m_motor.GetForwardLimitSwitch().Get())
+    // {
+    //     m_encoder.SetPosition(106.0);
+    //     if (m_WristState == WristConstants::ZEROING)
+    //     {
+    //         // m_goal = 0.1_m;
+    //         m_WristState = WristConstants::HOLD;
+    //         SetAngle(105.0);
+    //     }
+    // }
 }
 
 WristConstants::WristState Wrist::GetState()
