@@ -281,31 +281,233 @@ void Robot::UpdateDashboard()
     frc::SmartDashboard::PutNumber("Robot/PDH Total Current", m_pdh.GetTotalCurrent());
 }
 
-void Robot::CheckActiveHub()
+std::string Robot::CheckActiveHub()
 {
     std::string GameData;
+    std::string AutoWinner;
     GameData = frc::DriverStation::GetGameSpecificMessage();
     if(GameData.length() > 0)
     {
         switch (GameData[0])
         {
             case 'B' :
-                //blue case code
+                AutoWinner = "Blue";
                 break;
-        
             case 'R' :
-                //red case code
+                AutoWinner = "Red";
                 break;
             default :
-                //this is corrupt data
+                AutoWinner = "None";
                 break;
         }
     } else {
         //code for no data recieved yet
+        AutoWinner = "None";
     }
 
     units::time::second_t matchtimer = frc::DriverStation::GetMatchTime();
+    units::time::second_t startOfMatch = units::time::second_t{160};
+    units::time::second_t endOfAuto = units::time::second_t{140};
+    units::time::second_t endOfTransition = units::time::second_t{130};
+    units::time::second_t endOfPeriod1 = units::time::second_t{105};
+    units::time::second_t endOfPeriod2 = units::time::second_t{80};
+    units::time::second_t endOfPeriod3 = units::time::second_t{55};
+    units::time::second_t endOfPeriod4 = units::time::second_t{30};
+    units::time::second_t endOfEndgame = units::time::second_t{0};
+    frc::DriverStation::Alliance AllianceColor = frc::DriverStation::GetAlliance().value();
+
+    // if (matchtimer < endOfTransition && matchtimer > endOfPeriod1 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Blue")
+    // {
+    //     return "inactive";
+    // }
+    // else if (matchtimer < endOfTransition && matchtimer > endOfPeriod1 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Red")
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfPeriod1 && matchtimer > endOfPeriod2 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Blue")
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfPeriod1 && matchtimer > endOfPeriod2 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Red")
+    // {
+    //     return "inactive";
+    // }
+    // else if (matchtimer < endOfPeriod2 && matchtimer > endOfPeriod3 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Blue")
+    // {
+    //     return "inactive";
+    // }
+    // else if (matchtimer < endOfPeriod2 && matchtimer > endOfPeriod3 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Red")
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfPeriod3 && matchtimer > endOfPeriod4 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Blue")
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfPeriod3 && matchtimer > endOfPeriod4 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Red")
+    // {
+    //     return "inactive";
+    // }
+
+    // else if (matchtimer < endOfTransition && matchtimer > endOfPeriod1 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Blue")
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfTransition && matchtimer > endOfPeriod1 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Red")
+    // {
+    //     return "inactive";
+    // }
+    // else if (matchtimer < endOfPeriod1 && matchtimer > endOfPeriod2 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Blue")
+    // {
+    //     return "inactive";
+    // }
+    // else if (matchtimer < endOfPeriod1 && matchtimer > endOfPeriod2 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Red")
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfPeriod2 && matchtimer > endOfPeriod3 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Blue")
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfPeriod2 && matchtimer > endOfPeriod3 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Red")
+    // {
+    //     return "inactive";
+    // }
+    // else if (matchtimer < endOfPeriod3 && matchtimer > endOfPeriod4 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Blue")
+    // {
+    //     return "inactive";
+    // }
+    // else if (matchtimer < endOfPeriod3 && matchtimer > endOfPeriod4 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Red")
+    // {
+    //     return "active";
+    // }
+    
+    // else if (matchtimer <= startOfMatch && matchtimer > endOfAuto)
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfAuto && matchtimer > endOfTransition)
+    // {
+    //     return "active";
+    // }
+    // else if (matchtimer < endOfPeriod4 && matchtimer >= endOfEndgame)
+    // {
+    //     return "active";
+    // }
+    
+    
+    // //attemping to make more efficient
+    // if (matchtimer < endOfTransition && matchtimer > endOfPeriod1 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Blue")
+    // {
+    //     return "BlueInactive";
+    // }
+
+    // else if (matchtimer < endOfPeriod1 && matchtimer > endOfPeriod2 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Blue")
+    // {
+    //     return "BlueActive";
+    // }
+
+    // else if (matchtimer < endOfPeriod2 && matchtimer > endOfPeriod3 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Blue")
+    // {
+    //     return "BlueInactive";
+    // }
+
+    // else if (matchtimer < endOfPeriod3 && matchtimer > endOfPeriod4 && AllianceColor == frc::DriverStation::Alliance::kBlue && AutoWinner == "Blue")
+    // {
+    //     return "BlueActive";
+    // }
+
+    // else if (matchtimer < endOfTransition && matchtimer > endOfPeriod1 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Blue")
+    // {
+    //     return "BlueActive";
+    // }
+
+    // else if (matchtimer < endOfPeriod1 && matchtimer > endOfPeriod2 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Blue")
+    // {
+    //     return "BlueInactive";
+    // }
+
+    // else if (matchtimer < endOfPeriod2 && matchtimer > endOfPeriod3 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Blue")
+    // {
+    //     return "BlueActive";
+    // }
+
+    // else if (matchtimer < endOfPeriod3 && matchtimer > endOfPeriod4 && AllianceColor == frc::DriverStation::Alliance::kRed && AutoWinner == "Blue")
+    // {
+    //     return "BlueInactive";
+    // }
+
+    // else if (matchtimer <= startOfMatch && matchtimer > endOfAuto)
+    // {
+    //     return "BothActive";
+    // }
+    // else if (matchtimer < endOfAuto && matchtimer > endOfTransition)
+    // {
+    //     return "BothActive";
+    // }
+    // else if (matchtimer < endOfPeriod4 && matchtimer >= endOfEndgame)
+    // {
+    //     return "BothActive";
+    // }
+    
+    //actual one:
+    if ((matchtimer < endOfAuto && matchtimer >= endOfTransition) || (matchtimer < endOfPeriod4 && matchtimer >= endOfEndgame))
+    {
+        if (AllianceColor == frc::DriverStation::Alliance::kBlue)
+        {
+            return "BlueActive";
+        }
+        else 
+        {
+            return "RedActive";
+        }
+        
+    }
+    else if(GameData == "R" || GameData == "B")
+    {
+        if ((matchtimer < endOfTransition && matchtimer >= endOfPeriod1) || (matchtimer < endOfPeriod2 && matchtimer >= endOfPeriod3))
+        {
+            if (AutoWinner == "Blue")
+            {
+                return "RedActive";
+            }
+            else 
+            {
+                return "BlueActive";
+            }
+        
+        }
+        else if ((matchtimer < endOfPeriod1 && matchtimer >= endOfPeriod2) || (matchtimer < endOfPeriod3 && matchtimer >= endOfPeriod4))
+        {
+            if (AutoWinner == "Blue")
+            {
+                return "BlueActive";
+            }
+            else
+            {
+                return "RedActive";
+            }
+        
+        }
+    }
+    else
+    {
+        if (AllianceColor == frc::DriverStation::Alliance::kBlue)
+        {
+            return "BlueActive";
+        }
+        else 
+        {
+            return "RedActive";
+        }
+        
+    } 
+
 }
+
+
+
+
 #ifndef RUNNING_FRC_TESTS
 int main()
 {

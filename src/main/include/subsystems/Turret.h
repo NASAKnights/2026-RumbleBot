@@ -94,13 +94,13 @@ namespace TurretConstants
   const units::degree_t kAngleOffset(0.0);
   const units::volt_t kMaxVoltage = 4.0_V; 
 
-  std::vector<double> BlueHubCoords = {4.625594, 4.034536, 0.0}; //in meters
-  std::vector<double> TopBlueCoords = {1.11252, 6.930136, 0.0};
-  std::vector<double> BottomBlueCoords = {1.11252, 2.010664, 0.0};
+  const std::vector<double> BlueHubCoords = {4.625594, 4.034536, 0.0}; //in meters
+  const std::vector<double> TopBlueCoords = {1.11252, 6.930136, 0.0};
+  const std::vector<double> BottomBlueCoords = {1.11252, 2.010664, 0.0};
 
-  std::vector<double> RedHubCoords = {11.915394, 4.034536, 0.0};
-  std::vector<double> TopRedCoords = {15.428468, 6.930136, 0.0};
-  std::vector<double> BottomRedCoords = {15.428468, 2.010664, 0.0};
+  const std::vector<double> RedHubCoords = {11.915394, 4.034536, 0.0};
+  const std::vector<double> TopRedCoords = {15.428468, 6.930136, 0.0};
+  const std::vector<double> BottomRedCoords = {15.428468, 2.010664, 0.0};
 
   const units::length::meter_t BlueAllianceZoneX = 4.625594_m;
   const units::length::meter_t MidFieldLine = 4.034536_m;
