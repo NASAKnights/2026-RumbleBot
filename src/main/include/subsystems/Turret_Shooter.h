@@ -10,6 +10,7 @@
 // #include <ctre/phoenix6/TalonFX.hpp>
 #include <frc/motorcontrol/PWMMotorController.h>
 #include <ctre/phoenix6/TalonFXS.hpp>
+#include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/controls/Follower.hpp>
 #include <units/angle.h>
 #include <units/velocity.h>
@@ -32,6 +33,12 @@ namespace Turret_ShooterConstants {
 
   static const int kMotorIdLeft = 4;
   static const int kMotorIdRight = 3;
+
+  static const int kSpindexerMotorId = 5;
+  static const int kIndexerMotorId = 6;
+
+  static const double spindexerSpeed = 0.85;
+  static const double indexerSpeed = 0.85;
 }
 
 class Turret_Shooter : public frc2::SubsystemBase
@@ -44,9 +51,15 @@ public:
   void StopMotors();
   void SetSpeed(units::meters_per_second_t speed); // speed of the ball leaving the shooter
 
+  void RunSpindexerIndexer();
+  void StopSpindexerIndexer();
+
 private:
   ctre::phoenix6::hardware::TalonFXS m_leftMotor{Turret_ShooterConstants::kMotorIdLeft};
   ctre::phoenix6::hardware::TalonFXS m_rightMotor{Turret_ShooterConstants::kMotorIdRight};
+
+  ctre::phoenix6::hardware::TalonFX m_spindexerMotor{Turret_ShooterConstants::kSpindexerMotorId};
+  rev::spark::SparkFlex m_indexerMotor{Turret_ShooterConstants::kIndexerMotorId, rev::spark::SparkFlex::MotorType::kBrushless};
 
   static constexpr units::inch_t kFlywheelDiameter = units::inch_t{2.625};
   static constexpr int kGearRatio = 2;

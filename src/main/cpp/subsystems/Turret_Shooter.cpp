@@ -74,6 +74,18 @@ void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed) {
     frc::SmartDashboard::PutNumber("Shooter/Commanded_Motor_RPM", motorSpeed.value() * 60.0);
 }
 
+void Turret_Shooter::RunSpindexerIndexer() 
+{
+    m_indexerMotor.Set(Turret_ShooterConstants::indexerSpeed);
+    m_spindexerMotor.Set(Turret_ShooterConstants::spindexerSpeed);
+}
+
+void Turret_Shooter::StopSpindexerIndexer()
+{
+    m_indexerMotor.Set(0.0);
+    m_spindexerMotor.Set(0.0);
+}
+
 void Turret_Shooter::StopMotors()
 {
     auto motorRequest = ctre::phoenix6::controls::VelocityVoltage{0_tps};
