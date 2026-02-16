@@ -42,6 +42,10 @@
 #include <networktables/NetworkTableInstance.h>
 #include <frc/smartdashboard/Field2d.h>
 
+#include "utils/BallisticsInterpolator.h"
+#include "utils/ballistics_rv_hub.h"
+#include "utils/ballistics_rv_gnd.h"
+
 namespace TurretConstants
 {
   enum TurretState
@@ -51,6 +55,12 @@ namespace TurretConstants
     START,
     TRACKING,
     DISABLED
+  };
+
+  enum BallisticTargetType
+  {
+    HUB,
+    GROUND
   };
 
   const double kAngleP = 0.0;
@@ -106,7 +116,7 @@ namespace TurretConstants
   const units::length::meter_t MidFieldLine = 4.034536_m;
   const units::length::meter_t RedAllianceZoneX = 11.915394_m;
 
-
+  
 } // namespace TurretConstants
 
 /**
@@ -169,6 +179,42 @@ private:
   }
   void UpdateFieldVisuals();
   frc::Pose2d CalculateTurretPose(const frc::Pose2d &robotPose);
+  void GetBallisticSolution(TurretConstants::BallisticTargetType target_type,
+                                    units::meters_per_second_t turret_vx,
+                                    units::meters_per_second_t turret_vy,
+                                    units::meter_t target_distance,
+                                    units::meters_per_second_t &launch_speed,
+                                    units::radian_t &launch_angle,
+                                    units::radian_t &lead_angle,
+                                    bool &valid);
+  BallisticsInterpolator m_ballistics_hub_interpolator{
+        ballistics_rv_hub::dim_vx, 
+        ballistics_rv_hub::dim_vy, 
+        ballistics_rv_hub::dim_x,
+        ballistics_rv_hub::first_vx, 
+        ballistics_rv_hub::last_vx,
+        ballistics_rv_hub::first_vy, 
+        ballistics_rv_hub::last_vy,
+        ballistics_rv_hub::first_x, 
+        ballistics_rv_hub::last_x,
+        ballistics_rv_hub::rel_vx,
+        ballistics_rv_hub::rel_vy,
+        ballistics_rv_hub::rel_vz
+  };
+  BallisticsInterpolator m_ballistics_gnd_interpolator{
+        ballistics_rv_gnd::dim_vx, 
+        ballistics_rv_gnd::dim_vy, 
+        ballistics_rv_gnd::dim_x,
+        ballistics_rv_gnd::first_vx, 
+        ballistics_rv_gnd::last_vx,
+        ballistics_rv_gnd::first_vy, 
+        ballistics_rv_gnd::last_vy,
+        ballistics_rv_gnd::first_x, 
+        ballistics_rv_gnd::last_x,
+        ballistics_rv_gnd::rel_vx,
+        ballistics_rv_gnd::rel_vy,
+        ballistics_rv_gnd::rel_vz
+  };
   TurretConstants::TurretState m_TurretState;
   void printLog();
   rev::spark::SparkMax m_motor{TurretConstants::kAngleMotorId, rev::spark::SparkLowLevel::MotorType::kBrushless};

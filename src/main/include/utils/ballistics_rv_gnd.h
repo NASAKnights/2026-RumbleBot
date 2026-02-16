@@ -4,17 +4,17 @@
 
 namespace ballistics_rv_gnd {
 
-const int ballistics_dim_vx = 11;
-const int ballistics_dim_vy = 6;
-const int ballistics_dim_x = 19;
+const int dim_vx = 11;
+const int dim_vy = 6;
+const int dim_x = 19;
 
-const double ballistics_first_vx = -5.000000;
-const double ballistics_last_vx = 5.000000;
-const double ballistics_first_vy = 0.000000;
-const double ballistics_last_vy = 5.000000;
-const double ballistics_first_x = 0.500000;
-const double ballistics_last_x = 18.500000;
-const float ballistics_rel_vx[11][6][19] = {
+const double first_vx = -5.000000;
+const double last_vx = 5.000000;
+const double first_vy = 0.000000;
+const double last_vy = 5.000000;
+const double first_x = 0.500000;
+const double last_x = 18.500000;
+const float rel_vx[11][6][19] = {
     {
         {NAN, 6.199365f, 6.826354f, 7.403167f, 7.946249f, 8.465757f, 8.968596f, 9.460040f, 9.944012f, 10.423773f, 10.902190f, 11.381835f, 11.865200f, 12.354572f, 12.852500f, 13.361641f, 13.884946f, 14.425824f, 14.988381f},
         {NAN, 6.194095f, 6.819151f, 7.395200f, 7.938049f, 8.457726f, 8.961017f, 9.453009f, 9.937668f, 10.418244f, 10.897547f, 11.378062f, 11.862422f, 12.352847f, 12.851984f, 13.362437f, 13.887181f, 14.429761f, 14.994178f},
@@ -105,7 +105,7 @@ const float ballistics_rel_vx[11][6][19] = {
     }
 };
 
-const float ballistics_rel_vy[11][6][19] = {
+const float rel_vy[11][6][19] = {
     {
         {NAN, -0.001706f, -0.002686f, -0.008152f, -0.002004f, -0.000757f, 0.002982f, 0.002343f, 0.000708f, -0.000342f, 0.000011f, 0.000741f, -0.000627f, 0.000198f, 0.000361f, 0.000104f, -0.000128f, -0.000572f, -0.001009f},
         {NAN, -1.028809f, -1.035182f, -1.041621f, -1.048232f, -1.054982f, -1.062024f, -1.069232f, -1.076770f, -1.084698f, -1.092895f, -1.101669f, -1.110908f, -1.120555f, -1.131057f, -1.142220f, -1.154195f, -1.167170f, -1.181301f},
@@ -196,7 +196,7 @@ const float ballistics_rel_vy[11][6][19] = {
     }
 };
 
-const float ballistics_rel_vz[11][6][19] = {
+const float rel_vz[11][6][19] = {
     {
         {NAN, 7.388131f, 8.135310f, 8.822777f, 9.469986f, 10.089116f, 10.688369f, 11.274071f, 11.850821f, 12.422599f, 12.992690f, 13.564363f, 14.140398f, 14.723615f, 15.317004f, 15.923789f, 16.547434f, 17.192003f, 17.862481f},
         {NAN, 7.482948f, 8.219822f, 8.900251f, 9.542313f, 10.157642f, 10.754063f, 11.337499f, 11.912578f, 12.483097f, 13.052386f, 13.623271f, 14.198961f, 14.781967f, 15.375587f, 15.982837f, 16.607152f, 17.252888f, 17.924761f},

@@ -537,3 +537,63 @@ frc::Pose2d Turret::CalculateTurretPose(const frc::Pose2d &robotPose)
     // Apply that transform in the robot's frame to get field-relative turret pose
     return robotPose.TransformBy(turretTransform);
 }
+
+void Turret::GetBallisticSolution(TurretConstants::BallisticTargetType target_type,
+                                    units::meters_per_second_t turret_vx,
+                                    units::meters_per_second_t turret_vy,
+                                    units::meter_t target_distance,
+                                    units::meters_per_second_t &launch_speed,
+                                    units::radian_t &launch_angle,
+                                    units::radian_t &lead_angle,
+                                    bool &valid) 
+{
+    double rel_vx, rel_vy, rel_vz;
+    switch (target_type)
+    {
+        case TurretConstants::BallisticTargetType::HUB:
+            m_ballistics_hub_interpolator.interpolate(turret_vx.value(),
+                                                    std::abs(turret_vy.value()),
+                                                    target_distance.value(),
+                                                    rel_vx, rel_vy, rel_vz);
+            break;
+        case TurretConstants::BallisticTargetType::GROUND:
+            m_ballistics_gnd_interpolator.interpolate(turret_vx.value(),
+                                                    std::abs(turret_vy.value()),
+                                                    target_distance.value(),
+                                                    rel_vx, rel_vy, rel_vz);
+            break;
+        default:
+            valid = false;
+            launch_speed = units::meters_per_second_t{0.0};
+            lead_angle = units::radian_t{0.0};
+            launch_angle = units::radian_t{0.0};
+            return;
+    }
+    if (std::isnan(rel_vx) || std::isnan(rel_vy) || std::isnan(rel_vz)) {
+        valid = false;
+        launch_speed = units::meters_per_second_t{0.0};
+        lead_angle = units::radian_t{0.0};
+        launch_angle = units::radian_t{0.0};
+        return;
+    }
+    valid = true;
+
+    if (turret_vy.value() < 0.0) {
+        // solution space is symmetrical, but rel_vy is inverted
+        rel_vy = -rel_vy;
+    }
+
+    // Compute the launch speed (magnitude of velocity vector)
+    double v_mag = std::sqrt(rel_vx * rel_vx + rel_vy * rel_vy + rel_vz * rel_vz);
+
+    launch_speed = units::meters_per_second_t{v_mag};
+    
+    // Compute the horizontal aim angle
+    lead_angle = units::radian_t{std::atan2(rel_vy, rel_vx)};
+    
+    // Horizontal velocity component
+    double v_horizontal = std::sqrt(rel_vx * rel_vx + rel_vy * rel_vy);
+    
+    // Compute the launch angle
+    launch_angle = units::radian_t{std::acos(v_horizontal / v_mag)};
+}
