@@ -30,7 +30,7 @@
 
 namespace Turret_ShooterConstants {
 
-  static const int kMotorIdLeft = 1;
+  static const int kMotorIdLeft = 4;
   static const int kMotorIdRight = 3;
 }
 

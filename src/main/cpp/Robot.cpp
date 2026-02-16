@@ -243,6 +243,22 @@ void Robot::BindCommands()
             frc2::InstantCommand([this]
                                  { return m_swerveDrive.ResetHeading(); })));
 
+    frc2::JoystickButton(&m_driverController, 1)
+        .WhileTrue(frc2::CommandPtr(
+            frc2::InstantCommand([this]
+                                 { return m_intake.Intake(); })))
+        .OnFalse(frc2::CommandPtr(
+            frc2::InstantCommand([this]
+                                 { return m_intake.StopIntake(); })));
+
+    frc2::JoystickButton(&m_driverController, 2)
+        .WhileTrue(frc2::CommandPtr(
+            frc2::InstantCommand([this]
+                                 { return m_intake.Outtake(); })))
+        .OnFalse(frc2::CommandPtr(
+            frc2::InstantCommand([this]
+                                 { return m_intake.StopIntake(); })));
+
     // frc2::JoystickButton(&m_driverController, 3)
     //     .OnTrue(scoreClosest.get())
     //     .OnFalse(frc2::CommandPtr(
@@ -259,14 +275,14 @@ void Robot::BindCommands()
     //             return;
     //         })));
 
-    frc2::JoystickButton(&m_operatorController,1)
-        .OnTrue(frc2::CommandPtr(
-            frc2::InstantCommand([this]
-                                        { double hoodAngle = 0.7;
-                                            return m_turret.ChangeHoodAngle(hoodAngle); }))) //0.004 is the smallest movement it can do
-        .OnFalse(frc2::CommandPtr(
-            frc2::InstantCommand([this]
-                                        { return m_turret.ChangeHoodAngle(0); })));
+    // frc2::JoystickButton(&m_operatorController,1)
+    //     .OnTrue(frc2::CommandPtr(
+    //         frc2::InstantCommand([this]
+    //                                     { double hoodAngle = 0.7;
+    //                                         return m_turret.ChangeHoodAngle(hoodAngle); }))) //0.004 is the smallest movement it can do
+    //     .OnFalse(frc2::CommandPtr(
+    //         frc2::InstantCommand([this]
+    //                                     { return m_turret.ChangeHoodAngle(0); })));
 }
 
 void Robot::DisabledPeriodic()

@@ -71,7 +71,7 @@ namespace DriveConstants
     // inline constexpr std::string_view mk4i_l3 = "mk4i_l3";
 
     // const SDSModuleType kSDSModule = mk4i_l3;
-    const SDSModuleType kSDSModule = mk4i_l1plus;
+    const SDSModuleType kSDSModule = mk4i_l2plus;
 
     const auto kTrackwidthMeters = 0.4_m; // Add to shuffleboard
     const auto kWheelbaseMeters = 0.4_m;  // Add to shuffleboard

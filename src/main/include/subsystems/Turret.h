@@ -53,7 +53,7 @@ namespace TurretConstants
     DISABLED
   };
 
-  const double kAngleP = 0.1;
+  const double kAngleP = 0.0;
   const double kAngleI = 0.00;
   const double kAngleD = 0.0; // 0.0001
   const double kIZone = 0.0;

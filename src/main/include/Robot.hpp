@@ -28,20 +28,17 @@
 #include <pathplanner/lib/commands/PathPlannerAuto.h>
 #include <pathplanner/lib/auto/AutoBuilder.h>
 
-#include "subsystems/SwerveDrive.hpp"
-#include "subsystems/Elevator.h"
-#include "subsystems/Wrist.h"
-
 #include <units/angular_velocity.h>
 #include <units/velocity.h>
 
+#include "subsystems/SwerveDrive.hpp"
 #include "subsystems/Elevator.h"
 #include "subsystems/Wrist.h"
-#include "subsystems/Turret_Shooter.h"
-
-#include "subsystems/LEDController.h"
-#include "subsystems/Climber.h"
 #include "subsystems/Turret.h"
+#include "subsystems/Turret_Shooter.h"
+#include "subsystems/TurretIntake.h"
+#include "subsystems/Climber.h"
+#include "subsystems/LEDController.h"
 
 #include "commands/AutoWheelOffsets.h"
 
@@ -94,6 +91,7 @@ private:
     // Climber m_climber;
     Turret_Shooter m_turret_shooter;
     Turret m_turret;
+    TurretIntake m_intake;
 
     std::string_view baseLink = "base_link";
     nt::StructPublisher<frc::Pose3d> stageOne3dPOS;
