@@ -178,46 +178,7 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
                          units::length::meter_t{TurretConstants::kZOffset},
                          frc::Rotation3d(0.0_rad, 0.0_rad,
                                          units::angle::radian_t{GetMeasurement().convert<units::angle::radians>()} + baseLink->Rotation().Radians()));
-
-    // grab world2robot, world2goal, robot2turret transforms
-
-    // get robot2turret transform from world2robot * (world2turret)^-1
-
-    frc::Transform3d robot2turret = frc::Transform3d(world2robot.ToMatrix().inverse() * world2turret.ToMatrix());
-    // get turret2goal transform from (world2turret)^-1 * world2goal
-
-    // Compute world-space vector from turret to goal
-    Eigen::Vector3d tgVector = (world2goal.Translation() - world2turret.Translation()).ToVector();
-
-    // Compute desired yaw in world frame
-    units::radian_t targetYaw = units::radian_t{std::atan2(tgVector.y(), tgVector.x())};
-
-    // Get current turret yaw in world frame
-    units::radian_t turretYaw = world2turret.Rotation().ToRotation2d().Radians();
-
-    // Find smallest signed error
-    units::radian_t error = frc::AngleModulus(targetYaw - turretYaw);
-
-    // Add to current turret angle
-    units::degree_t newTarget = GetMeasurement() + units::degree_t{error};
-
-    // If the computed target exceeds the upper limit by >180°, it likely wrapped
-    if (newTarget > TurretConstants::kmaxAngle)
-    {
-        // If we're only just beyond by less than 180°, clamp
-        if (newTarget - 360_deg >= TurretConstants::kminAngle)
-            newTarget -= 360_deg;
-        else
-            newTarget = TurretConstants::kmaxAngle;
-    }
-    else if (newTarget < TurretConstants::kminAngle)
-    {
-        if (newTarget + 360_deg <= TurretConstants::kmaxAngle)
-            newTarget += 360_deg;
-        else
-            newTarget = TurretConstants::kminAngle;
-    }
-    frc::SmartDashboard::PutNumber("/Turret/newTarget", double(newTarget));
+    
     
     // Calculate tangential velocity feedforward
     auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vx", 0.0)};
@@ -247,6 +208,73 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
 
     // Angle to goal
     auto angleToGoal = units::radian_t{std::atan2(dy.value(), dx.value())};
+
+    // =============================================================================================
+    // using the ballistics solution to determine launch parameters
+    
+    // turret velocity in world coordinate frame
+    units::meters_per_second_t turretVx = robotVx - robotOmega * dy / units::radian_t{1};
+    units::meters_per_second_t turretVy = robotVy + robotOmega * dx / units::radian_t{1};
+
+    // turret velocity in rotated coordinate frame where radial is towards target
+    units::meters_per_second_t turretVrad =  turretVx * std::cos(angleToGoal.value()) + 
+                                             turretVy * std::sin(angleToGoal.value());
+    units::meters_per_second_t turretVtan = -turretVx * std::sin(angleToGoal.value()) + 
+                                             turretVy * std::cos(angleToGoal.value());
+
+    // assume ground goal
+    TurretConstants::BallisticTargetType targetType = TurretConstants::BallisticTargetType::GROUND;
+    if (world2goal.Z().value() > 0.0) {
+        // assume hub instead
+        targetType = TurretConstants::BallisticTargetType::HUB;
+    }
+
+    units::meters_per_second_t launch_speed;
+    units::radian_t launch_angle;
+    units::radian_t lead_angle;
+    bool validSolution;
+    
+    GetBallisticSolution(targetType, turretVrad, turretVtan, dist, 
+                         launch_speed, launch_angle, lead_angle, validSolution);
+
+    // TODO Need to do something if solution is invalid
+    // TODO Need to do something with launch_speed and launch_angle
+
+    // =============================================================================================
+    // this code relocated from earlier in this method, but now using the
+    // lead angle from the ballistic solution
+
+    // Compute desired yaw in world frame
+    units::radian_t targetYaw = angleToGoal + lead_angle;
+
+    // Get current turret yaw in world frame
+    units::radian_t turretYaw = world2turret.Rotation().ToRotation2d().Radians();
+
+    // Find smallest signed error
+    units::radian_t error = frc::AngleModulus(targetYaw - turretYaw);
+
+    // Add to current turret angle
+    units::degree_t newTarget = GetMeasurement() + units::degree_t{error};
+
+    // If the computed target exceeds the upper limit by >180°, it likely wrapped
+    if (newTarget > TurretConstants::kmaxAngle)
+    {
+        // If we're only just beyond by less than 180°, clamp
+        if (newTarget - 360_deg >= TurretConstants::kminAngle)
+            newTarget -= 360_deg;
+        else
+            newTarget = TurretConstants::kmaxAngle;
+    }
+    else if (newTarget < TurretConstants::kminAngle)
+    {
+        if (newTarget + 360_deg <= TurretConstants::kmaxAngle)
+            newTarget += 360_deg;
+        else
+            newTarget = TurretConstants::kminAngle;
+    }
+    frc::SmartDashboard::PutNumber("/Turret/newTarget", double(newTarget));
+
+    // =============================================================================================
     
     // Rotate robot velocity into frame aligned with goal vector
     // tangential component is -sin(theta)*vx + cos(theta)*vy
