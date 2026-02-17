@@ -57,7 +57,7 @@ namespace TurretConstants
     DISABLED
   };
 
-  enum BallisticTargetType
+  enum BallisticSolutionType
   {
     HUB,
     GROUND
@@ -116,7 +116,7 @@ namespace TurretConstants
   const units::length::meter_t MidFieldLine = 4.034536_m;
   const units::length::meter_t RedAllianceZoneX = 11.915394_m;
 
-  
+
 } // namespace TurretConstants
 
 /**
@@ -179,7 +179,7 @@ private:
   }
   void UpdateFieldVisuals();
   frc::Pose2d CalculateTurretPose(const frc::Pose2d &robotPose);
-  void GetBallisticSolution(TurretConstants::BallisticTargetType target_type,
+  void GetBallisticSolution(TurretConstants::BallisticSolutionType target_type,
                                     units::meters_per_second_t turret_vx,
                                     units::meters_per_second_t turret_vy,
                                     units::meter_t target_distance,
@@ -215,6 +215,10 @@ private:
         ballistics_rv_gnd::rel_vy,
         ballistics_rv_gnd::rel_vz
   };
+  units::meters_per_second_t m_BallisticLaunchSpeed = 0.0_mps;
+  units::radian_t m_BallisticLaunchAngle = 0.0_rad;
+  units::radian_t m_BallisticLeadAngle = 0.0_rad;
+  bool m_BallisticSolutionValid = false;
   TurretConstants::TurretState m_TurretState;
   void printLog();
   rev::spark::SparkMax m_motor{TurretConstants::kAngleMotorId, rev::spark::SparkLowLevel::MotorType::kBrushless};

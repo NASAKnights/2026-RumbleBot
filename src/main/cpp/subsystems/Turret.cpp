@@ -216,28 +216,48 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     units::meters_per_second_t turretVx = robotVx - robotOmega * dy / units::radian_t{1};
     units::meters_per_second_t turretVy = robotVy + robotOmega * dx / units::radian_t{1};
 
-    // turret velocity in rotated coordinate frame where radial is towards target
+    // turret velocity in rotated world coordinate frame where radial is towards target
     units::meters_per_second_t turretVrad =  turretVx * std::cos(angleToGoal.value()) + 
                                              turretVy * std::sin(angleToGoal.value());
     units::meters_per_second_t turretVtan = -turretVx * std::sin(angleToGoal.value()) + 
                                              turretVy * std::cos(angleToGoal.value());
 
-    // assume ground goal
-    TurretConstants::BallisticTargetType targetType = TurretConstants::BallisticTargetType::GROUND;
+    frc::SmartDashboard::PutNumber("/Turret/VelocityRadial_mps", turretVrad.value());
+    frc::SmartDashboard::PutNumber("/Turret/VelocityTangential_mps", turretVtan.value());
+    frc::SmartDashboard::PutNumber("/Turret/TargetDistance_m", dist.value());
+
+    TurretConstants::BallisticSolutionType solutionType;
     if (world2goal.Z().value() > 0.0) {
-        // assume hub instead
-        targetType = TurretConstants::BallisticTargetType::HUB;
+        // assume hub 
+        solutionType = TurretConstants::BallisticSolutionType::HUB;
+        frc::SmartDashboard::PutString("/Turret/BallisticSolutionType", "HUB");
+    } else {
+        // assume ground
+        solutionType = TurretConstants::BallisticSolutionType::GROUND;
+        frc::SmartDashboard::PutString("/Turret/BallisticSolutionType", "GROUND");
     }
 
     units::meters_per_second_t launch_speed;
     units::radian_t launch_angle;
     units::radian_t lead_angle;
-    bool validSolution;
     
-    GetBallisticSolution(targetType, turretVrad, turretVtan, dist, 
-                         launch_speed, launch_angle, lead_angle, validSolution);
+    GetBallisticSolution(solutionType, turretVrad, turretVtan, dist, 
+                         launch_speed, launch_angle, lead_angle, m_BallisticSolutionValid);
 
-    // TODO Need to do something if solution is invalid
+    frc::SmartDashboard::PutBoolean("/Turret/BallisticSolutionValid", m_BallisticSolutionValid);
+
+    if (m_BallisticSolutionValid) {
+        // update current solution, otherwise retain previous solution
+        m_BallisticLaunchSpeed = launch_speed;
+        m_BallisticLaunchAngle = launch_angle;
+        m_BallisticLeadAngle = lead_angle;
+        frc::SmartDashboard::PutNumber("/Turret/BallisticLaunchSpeed_mps", m_BallisticLaunchSpeed.value());
+        frc::SmartDashboard::PutNumber("/Turret/BallisticLaunchAngle_deg", units::degree_t{m_BallisticLaunchAngle}.value());
+        frc::SmartDashboard::PutNumber("/Turret/BallisticLeadAngle_deg", units::degree_t{m_BallisticLeadAngle}.value());
+    }
+
+    frc::SmartDashboard::PutNumber("/Turret/VelocityRadial_mps", turretVrad.value());
+
     // TODO Need to do something with launch_speed and launch_angle
 
     // =============================================================================================
@@ -245,7 +265,7 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     // lead angle from the ballistic solution
 
     // Compute desired yaw in world frame
-    units::radian_t targetYaw = angleToGoal + lead_angle;
+    units::radian_t targetYaw = angleToGoal + m_BallisticLeadAngle;
 
     // Get current turret yaw in world frame
     units::radian_t turretYaw = world2turret.Rotation().ToRotation2d().Radians();
@@ -566,7 +586,7 @@ frc::Pose2d Turret::CalculateTurretPose(const frc::Pose2d &robotPose)
     return robotPose.TransformBy(turretTransform);
 }
 
-void Turret::GetBallisticSolution(TurretConstants::BallisticTargetType target_type,
+void Turret::GetBallisticSolution(TurretConstants::BallisticSolutionType solution_type,
                                     units::meters_per_second_t turret_vx,
                                     units::meters_per_second_t turret_vy,
                                     units::meter_t target_distance,
@@ -576,15 +596,15 @@ void Turret::GetBallisticSolution(TurretConstants::BallisticTargetType target_ty
                                     bool &valid) 
 {
     double rel_vx, rel_vy, rel_vz;
-    switch (target_type)
+    switch (solution_type)
     {
-        case TurretConstants::BallisticTargetType::HUB:
+        case TurretConstants::BallisticSolutionType::HUB:
             m_ballistics_hub_interpolator.interpolate(turret_vx.value(),
                                                     std::abs(turret_vy.value()),
                                                     target_distance.value(),
                                                     rel_vx, rel_vy, rel_vz);
             break;
-        case TurretConstants::BallisticTargetType::GROUND:
+        case TurretConstants::BallisticSolutionType::GROUND:
             m_ballistics_gnd_interpolator.interpolate(turret_vx.value(),
                                                     std::abs(turret_vy.value()),
                                                     target_distance.value(),

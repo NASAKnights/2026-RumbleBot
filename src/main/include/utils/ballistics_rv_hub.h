@@ -2,6 +2,18 @@
 
 #include <cmath>
 
+// =============================================================================
+// Ballistics Solution
+//
+// Intended Use: Hub target (72 inches height, horizontal target)
+// Constraints:  Fixed peak height of 12 feet, unless launch angle exceeds
+//               78 degrees (maximum for the turret hood), then fixed launch
+//               angle of 78 degrees 
+// Domain:       Turret Field Velocity: -3 to 3 mps
+//               Target Distance: 0.6 m (half hub width) to 6.2 m (furthest 
+//                                corner of the alliance zone)
+// =============================================================================
+
 namespace ballistics_rv_hub {
 
 const int dim_vx = 25;

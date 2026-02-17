@@ -2,6 +2,15 @@
 
 #include <cmath>
 
+// =============================================================================
+// Ballistics Solution
+//
+// Intended Use: Ground targets (height 0) where accuracy is not essential 
+// Constraints:  Fixed launch angle of 50 degrees (minimum for the turret hood)
+// Domain:       Turret Field Velocity: -5 to 5 mps
+//               Target Distance: 0.5 to 18.5 meters
+// =============================================================================
+
 namespace ballistics_rv_gnd {
 
 const int dim_vx = 11;
