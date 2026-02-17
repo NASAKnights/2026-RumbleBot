@@ -24,6 +24,7 @@
 #include <units/angle.h>
 #include <units/length.h>
 #include <units/time.h>
+#include <frc/DigitalInput.h>
 
 #include <optional>
 #include <string_view>
@@ -49,11 +50,12 @@ namespace TurretConstants
     MOVE,
     HOLD,
     START,
+    HOMING,
     TRACKING,
     DISABLED
   };
 
-  const double kAngleP = 0.0;
+  const double kAngleP = 0.01;
   const double kAngleI = 0.00;
   const double kAngleD = 0.0; // 0.0001
   const double kIZone = 0.0;
@@ -80,8 +82,12 @@ namespace TurretConstants
       units::moment_of_inertia::kilogram_square_meter_t(0.06742); // I = MR^2
   const units::length::meter_t kTurretRadius = units::length::meter_t(0.3048);
   const units::mass::kilogram_t kTurretMass = units::mass::kilogram_t(2.26796);
-  const units::angle::radian_t kminAngle = -225_deg;
-  const units::angle::radian_t kmaxAngle = 45_deg;
+  // const units::angle::radian_t kminAngle = -225_deg;
+  // const units::angle::radian_t kmaxAngle = 45_deg;
+
+  const units::angle::radian_t kminAngle = -140_deg;
+  const units::angle::radian_t kmaxAngle = 140_deg;
+
   const bool kGravity = false;
   const units::angle::radian_t kTurretStartAngle = units::angle::radian_t(0.0);
 
@@ -120,6 +126,7 @@ public:
   void Periodic();
   void Emergency_Stop();
   void ChangeAngle();
+  void FindLimitSwitch();
   void UseOutput();
   void SimulationPeriodic();
   void Enable();
@@ -173,9 +180,10 @@ private:
   void printLog();
   rev::spark::SparkMax m_motor{TurretConstants::kAngleMotorId, rev::spark::SparkLowLevel::MotorType::kBrushless};
   rev::spark::SparkRelativeEncoder m_encoder;
+  frc::DigitalInput m_magSwitch{0};
 
   frc::Servo m_hood{7};
-
+  
   frc::ArmFeedforward m_feedforward;
   wpi::log::DoubleLogEntry m_AngleLog;
   wpi::log::DoubleLogEntry m_SetPointLog;

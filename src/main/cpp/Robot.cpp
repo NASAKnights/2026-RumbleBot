@@ -243,21 +243,27 @@ void Robot::BindCommands()
             frc2::InstantCommand([this]
                                  { return m_swerveDrive.ResetHeading(); })));
 
-    frc2::JoystickButton(&m_driverController, 1)
-        .WhileTrue(frc2::CommandPtr(
+    frc2::JoystickButton(&m_driverController, 6)
+        .OnTrue(frc2::CommandPtr(
             frc2::InstantCommand([this]
-                                 { return m_intake.Intake(); })))
-        .OnFalse(frc2::CommandPtr(
-            frc2::InstantCommand([this]
-                                 { return m_intake.StopIntake(); })));
+                                { m_turret.FindLimitSwitch();
+                                return; })));
+                                
+    // frc2::JoystickButton(&m_driverController, 1)
+    //     .WhileTrue(frc2::CommandPtr(
+    //         frc2::InstantCommand([this]
+    //                              { return m_intake.Intake(); })))
+    //     .OnFalse(frc2::CommandPtr(
+    //         frc2::InstantCommand([this]
+    //                              { return m_intake.StopIntake(); })));
 
-    frc2::JoystickButton(&m_driverController, 2)
-        .WhileTrue(frc2::CommandPtr(
-            frc2::InstantCommand([this]
-                                 { return m_intake.Outtake(); })))
-        .OnFalse(frc2::CommandPtr(
-            frc2::InstantCommand([this]
-                                 { return m_intake.StopIntake(); })));
+    // frc2::JoystickButton(&m_driverController, 2)
+    //     .WhileTrue(frc2::CommandPtr(
+    //         frc2::InstantCommand([this]
+    //                              { return m_intake.Outtake(); })))
+    //     .OnFalse(frc2::CommandPtr(
+    //         frc2::InstantCommand([this]
+    //                              { return m_intake.StopIntake(); })));
 
     // frc2::JoystickButton(&m_driverController, 3)
     //     .OnTrue(scoreClosest.get())
