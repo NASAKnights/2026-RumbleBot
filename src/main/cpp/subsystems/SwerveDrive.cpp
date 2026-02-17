@@ -206,6 +206,7 @@ void SwerveDrive::SimulationPeriodic()
     if (m_usingPigeon) {
     //    delta = m_pigeon.GetAngularVelocityZWorld().GetValue() * dt;
     //    m_pigeonSim.AddYaw(delta);
+        delta = speeds.omega * dt;
     } else {
        // Assuming navx sim support, but simplified for now.
        // Without pigeon loop-back in sim, we might need manual integration or navx sim support.

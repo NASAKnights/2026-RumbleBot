@@ -53,7 +53,7 @@ Turret::Turret() : m_controller(
     // Initialize goal topic - publish default and subscribe for updates
     auto turretTable = networkTableInst.GetTable("Turret");
     goalPublisher = turretTable->GetDoubleArrayTopic("goal").Publish({.periodic = 0.01, .sendAll = true});
-    std::vector<double> defaultGoal = {4.5, 4.0, 0.0};
+    std::vector<double> defaultGoal = {4.5, 4.0, 1.829};
     goalSubscriber = turretTable->GetDoubleArrayTopic("goal").Subscribe(defaultGoal, {.periodic = 0.02, .sendAll = true});
     // Publish initial default goal
     goalPublisher.Set(defaultGoal);
@@ -211,10 +211,17 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
 
     // =============================================================================================
     // using the ballistics solution to determine launch parameters
+
+    // robotVx, robotVy are rotated relative to the robot's reference frame, so reorient to world (field)
+    units::radian_t robotAngle = baseLink->Rotation().Radians();
+    units::meters_per_second_t robotWorldVx = robotVx * std::cos(-robotAngle.value()) + 
+                                              robotVy * std::sin(-robotAngle.value());
+    units::meters_per_second_t robotWorldVy = -robotVx * std::sin(-robotAngle.value()) + 
+                                               robotVy * std::cos(-robotAngle.value());
     
     // turret velocity in world coordinate frame
-    units::meters_per_second_t turretVx = robotVx - robotOmega * dy / units::radian_t{1};
-    units::meters_per_second_t turretVy = robotVy + robotOmega * dx / units::radian_t{1};
+    units::meters_per_second_t turretVx = robotWorldVx - robotOmega * dy / units::radian_t{1};
+    units::meters_per_second_t turretVy = robotWorldVy + robotOmega * dx / units::radian_t{1};
 
     // turret velocity in rotated world coordinate frame where radial is towards target
     units::meters_per_second_t turretVrad =  turretVx * std::cos(angleToGoal.value()) + 
@@ -267,11 +274,17 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     // Compute desired yaw in world frame
     units::radian_t targetYaw = angleToGoal + m_BallisticLeadAngle;
 
+    frc::SmartDashboard::PutNumber("/Turret/TargetYaw_deg", units::degree_t{targetYaw}.value());
+
     // Get current turret yaw in world frame
     units::radian_t turretYaw = world2turret.Rotation().ToRotation2d().Radians();
 
+    frc::SmartDashboard::PutNumber("/Turret/TurretYaw_deg", units::degree_t{turretYaw}.value());
+
     // Find smallest signed error
     units::radian_t error = frc::AngleModulus(targetYaw - turretYaw);
+
+    frc::SmartDashboard::PutNumber("/Turret/TurretYawError_deg", units::degree_t{error}.value());
 
     // Add to current turret angle
     units::degree_t newTarget = GetMeasurement() + units::degree_t{error};
@@ -295,14 +308,9 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     frc::SmartDashboard::PutNumber("/Turret/newTarget", double(newTarget));
 
     // =============================================================================================
-    
-    // Rotate robot velocity into frame aligned with goal vector
-    // tangential component is -sin(theta)*vx + cos(theta)*vy
-    // Be careful with frames. If vx, vy are field relative:
-    auto v_tangential = -units::math::sin(angleToGoal) * robotVx + units::math::cos(angleToGoal) * robotVy;
-
+       
     // Angular velocity contribution from translation: omega = v_tan / r
-    auto omega_trans = v_tangential * (1.0_rad / dist);
+    auto omega_trans = turretVtan * (1.0_rad / dist);
 
     // Total required turret velocity = - (omega_trans) - omega_robot
     // The turret needs to counter-rotate against the robot's rotation AND track the goal translation.
@@ -385,6 +393,7 @@ void Turret::Periodic()
         // auto turretVel = GetVelocity();
         // frc::SmartDashboard::PutNumber("/Turret/GM", double(GetMeasurement()));
         // frc::SmartDashboard::PutNumber("/Turret/FB", double(fb));
+        // frc::SmartDashboard::PutNumber("/Turret/FF", double(ff));
         // frc::SmartDashboard::PutNumber("/Turret/ff_vel  ", double(velocity));
 
         frc::SmartDashboard::PutNumber("/Turret/Voltage", double(v));

@@ -63,7 +63,7 @@ namespace TurretConstants
     GROUND
   };
 
-  const double kAngleP = 0.0;
+  const double kAngleP = 6.0 / 180.0; // 6 volts at max error of 180 degrees
   const double kAngleI = 0.00;
   const double kAngleD = 0.0; // 0.0001
   const double kIZone = 0.0;
