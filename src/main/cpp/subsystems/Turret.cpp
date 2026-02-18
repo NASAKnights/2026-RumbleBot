@@ -37,7 +37,8 @@ Turret::Turret() : m_controller(
     m_controller.SetIZone(TurretConstants::kIZone);
     m_controller.SetTolerance(TurretConstants::kTolerancePos.value(), TurretConstants::kToleranceVel.value());
     // Start m_Turret in neutral position
-    m_TurretState = TurretConstants::TRACKING;
+    // m_TurretState = TurretConstants::TRACKING; 
+    m_TurretState = TurretConstants::HOMING; // Setting initial state to HOMING first, should transition into tracking automagically
     wpi::log::DataLog &log = frc::DataLogManager::GetLog();
     m_AngleLog = wpi::log::DoubleLogEntry(log, "/Turret/Angle");
     m_SetPointLog = wpi::log::DoubleLogEntry(log, "/Turret/Setpoint");
@@ -112,6 +113,7 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
         // Timestamp hasn't changed - pose is stale
         poseIsStale = true;
         frc::SmartDashboard::PutString("/Turret/PoseStatus", "STALE - Timestamp Frozen");
+        // frc::SmartDashboard::PutNumber("DiffTime", poseTimestamp - m_lastPoseUpdateTime);
     }
     else if (m_lastValidPose.has_value())
     {
@@ -123,6 +125,8 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
         );
         double angleDiff = std::abs((baseLink->Rotation().Radians() - lastPose.Rotation().Radians()).value());
         
+        UpdateTurretGoal(*baseLink); // UPDATES THE CURRENT GOAL POSITION
+
         // If robot hasn't moved at all in multiple cycles, might be stale
         // (though it could also just be stationary)
         if (poseDiff < 0.001 && angleDiff < 0.001)
@@ -145,15 +149,15 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     frc::SmartDashboard::PutNumber("/Turret/PoseTimestamp", poseTimestamp / 1e6); // Convert to seconds
     frc::SmartDashboard::PutNumber("/Turret/PoseAge", (nt::Now() - poseTimestamp) / 1e6); // Age in seconds
 
+    // Update tracking variables
+    m_lastPoseUpdateTime = poseTimestamp;
+    m_lastValidPose = *baseLink;
+
     // If pose is stale, hold current position
     if (poseIsStale)
     {
         return {GetMeasurement(), 0_deg_per_s};
     }
-
-    // Update tracking variables
-    m_lastPoseUpdateTime = poseTimestamp;
-    m_lastValidPose = *baseLink;
 
     frc::Transform3d world2robot = frc::Transform3d(baseLink->X(), baseLink->Y(), 0_m, frc::Rotation3d(0_rad, 0_rad, baseLink->Rotation().Radians()));
 
@@ -318,6 +322,9 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     // If robot moves tangentially such that goal moves "left" in view, turret must rotate "left".
     
     auto feedforwardVel = -omega_trans - robotOmega;
+    // frc::SmartDashboard::PutNumber("omegaTrans", omega_trans.value());
+    // frc::SmartDashboard::PutNumber("RobotOmega", frc::SmartDashboard::GetNumber("drive/omega", 0.5));
+
     
     return {newTarget, units::degrees_per_second_t{feedforwardVel}};
 }
@@ -344,6 +351,10 @@ void Turret::SetAngle(units::degree_t TurretAngleGoal, units::degrees_per_second
     frc::SmartDashboard::PutNumber("/Turret/m_goal", double(m_goal));
 }
 
+void Turret::FindLimitSwitch() {
+    m_TurretState = TurretConstants::HOMING;
+}
+
 units::degrees_per_second_t Turret::GetVelocity()
 {
     return units::degrees_per_second_t{m_encoder.GetVelocity()};
@@ -362,6 +373,8 @@ void Turret::Periodic()
     double fb;
     units::volt_t ff;
     units::volt_t v;
+    frc::SmartDashboard::PutBoolean("TurretLimitSwitch", m_magSwitch.Get());
+
     switch (m_TurretState)
     {
     case TurretConstants::HOLD:
@@ -384,19 +397,62 @@ void Turret::Periodic()
     {
         frc::SmartDashboard::PutString("/Turret/State", "TRACKING");
         auto [angle, velocity] = findTrackingAngle();
+        frc::SmartDashboard::PutNumber("/Turret/Measurement Value", GetMeasurement().value());
         SetAngle(angle, velocity);
         fb = m_controller.Calculate(GetMeasurement().value());
         ff = m_feedforward.Calculate(angle, velocity);
         v = units::volt_t{fb} + ff;
+        frc::SmartDashboard::PutNumber("/Turret/Velocity", velocity.value());
+        frc::SmartDashboard::PutNumber("/Turret/angle", angle.value());
+        frc::SmartDashboard::PutNumber("/Turret/VOLTAGEATCURRENT", ff.value());
+        
+        if(GetMeasurement() < TurretConstants::kminAngle && v.value() < 0) {
+            v = units::volt_t(0);
+        }
+        else if(GetMeasurement() > TurretConstants::kmaxAngle && v.value() > 0) {
+            v = units::volt_t(0);
+        }
+
+        if (!m_magSwitch.Get() && GetMeasurement().value() < 0 && v.value() < 0)
+        {
+            v = units::volt_t(0);
+        }
+        else if (!m_magSwitch.Get() && GetMeasurement().value() > 0 && v.value() > 0)
+        {
+            v = units::volt_t(0);
+        }
+        
+        
+        // if(!m_magSwitch.Get() && v.value() < 0) {
+        //     // if(v.value() < 0) m_encoder.SetPosition(-45); 
+        //     // else m_encoder.SetPosition(45); 
+        //     v = units::volt_t(0);
+        // }
+        // else if(!m_magSwitch.Get() && v.value() > 0){
+
+        // }
 
         // units::degrees_per_second_t robotVel = units::degrees_per_second_t{frc::SmartDashboard::GetNumber("Angular velocity", 0.0)};
         // auto turretVel = GetVelocity();
         // frc::SmartDashboard::PutNumber("/Turret/GM", double(GetMeasurement()));
-        // frc::SmartDashboard::PutNumber("/Turret/FB", double(fb));
         // frc::SmartDashboard::PutNumber("/Turret/FF", double(ff));
+        frc::SmartDashboard::PutNumber("/Turret/FB", double(fb));
         // frc::SmartDashboard::PutNumber("/Turret/ff_vel  ", double(velocity));
 
         frc::SmartDashboard::PutNumber("/Turret/Voltage", double(v));
+        break;
+    }
+    case TurretConstants::HOMING:
+    {
+        frc::SmartDashboard::PutString("/Turret/State", "HOMING");
+        v = units::voltage::volt_t(-0.75); // TODO: Set a proper value in the constants for constant slow movement in HOMING
+        if(!m_magSwitch.Get()) {
+            m_encoder.SetPosition(units::angle::degree_t{TurretConstants::kminAngle}.value());
+            // m_TurretState = TurretConstants::HOLD;
+            // m_goal = units::angle::degree_t(0);
+            // v = units::voltage::volt_t(0.0);
+            m_TurretState = TurretConstants::TRACKING;
+        }
         break;
     }
     default:
@@ -411,6 +467,7 @@ void Turret::Periodic()
         m_TurretSim.SetInputVoltage(v);
         SimulationPeriodic();
     }
+    frc::SmartDashboard::PutNumber("/Turret/Voltage", double(v));
     m_motor.SetVoltage(v);
 
     std::string GameData;
@@ -526,32 +583,6 @@ void Turret::UpdateTurretGoal(const frc::Pose2d &robotPose)
     units::length::meter_t TurretX = turretPose.X();
     units::length::meter_t TurretY = turretPose.Y();
 
-
-    // if (RobotPose > FieldConstants::kBlueAllianceZone && RobotPose < FieldConstants::kBlueAllianceZone && frc::DriverStation::GetAlliance = "blue")
-    // {
-    //     TurretGoal = TurretConstants::BlueHubCoords;
-    // } 
-    // else if (RobotPose > FieldConstants::kBlueNeutralZone && RobotPose < FieldConstants::kBlueNeutralZone && frc::DriverStation::GetAlliance = "blue") //y coords above/equalTo halfway point
-    // {
-    //     TurretGoal = TurretConstants::TopBlueCoords;
-    // } 
-    // else if (RobotPose > FieldConstants::kBlueNeutralZone && RobotPose < FieldConstants::kBlueNeutralZone && frc::DriverStation::GetAlliance = "blue")//y coords below halfway point
-    // {
-    //     TurretGoal = TurretConstants::BottomBlueCoords;
-    // } 
-    // else if (RobotPose > FieldConstants::kRedAllianceZone && RobotPose < FieldConstants::kRedAllianceZone && frc::DriverStation::GetAlliance = "red")
-    // {
-    //     TurretGoal = TurretConstants::RedHubCoords;
-    // } 
-    // else if (RobotPose > FieldConstants::kRedNeutralZone && RobotPose < FieldConstants::kRedNeutralZone && frc::DriverStation::GetAlliance = "red") //y coords above/equal to halfway point
-    // {
-    //     TurretGoal = TurretConstants::TopRedCoords;
-    // }
-    // else if (RobotPose > FieldConstants::kRedNeutralZone && RobotPose < FieldConstants::kRedNeutralZone && frc::DriverStation::GetAlliance = "red") //y below halfway point
-    // {
-    //     TurretGoal = TurretConstants::BottomRedCoords;
-    // }
-
     frc::DriverStation::Alliance AllianceColor = frc::DriverStation::GetAlliance().value();
 
     if (TurretX < TurretConstants::BlueAllianceZoneX && AllianceColor == frc::DriverStation::Alliance::kBlue)
@@ -578,7 +609,7 @@ void Turret::UpdateTurretGoal(const frc::Pose2d &robotPose)
     {
         TurretGoal = TurretConstants::BottomRedCoords;
     }
-    
+    goalPublisher.Set(TurretGoal);
     
 }
 

@@ -16,6 +16,11 @@
   },
   "C_Cpp.default.configurationProvider": "vscode-wpilib",
   "files.associations": {
-    "optional": "cpp"
+    "expected": "cpp",
+    "optional": "cpp",
+    "system_error": "cpp",
+    "regex": "cpp",
+    "any": "cpp",
+    "ranges": "cpp"
   }
 }

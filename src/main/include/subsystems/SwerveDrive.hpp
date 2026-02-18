@@ -48,6 +48,9 @@
 #include <pathplanner/lib/config/RobotConfig.h>
 #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
 
+#include <photon/PhotonCamera.h>
+#include <photon/PhotonPoseEstimator.h>
+
 #include <units/angle.h>
 #include <units/time.h>
 #include <units/angular_velocity.h>
@@ -142,6 +145,12 @@ private:
 
   nt::NetworkTableInstance networkTableInst;
 
+  frc::AprilTagFieldLayout kTagLayout{
+    frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::kDefaultField)};
+  
+  photon::PhotonCamera jetsonCamera{"Arducam_B0495_camera1"};
+  photon::PhotonPoseEstimator pvPoseEstimation{kTagLayout, frc::Transform3d{}};
+
   std::string_view baseLink1 = "base_link_1";
   std::string_view baseLink2 = "base_link_2";
   std::string_view baseLink = "base_link";
@@ -153,6 +162,7 @@ private:
   nt::DoubleArraySubscriber baseLink1Subscribe;
   nt::DoubleArraySubscriber baseLink2Subscribe;
   nt::DoubleArraySubscriber visionStdDevSub;
+  nt::StructPublisher<frc::Transform3d> posePublisher;
   PoseFilter poseFilter1 = PoseFilter(5, 0.2, 0.2);
   PoseFilter poseFilter2 = PoseFilter(5, 0.2, 0.2);
   frc::Quaternion rotation_q; // w, x, y, z
