@@ -39,6 +39,7 @@
 #include <frc/Timer.h>
 #include <frc/simulation/SimDeviceSim.h>
 #include <frc/simulation/SingleJointedArmSim.h>
+#include <frc/simulation/DIOSim.h>
 #include <networktables/DoubleArrayTopic.h>
 #include <networktables/NetworkTableInstance.h>
 #include <frc/smartdashboard/Field2d.h>
@@ -110,11 +111,11 @@ namespace TurretConstants
   const units::degree_t kAngleOffset(0.0);
   const units::volt_t kMaxVoltage = 4.0_V; 
 
-  const std::vector<double> BlueHubCoords = {4.625594, 4.034536, 0.0}; //in meters
+  const std::vector<double> BlueHubCoords = {4.625594, 4.034536, 1.829}; //in meters
   const std::vector<double> TopBlueCoords = {1.11252, 6.930136, 0.0};
   const std::vector<double> BottomBlueCoords = {1.11252, 2.010664, 0.0};
 
-  const std::vector<double> RedHubCoords = {11.915394, 4.034536, 0.0};
+  const std::vector<double> RedHubCoords = {11.915394, 4.034536, 1.829};
   const std::vector<double> TopRedCoords = {15.428468, 6.930136, 0.0};
   const std::vector<double> BottomRedCoords = {15.428468, 2.010664, 0.0};
 
@@ -231,6 +232,7 @@ private:
   rev::spark::SparkMax m_motor{TurretConstants::kAngleMotorId, rev::spark::SparkLowLevel::MotorType::kBrushless};
   rev::spark::SparkRelativeEncoder m_encoder;
   frc::DigitalInput m_magSwitch{0};
+  frc::sim::DIOSim m_magSwitchSim{m_magSwitch};
 
   frc::Servo m_hood{7};
   

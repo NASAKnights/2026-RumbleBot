@@ -65,6 +65,11 @@ Turret::Turret() : m_controller(
     m_encoder.SetPosition(0.0);
     SetAngle(0.0_deg);
 
+    if constexpr(frc::RobotBase::IsSimulation())
+    {
+        m_magSwitchSim.SetValue(true);
+    }
+
     // if constexpr(frc::RobotBase::IsSimulation())
     // {
     //     m_simTimer.Start();
@@ -77,6 +82,8 @@ void Turret::SimulationPeriodic()
 {
     m_TurretSim.Update(10_ms);
     frc::SmartDashboard::PutNumber("Motor current draw", m_TurretSim.GetCurrentDraw().value());
+    units::radian_t epsilon = 0.001_rad;
+    m_magSwitchSim.SetValue(m_TurretSim.GetAngle() > TurretConstants::kminAngle + epsilon && m_TurretSim.GetAngle() < TurretConstants::kmaxAngle - epsilon);
 }
 
 units::degree_t Turret::GetMeasurement()
@@ -582,8 +589,14 @@ void Turret::UpdateTurretGoal(const frc::Pose2d &robotPose)
     frc::Pose2d turretPose = CalculateTurretPose(robotPose);
     units::length::meter_t TurretX = turretPose.X();
     units::length::meter_t TurretY = turretPose.Y();
+    frc::DriverStation::Alliance AllianceColor;
 
-    frc::DriverStation::Alliance AllianceColor = frc::DriverStation::GetAlliance().value();
+    if constexpr(frc::RobotBase::IsSimulation())
+    {
+        AllianceColor = frc::DriverStation::Alliance::kBlue;
+    } else {
+        AllianceColor = frc::DriverStation::GetAlliance().value();
+    }
 
     if (TurretX < TurretConstants::BlueAllianceZoneX && AllianceColor == frc::DriverStation::Alliance::kBlue)
     {
