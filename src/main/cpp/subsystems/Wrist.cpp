@@ -22,11 +22,16 @@ Wrist::Wrist() : m_controller(
 {
     m_controller.SetIZone(WristConstants::kIZone);
     rev::spark::SparkBaseConfig config;
+    config.Inverted(true);
+    // config.limitSwitch.ForwardLimitSwitchTriggerBehavior(rev::spark::LimitSwitchConfig::Behavior::kStopMovingMotor);
     config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kBrake);
     // config.encoder.PositionConversionFactor(360 / 81.0);
     config.absoluteEncoder.PositionConversionFactor(360.0);
     config.absoluteEncoder.ZeroOffset(WristConstants::kAbsoluteOffset);
+    config.absoluteEncoder.Inverted(true);
+    config.absoluteEncoder.ZeroCentered(true);
     config.SmartCurrentLimit(30, 0, 20000);
+    
 
     m_motor.Configure(config, rev::spark::SparkMax::ResetMode::kResetSafeParameters, rev::spark::SparkMax::PersistMode::kPersistParameters);
 
@@ -87,6 +92,7 @@ void Wrist::Periodic()
     {
     case WristConstants::START:
     {
+        frc::SmartDashboard::PutString("/Wrist/State", "START");
         m_controller.Reset(GetMeasurement());
         m_controller.SetGoal(m_goal);
         m_WristState = WristConstants::MOVE;
@@ -132,7 +138,7 @@ void Wrist::Periodic()
         break;
     }
     case WristConstants::DISABLED:
-        frc::SmartDashboard::PutString("/Elevator/ElevState", "DISABLED");
+        frc::SmartDashboard::PutString("/Wrist/State", "DISABLED");
         break;
     default:
     {
@@ -168,6 +174,7 @@ void Wrist::printLog()
     frc::SmartDashboard::PutNumber("/Wrist/Goal Angle", m_controller.GetGoal().position.value());
     frc::SmartDashboard::PutNumber("/Wrist/setpoint",
                                    m_controller.GetSetpoint().position.value());
+    frc::SmartDashboard::PutBoolean("/Wrist/LimitSwitch", m_motor.GetForwardLimitSwitch().Get());
     m_AngleLog.Append(GetMeasurement().value());
     m_SetPointLog.Append(m_controller.GetSetpoint().position.value());
     m_StateLog.Append(m_WristState);

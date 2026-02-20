@@ -87,7 +87,7 @@ private:
     // ctre::phoenix6::CANBus RioCANBus{"rio"};
     SwerveDrive m_swerveDrive{NKCANBus};
     // SwerveDrive m_swerveDrive{RioCANBus};
-    // Wrist m_wrist;
+    Wrist m_wrist;
     // Elevator m_elevator;
     // Climber m_climber;
     Turret_Shooter m_turret_shooter;

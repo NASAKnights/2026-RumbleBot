@@ -10,6 +10,8 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/ProfiledPIDSubsystem.h>
 #include <rev/SparkMax.h>
+#include <rev/AbsoluteEncoder.h>
+#include <rev/SparkAbsoluteEncoder.h>
 #include <units/angle.h>
 #include <units/time.h>
 #include <units/acceleration.h>
@@ -67,7 +69,7 @@ namespace WristConstants
     const units::angle::radian_t kmaxAngle = 114_deg;
     const bool kGravity = true;
     const units::angle::radian_t kWristStartAngle = units::angle::radian_t(0.0);
-    const double kAbsoluteOffset = 0.72; // offset in rotations
+    const double kAbsoluteOffset = 0.05; // offset in rotations  
 
 } // namespace ArmConstants
 
