@@ -96,6 +96,10 @@ namespace TurretConstants
   // const units::angle::radian_t kminAngle = -225_deg;
   // const units::angle::radian_t kmaxAngle = 45_deg;
 
+  // HOMING will find the kminAngle limit switch and set the encoder position to this
+  // value.  kminAngle should therefore be set based on the physical location of the
+  // limit switch, such that 0 deg will point the turret directly away from the intake, 
+  // orthogonal to the robot. 
   const units::angle::radian_t kminAngle = -140_deg;
   const units::angle::radian_t kmaxAngle = 140_deg;
 
@@ -105,8 +109,8 @@ namespace TurretConstants
   const double turretPositionConversionFactor  = 360.0 / TurretConstants::kGearRatio;
   const double turretVelocityConversionFactor = 360.0 / TurretConstants::kGearRatio / 60.0;
 
-  const double kXOffset = 0.0;
-  const double kYOffset = 0.0;
+  const double kXOffset =  0.18542;  // (m) 7.3 inches from center of robot (opposite intake)
+  const double kYOffset = -0.18542;  // (m) 7.3 inches from center of robot
   const double kZOffset = 0.0;
   const units::degree_t kAngleOffset(0.0);
   const units::volt_t kMaxVoltage = 4.0_V; 
@@ -195,6 +199,8 @@ private:
                                     units::radian_t &launch_angle,
                                     units::radian_t &lead_angle,
                                     bool &valid);
+  void CalculateTargetingSolution(const frc::Pose2d &robotPose, units::second_t dt, bool update,
+                                  units::meters_per_second_t &launch_speed, units::radian_t &launch_angle, units::radian_t &turret_angle);
   BallisticsInterpolator m_ballistics_hub_interpolator{
         ballistics_rv_hub::dim_vx, 
         ballistics_rv_hub::dim_vy, 
@@ -226,6 +232,9 @@ private:
   units::meters_per_second_t m_BallisticLaunchSpeed = 0.0_mps;
   units::radian_t m_BallisticLaunchAngle = 0.0_rad;
   units::radian_t m_BallisticLeadAngle = 0.0_rad;
+  units::meters_per_second_squared_t m_LaunchSpeedAcceleration = 0.0_mps_sq;
+  units::radians_per_second_t m_LaunchAngleVelocity = 0.0_rad_per_s;
+  units::radians_per_second_t m_TurretAngleVelocity = 0.0_rad_per_s;
   bool m_BallisticSolutionValid = false;
   TurretConstants::TurretState m_TurretState;
   void printLog();

@@ -166,7 +166,7 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
         return {GetMeasurement(), 0_deg_per_s};
     }
 
-    frc::Transform3d world2robot = frc::Transform3d(baseLink->X(), baseLink->Y(), 0_m, frc::Rotation3d(0_rad, 0_rad, baseLink->Rotation().Radians()));
+    //frc::Transform3d world2robot = frc::Transform3d(baseLink->X(), baseLink->Y(), 0_m, frc::Rotation3d(0_rad, 0_rad, baseLink->Rotation().Radians()));
 
     // Read goal from NetworkTables
     std::vector<double> defaultGoal = {4.0, 4.0, 0.0};
@@ -179,161 +179,40 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
             frc::Rotation3d()
         );
     }
-    
-    frc::Transform3d world2goal = goal;
 
-    // world2turret rotation matrix
-    frc::Transform3d world2turret =
-        frc::Transform3d(baseLink->X() + units::length::meter_t{TurretConstants::kXOffset},
-                         baseLink->Y() + units::length::meter_t{TurretConstants::kYOffset},
-                         units::length::meter_t{TurretConstants::kZOffset},
-                         frc::Rotation3d(0.0_rad, 0.0_rad,
-                                         units::angle::radian_t{GetMeasurement().convert<units::angle::radians>()} + baseLink->Rotation().Radians()));
-    
-    
-    // Calculate tangential velocity feedforward
-    auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vx", 0.0)};
-    auto robotVy = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vy", 0.0)};
-    auto robotOmega = units::radians_per_second_t{frc::SmartDashboard::GetNumber("drive/omega", 0.0)};
-
-    // Robot velocity vector in field frame (approximate, since we don't have full odometry velocity here easily)
-    // Actually, drive/vx and vy are usually robot-relative or field-relative depending on how they are pushed. 
-    // In SwerveDrive.cpp, they are pushed as the commanded chassis speeds (Robot Relative? No, SwerveDrive::Drive usually takes field relative if driven that way, but let's check).
-    // SwerveDrive::Drive takes whatever is passed. In Robot.cpp, it seems field relative is used.
-    // However, the dashboard values come from SwerveDrive::Drive, which receives the result of WeightedDriving.
-    
-    // Let's assume field relative for now as that's typical for swerve.
-    
-    // Relative velocity of goal wrt robot: v_g_r = v_g - v_r
-    // v_g = 0 (static goal)
-    // v_r = v_robot_trans + omega_robot x r_turret
-    // But simply: we need the tangential component of the robot's velocity relative to the goal.
-
-    // Tangential velocity = v_perp / distance
-    // v_perp is the component of robot velocity perpendicular to the turret-to-goal vector.
-    
-    // Vector from Turret to Goal
-    units::meter_t dx = world2goal.X() - world2turret.X();
-    units::meter_t dy = world2goal.Y() - world2turret.Y();
-    units::meter_t dist = units::meter_t{std::sqrt(dx.value()*dx.value() + dy.value()*dy.value())};
-
-    // Angle to goal
-    auto angleToGoal = units::radian_t{std::atan2(dy.value(), dx.value())};
-
-    // =============================================================================================
-    // using the ballistics solution to determine launch parameters
-
-    // robotVx, robotVy are rotated relative to the robot's reference frame, so reorient to world (field)
-    units::radian_t robotAngle = baseLink->Rotation().Radians();
-    units::meters_per_second_t robotWorldVx = robotVx * std::cos(-robotAngle.value()) + 
-                                              robotVy * std::sin(-robotAngle.value());
-    units::meters_per_second_t robotWorldVy = -robotVx * std::sin(-robotAngle.value()) + 
-                                               robotVy * std::cos(-robotAngle.value());
-    
-    // turret velocity in world coordinate frame
-    units::meters_per_second_t turretVx = robotWorldVx - robotOmega * dy / units::radian_t{1};
-    units::meters_per_second_t turretVy = robotWorldVy + robotOmega * dx / units::radian_t{1};
-
-    // turret velocity in rotated world coordinate frame where radial is towards target
-    units::meters_per_second_t turretVrad =  turretVx * std::cos(angleToGoal.value()) + 
-                                             turretVy * std::sin(angleToGoal.value());
-    units::meters_per_second_t turretVtan = -turretVx * std::sin(angleToGoal.value()) + 
-                                             turretVy * std::cos(angleToGoal.value());
-
-    frc::SmartDashboard::PutNumber("/Turret/VelocityRadial_mps", turretVrad.value());
-    frc::SmartDashboard::PutNumber("/Turret/VelocityTangential_mps", turretVtan.value());
-    frc::SmartDashboard::PutNumber("/Turret/TargetDistance_m", dist.value());
-
-    TurretConstants::BallisticSolutionType solutionType;
-    if (world2goal.Z().value() > 0.0) {
-        // assume hub 
-        solutionType = TurretConstants::BallisticSolutionType::HUB;
-        frc::SmartDashboard::PutString("/Turret/BallisticSolutionType", "HUB");
-    } else {
-        // assume ground
-        solutionType = TurretConstants::BallisticSolutionType::GROUND;
-        frc::SmartDashboard::PutString("/Turret/BallisticSolutionType", "GROUND");
-    }
-
+    // calculate the solution for the current robot position and orientation
     units::meters_per_second_t launch_speed;
     units::radian_t launch_angle;
-    units::radian_t lead_angle;
+    units::radian_t turret_angle;
     
-    GetBallisticSolution(solutionType, turretVrad, turretVtan, dist, 
-                         launch_speed, launch_angle, lead_angle, m_BallisticSolutionValid);
+    CalculateTargetingSolution(m_lastValidPose.value(), units::second_t{0}, true,
+                               launch_speed, launch_angle, turret_angle);
 
-    frc::SmartDashboard::PutBoolean("/Turret/BallisticSolutionValid", m_BallisticSolutionValid);
+    // calculate the solution for the projected robot position and orientation
+    // at a small time step
 
-    if (m_BallisticSolutionValid) {
-        // update current solution, otherwise retain previous solution
-        m_BallisticLaunchSpeed = launch_speed;
-        m_BallisticLaunchAngle = launch_angle;
-        m_BallisticLeadAngle = lead_angle;
-        frc::SmartDashboard::PutNumber("/Turret/BallisticLaunchSpeed_mps", m_BallisticLaunchSpeed.value());
-        frc::SmartDashboard::PutNumber("/Turret/BallisticLaunchAngle_deg", units::degree_t{m_BallisticLaunchAngle}.value());
-        frc::SmartDashboard::PutNumber("/Turret/BallisticLeadAngle_deg", units::degree_t{m_BallisticLeadAngle}.value());
-    }
+    units::second_t dt = units::second_t{0.02}; // 50 ms in the future
+    units::meters_per_second_t future_launch_speed;
+    units::radian_t future_launch_angle;
+    units::radian_t future_turret_angle;
+    
+    CalculateTargetingSolution(m_lastValidPose.value(), dt, false,
+                               future_launch_speed, future_launch_angle, future_turret_angle);
 
-    frc::SmartDashboard::PutNumber("/Turret/VelocityRadial_mps", turretVrad.value());
-
-    // TODO Need to do something with launch_speed and launch_angle
-
-    // =============================================================================================
-    // this code relocated from earlier in this method, but now using the
-    // lead angle from the ballistic solution
-
-    // Compute desired yaw in world frame
-    units::radian_t targetYaw = angleToGoal + m_BallisticLeadAngle;
-
-    frc::SmartDashboard::PutNumber("/Turret/TargetYaw_deg", units::degree_t{targetYaw}.value());
-
-    // Get current turret yaw in world frame
-    units::radian_t turretYaw = world2turret.Rotation().ToRotation2d().Radians();
-
-    frc::SmartDashboard::PutNumber("/Turret/TurretYaw_deg", units::degree_t{turretYaw}.value());
+    // compute the rate of change for each parameter
+    m_LaunchSpeedAcceleration = (future_launch_speed - launch_speed) / dt;
+    m_LaunchAngleVelocity     = (future_launch_angle - launch_angle) / dt;
+    m_TurretAngleVelocity     = (future_turret_angle - turret_angle) / dt;
 
     // Find smallest signed error
-    units::radian_t error = frc::AngleModulus(targetYaw - turretYaw);
+    units::radian_t error = frc::AngleModulus(turret_angle - GetMeasurement());
+    frc::SmartDashboard::PutNumber("/Turret/TurretAngleError_deg", units::degree_t{error}.value());
 
-    frc::SmartDashboard::PutNumber("/Turret/TurretYawError_deg", units::degree_t{error}.value());
-
-    // Add to current turret angle
-    units::degree_t newTarget = GetMeasurement() + units::degree_t{error};
-
-    // If the computed target exceeds the upper limit by >180°, it likely wrapped
-    if (newTarget > TurretConstants::kmaxAngle)
-    {
-        // If we're only just beyond by less than 180°, clamp
-        if (newTarget - 360_deg >= TurretConstants::kminAngle)
-            newTarget -= 360_deg;
-        else
-            newTarget = TurretConstants::kmaxAngle;
-    }
-    else if (newTarget < TurretConstants::kminAngle)
-    {
-        if (newTarget + 360_deg <= TurretConstants::kmaxAngle)
-            newTarget += 360_deg;
-        else
-            newTarget = TurretConstants::kminAngle;
-    }
-    frc::SmartDashboard::PutNumber("/Turret/newTarget", double(newTarget));
-
-    // =============================================================================================
-       
-    // Angular velocity contribution from translation: omega = v_tan / r
-    auto omega_trans = turretVtan * (1.0_rad / dist);
-
-    // Total required turret velocity = - (omega_trans) - omega_robot
-    // The turret needs to counter-rotate against the robot's rotation AND track the goal translation.
-    // If robot rotates CCW, turret must rotate CW (negative) to stay fixed.
-    // If robot moves tangentially such that goal moves "left" in view, turret must rotate "left".
+    frc::SmartDashboard::PutNumber("/Turret/LaunchSpeedAcceleration_mps2", m_LaunchSpeedAcceleration.value());
+    frc::SmartDashboard::PutNumber("/Turret/LaunchAngleVelocity_dps", units::degrees_per_second_t{m_LaunchAngleVelocity}.value());
+    frc::SmartDashboard::PutNumber("/Turret/TurretAngleVelocity_dps", units::degrees_per_second_t{m_TurretAngleVelocity}.value());
     
-    auto feedforwardVel = -omega_trans - robotOmega;
-    // frc::SmartDashboard::PutNumber("omegaTrans", omega_trans.value());
-    // frc::SmartDashboard::PutNumber("RobotOmega", frc::SmartDashboard::GetNumber("drive/omega", 0.5));
-
-    
-    return {newTarget, units::degrees_per_second_t{feedforwardVel}};
+    return {turret_angle, units::degrees_per_second_t{m_TurretAngleVelocity}};
 }
 
 void Turret::SetAngle(units::degree_t TurretAngleGoal, units::degrees_per_second_t velocityGoal)
@@ -697,4 +576,134 @@ void Turret::GetBallisticSolution(TurretConstants::BallisticSolutionType solutio
     
     // Compute the launch angle
     launch_angle = units::radian_t{std::acos(v_horizontal / v_mag)};
+}
+
+void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::second_t dt, bool update,
+                                        units::meters_per_second_t &launch_speed, units::radian_t &launch_angle, units::radian_t &turret_angle)
+{
+    // initial value for robot position and angle in field reference frame
+    units::meter_t robotx = robotPose.X();
+    units::meter_t roboty = robotPose.Y();
+
+    // robot's initial angle in the field reference frame
+    units::radian_t robotAngle = robotPose.Rotation().Radians();
+
+    // Get the robot's linear and angular velocity from the swervedrive.
+    // The linear velocities are oriented relative to the robot, not the field.
+    auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vx", 0.0)};
+    auto robotVy = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vy", 0.0)};
+    auto robotOmega = units::radians_per_second_t{frc::SmartDashboard::GetNumber("drive/omega", 0.0)};
+
+    // Reorient robotVx, robotVy to the world reference frame (field)
+    units::meters_per_second_t robotWorldVx = robotVx * std::cos(robotAngle.value()) - 
+                                              robotVy * std::sin(robotAngle.value());
+    units::meters_per_second_t robotWorldVy = robotVx * std::sin(robotAngle.value()) + 
+                                              robotVy * std::cos(robotAngle.value());
+
+    // estimate the robot's future position using current linear velocity
+    robotx += robotWorldVx * dt;
+    roboty += robotWorldVy * dt;
+
+    // estimate the robot's future orientation using current angular velocity
+    robotAngle += robotOmega * dt;
+
+    // calculate the turret position in the field frame
+    units::meter_t turretx = robotx + units::meter_t{TurretConstants::kXOffset} * std::cos(robotAngle.value()) - 
+                                      units::meter_t{TurretConstants::kYOffset} * std::sin(robotAngle.value());
+    units::meter_t turrety = roboty + units::meter_t{TurretConstants::kXOffset} * std::sin(robotAngle.value()) + 
+                                      units::meter_t{TurretConstants::kYOffset} * std::cos(robotAngle.value());
+
+    // calculate the distance and angle to the goal in the field coordinate reference frame
+    units::meter_t dx = goal.X() - turretx;
+    units::meter_t dy = goal.Y() - turrety;
+    units::meter_t dist = units::meter_t{std::sqrt(dx.value()*dx.value() + dy.value()*dy.value())};
+    units::radian_t angleToGoal = units::radian_t{std::atan2(dy.value(), dx.value())};
+ 
+    // Get the position of the turret relative to the robot in field orientation
+    units::meter_t tdx = turretx - robotx;
+    units::meter_t tdy = turrety - roboty;
+
+    // Calculate the turret linear velocity in the world (field) coordinate frame.
+    // This is a combination of the robot's linear velocity and the applied
+    // angular velocity of the robot on the turret.
+    units::meters_per_second_t turretVx = robotWorldVx - robotOmega * tdy / units::radian_t{1};
+    units::meters_per_second_t turretVy = robotWorldVy + robotOmega * tdx / units::radian_t{1};
+
+    // Calculate turret velocity in a rotated coordinate frame where the radial 
+    // direction is towards target.
+    units::meters_per_second_t turretVrad =  turretVx * std::cos(-angleToGoal.value()) - 
+                                             turretVy * std::sin(-angleToGoal.value());
+    units::meters_per_second_t turretVtan =  turretVx * std::sin(-angleToGoal.value()) + 
+                                             turretVy * std::cos(-angleToGoal.value());
+
+    
+    // Select which ballistic solution to use.  If the height of the goal is
+    // zero select the ground solution, otherwise select the hub solution.
+    // See ballistics_rv_hub.h and ballistics_rv_gnd.h for details on each.
+    TurretConstants::BallisticSolutionType solutionType;
+    if (goal.Z().value() > 0.0) {
+        // assume hub 
+        solutionType = TurretConstants::BallisticSolutionType::HUB;
+    } else {
+        // assume ground
+        solutionType = TurretConstants::BallisticSolutionType::GROUND;
+    }
+
+    units::meters_per_second_t sol_launch_speed;
+    units::radian_t sol_launch_angle;
+    units::radian_t sol_lead_angle;
+    bool sol_valid;
+    
+    // Interpolate the launch angle (hood), launch speed (flywheel), and lead angle from
+    // ballistic solution grids using the turret's linear velocity and distance to the
+    // target. 
+    GetBallisticSolution(solutionType, turretVrad, turretVtan, dist, 
+                         sol_launch_speed, sol_launch_angle, sol_lead_angle, sol_valid);
+
+    if (!sol_valid) {
+        // use previous solution
+        sol_launch_speed = m_BallisticLaunchSpeed;
+        sol_launch_angle = m_BallisticLaunchAngle;
+        sol_lead_angle   = m_BallisticLeadAngle;
+    }
+
+    // Compute desired yaw in field frame
+    units::radian_t turret_yaw = angleToGoal + sol_lead_angle;
+
+    // turret angle is initialized during homing to align with robot frame x-direction
+    // subtract the robot angle to get the desired turret angle
+    turret_angle = turret_yaw - robotPose.Rotation().Radians();
+    launch_speed = sol_launch_speed;
+    launch_angle = sol_launch_angle;
+
+    if (update) {
+        m_BallisticSolutionValid = sol_valid;
+        m_BallisticLaunchSpeed = sol_launch_speed;
+        m_BallisticLaunchAngle = sol_launch_angle;
+        m_BallisticLeadAngle = sol_lead_angle;
+        frc::SmartDashboard::PutNumber("/Turret/VelocityX_mps", turretVx.value());
+        frc::SmartDashboard::PutNumber("/Turret/VelocityY_mps", turretVy.value());
+        frc::SmartDashboard::PutNumber("/Turret/VelocityRadial_mps", turretVrad.value());
+        frc::SmartDashboard::PutNumber("/Turret/VelocityTangential_mps", turretVtan.value());
+        frc::SmartDashboard::PutNumber("/Turret/TargetDistance_m", dist.value());
+        switch(solutionType)
+        {
+            case TurretConstants::BallisticSolutionType::HUB:
+                frc::SmartDashboard::PutString("/Turret/BallisticSolutionType", "HUB");
+                break;
+            case TurretConstants::BallisticSolutionType::GROUND:
+                frc::SmartDashboard::PutString("/Turret/BallisticSolutionType", "GROUND");
+                break;
+        }
+        frc::SmartDashboard::PutNumber("/Turret/BallisticLaunchSpeed_mps", m_BallisticLaunchSpeed.value());
+        frc::SmartDashboard::PutNumber("/Turret/BallisticLaunchAngle_deg", units::degree_t{m_BallisticLaunchAngle}.value());
+        frc::SmartDashboard::PutNumber("/Turret/BallisticLeadAngle_deg", units::degree_t{m_BallisticLeadAngle}.value());
+        frc::SmartDashboard::PutNumber("/Turret/BallisticTurretAngle_deg", units::degree_t{turret_angle}.value());
+        // Flag indicates if we have a valid solution.  We may or may not want to pause
+        // shooting.  This typically occurs when driving the robot toward the hub at
+        // high velocity, which should be a short-term temporary condition.  The hood's 
+        // angle limit would be exceeded here because the robot's radial velocity
+        // must be offset, resulting in a higher launch angle. 
+        frc::SmartDashboard::PutBoolean("/Turret/BallisticSolutionValid", m_BallisticSolutionValid);
+    }
 }
