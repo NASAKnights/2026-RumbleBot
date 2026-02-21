@@ -149,6 +149,7 @@ public:
   void FindLimitSwitch();
   void UseOutput();
   void SimulationPeriodic();
+  void AllowShooting();
   void Enable();
   void Disable();
   void SetAngle(units::degree_t angle, units::degrees_per_second_t velocity = 0_deg_per_s);
@@ -289,4 +290,7 @@ private:
   wpi::log::BooleanLogEntry m_PoseStaleLog;
 
   std::vector<double> TurretGoal = {0.0, 0.0, 0.0};
+
+  bool allowShooting = false;
+
 };

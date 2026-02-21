@@ -47,6 +47,9 @@ Turret::Turret() : m_controller(
     m_MotorVoltageLog = wpi::log::DoubleLogEntry(log, "/Turret/MotorVoltage");
     m_PoseStaleLog = wpi::log::BooleanLogEntry(log, "/Turret/PoseStale");
 
+    
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/AllowShooting", false);
+
     frc::SmartDashboard::PutBoolean("Turret/Hood/Angle Manual Override", false);
     frc::SmartDashboard::PutNumber("Turret/Hood/Angle Manual Set", 0.0);
     networkTableInst = nt::NetworkTableInstance::GetDefault();
@@ -86,6 +89,12 @@ void Turret::SimulationPeriodic()
     frc::SmartDashboard::PutNumber("Motor current draw", m_TurretSim.GetCurrentDraw().value());
     units::radian_t epsilon = 0.001_rad;
     m_magSwitchSim.SetValue(m_TurretSim.GetAngle() > TurretConstants::kminAngle + epsilon && m_TurretSim.GetAngle() < TurretConstants::kmaxAngle - epsilon);
+}
+
+void Turret::AllowShooting()
+{
+    allowShooting = true;
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/AllowShooting", true);
 }
 
 units::degree_t Turret::GetMeasurement()
@@ -359,9 +368,10 @@ void Turret::Periodic()
             // ChangeHoodAngle(frc::SmartDashboard::GetNumber("Turret/Hood/Angle Manual Set", 0.0));
         }
         // Launch Speed
-        // ChangeLaunchSpeed(m_BallisticLaunchSpeed);
-        frc::SmartDashboard::PutNumber("Turret/LaunchAngle/Set Speed (mps)", m_BallisticLaunchSpeed.value());
-
+        if (allowShooting) {
+            ChangeLaunchSpeed(m_BallisticLaunchSpeed);
+            frc::SmartDashboard::PutNumber("Turret/LaunchAngle/Set Speed (mps)", m_BallisticLaunchSpeed.value());
+        }
         break;
     }
     case TurretConstants::HOMING:

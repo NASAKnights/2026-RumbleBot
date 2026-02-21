@@ -306,6 +306,14 @@ void Robot::BindCommands()
     //     .OnFalse(frc2::CommandPtr(
     //         frc2::InstantCommand([this]
     //                                     { return m_turret.ChangeHoodAngle(0); })));
+
+    frc2::JoystickButton(&m_operatorController, 2)
+        .OnTrue(frc2::CommandPtr(frc2::InstantCommand(
+            [this]
+            {
+                m_turret.AllowShooting();
+                return;
+            })));
 }
 
 void Robot::DisabledPeriodic()
