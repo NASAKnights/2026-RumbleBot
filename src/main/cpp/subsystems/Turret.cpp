@@ -673,6 +673,13 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
     // turret angle is initialized during homing to align with robot frame x-direction
     // subtract the robot angle to get the desired turret angle
     turret_angle = turret_yaw - robotPose.Rotation().Radians() - 0_deg;
+
+    // Normalize the turret angle into the turret's physical range.
+    double angle_val = turret_angle.convert<units::deg>().value();
+    double min_angle = TurretConstants::kminAngle.convert<units::deg>().value();
+    angle_val = angle_val - 360.0 * std::floor((angle_val - min_angle) / 360.0);
+    turret_angle = units::degree_t{angle_val};
+
     launch_speed = sol_launch_speed;
     launch_angle = sol_launch_angle;
 
