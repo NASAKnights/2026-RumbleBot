@@ -48,6 +48,8 @@
 #include "utils/ballistics_rv_hub.h"
 #include "utils/ballistics_rv_gnd.h"
 
+#include "subsystems/Turret_Shooter.h"
+
 namespace TurretConstants
 {
   enum TurretState
@@ -100,8 +102,8 @@ namespace TurretConstants
   const double turretPositionConversionFactor  = 360.0 / TurretConstants::kGearRatio;
   const double turretVelocityConversionFactor = 360.0 / TurretConstants::kGearRatio / 60.0;
 
-  const double kXOffset =  0.18542;  // (m) 7.3 inches from center of robot (opposite intake)
-  const double kYOffset = -0.18542;  // (m) 7.3 inches from center of robot
+  const double kXOffset =  -0.18542;  // (m) 7.3 inches from center of robot (opposite intake)
+  const double kYOffset = 0.18542;  // (m) 7.3 inches from center of robot
   const double kZOffset = 0.0;
   const units::degree_t kAngleOffset(0.0);
   const units::volt_t kMaxVoltage = 6.0_V; 
@@ -156,6 +158,7 @@ public:
   }
 
   void ChangeHoodAngle(double angle);
+  void ChangeLaunchSpeed(units::meters_per_second_t speed);
   // void get_pigeon();
   units::degree_t GetMeasurement();
   units::degrees_per_second_t GetVelocity();
@@ -244,6 +247,8 @@ private:
   frc::sim::DIOSim m_magSwitchSim{m_magSwitch};
 
   frc::Servo m_hood{7};
+
+  Turret_Shooter m_turret_shooter;
   
   frc::ArmFeedforward m_feedforward;
   wpi::log::DoubleLogEntry m_AngleLog;

@@ -90,7 +90,6 @@ private:
     Wrist m_wrist;
     // Elevator m_elevator;
     // Climber m_climber;
-    Turret_Shooter m_turret_shooter;
     Turret m_turret;
     TurretIntake m_intake;
 

@@ -20,7 +20,7 @@ Turret::Turret() : m_controller(
                     m_encoder(m_motor.GetEncoder()),
                     m_feedforward(TurretConstants::kFFks, TurretConstants::kFFkg, TurretConstants::kFFkV, TurretConstants::kFFkA),
 
-                   m_TurretSim(TurretConstants::kSimMotor, TurretConstants::kGearRatio, TurretConstants::kmoi,
+                    m_TurretSim(TurretConstants::kSimMotor, TurretConstants::kGearRatio, TurretConstants::kmoi,
                                TurretConstants::kTurretRadius, TurretConstants::kminAngle, TurretConstants::kmaxAngle,
                                TurretConstants::kGravity, TurretConstants::kTurretStartAngle, TurretConstants::kSimNoise)
 {
@@ -246,6 +246,11 @@ void Turret::ChangeHoodAngle(double HoodAngle)
     m_hood.Set(HoodAngle);
 }
 
+void Turret::ChangeLaunchSpeed(units::meters_per_second_t speed) 
+{
+    m_turret_shooter.SetSpeed(speed);
+}
+
 void Turret::Periodic()
 {
 
@@ -277,6 +282,8 @@ void Turret::Periodic()
     case TurretConstants::TRACKING:
     {
         frc::SmartDashboard::PutString("/Turret/State", "TRACKING");
+
+        // Tracking Angle
         auto [angle, velocity] = findTrackingAngle();
         frc::SmartDashboard::PutNumber("/Turret/Measurement Value", GetMeasurement().value());
         SetAngle(angle, velocity);
@@ -326,6 +333,14 @@ void Turret::Periodic()
         // frc::SmartDashboard::PutNumber("/Turret/ff_vel  ", double(velocity));
 
         frc::SmartDashboard::PutNumber("/Turret/Voltage", double(v));
+
+        // Hood/Launch Angle
+        // ChangeHoodAngle(m_BallisticLaunchAngle.value());
+
+        // Launch Speed
+        ChangeLaunchSpeed(m_BallisticLaunchSpeed);
+        frc::SmartDashboard::PutNumber("Turret/LaunchAngle/Set Speed (mps)", m_BallisticLaunchSpeed.value());
+
         break;
     }
     case TurretConstants::HOMING:
@@ -395,6 +410,8 @@ void Turret::printLog()
     m_StateLog.Append(m_TurretState);
     // m_MotorCurrentLog.Append(m_motor.GetOutputCurrent());
     // m_MotorVoltageLog.Append(m_motor.GetAppliedOutput());
+
+    // Turret Shooter values output in shooter class
 }
 
 void Turret::Disable()

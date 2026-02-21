@@ -265,16 +265,6 @@ void Robot::BindCommands()
             .OnFalse(frc2::CommandPtr(
             frc2::InstantCommand([this]
                                  { return m_intake.StopIntake(); })));
-
-    frc2::JoystickButton(&m_driverController, 4)
-            .OnTrue(frc2::CommandPtr(
-                frc2::InstantCommand([this]
-                                    { m_turret_shooter.RunAll();
-                                    return; })))
-            .OnFalse(frc2::CommandPtr(
-                frc2::InstantCommand([this]
-                                    { m_turret_shooter.StopAll();
-                                    return; })));
                                 
     // frc2::JoystickButton(&m_driverController, 1)
     //     .WhileTrue(frc2::CommandPtr(
