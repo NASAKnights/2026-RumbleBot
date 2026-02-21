@@ -29,6 +29,7 @@
 #include <optional>
 #include <string_view>
 #include <vector>
+#include <cmath>
 
 #include <frc/DriverStation.h>
 
@@ -129,6 +130,8 @@ namespace TurretConstants
   const units::length::meter_t MidFieldLine = 4.034536_m;
   const units::length::meter_t RedAllianceZoneX = 11.915394_m;
 
+  const double kPI = 3.14159265358979323846;
+
 
 } // namespace TurretConstants
 
@@ -157,7 +160,7 @@ public:
     m_controller.Reset();
   }
 
-  void ChangeHoodAngle(double angle);
+  void ChangeHoodAngle(units::angle::radian_t launchAngle);
   void ChangeLaunchSpeed(units::meters_per_second_t speed);
   // void get_pigeon();
   units::degree_t GetMeasurement();

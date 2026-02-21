@@ -47,6 +47,8 @@ Turret::Turret() : m_controller(
     m_MotorVoltageLog = wpi::log::DoubleLogEntry(log, "/Turret/MotorVoltage");
     m_PoseStaleLog = wpi::log::BooleanLogEntry(log, "/Turret/PoseStale");
 
+    frc::SmartDashboard::PutBoolean("Turret/Hood/Angle Manual Override", false);
+    frc::SmartDashboard::PutNumber("Turret/Hood/Angle Manual Set", 0.0);
     networkTableInst = nt::NetworkTableInstance::GetDefault();
     auto poseTable = networkTableInst.GetTable("ROS2Bridge");
     baseLinkSubscriber = poseTable->GetDoubleArrayTopic(robotPoseLink).Subscribe({}, {.periodic = 0.02, .sendAll = true});
@@ -241,9 +243,24 @@ units::degrees_per_second_t Turret::GetVelocity()
     return units::degrees_per_second_t{m_encoder.GetVelocity()};
 }
 
-void Turret::ChangeHoodAngle(double HoodAngle)
+void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle)
 {
-    m_hood.Set(HoodAngle);
+    double ballLaunchAngleDegrees = double((ballLaunchAngle*180)/TurretConstants::kPI);
+
+    double servoExtention = (-(2.94699*std::pow(10, -7)) * std::pow(ballLaunchAngleDegrees, 4) +
+        (5.89093*std::pow(10, -5)) * std::pow(ballLaunchAngleDegrees, 3) -
+        (4.41946*std::pow(10, -3)) * std::pow(ballLaunchAngleDegrees, 2) + 
+        (0.124056) * ballLaunchAngleDegrees - 0.227319);
+
+    frc::SmartDashboard::PutNumber("Turret/Hood/Servo Extension", servoExtention);
+    if (servoExtention > 0.8){
+        servoExtention = 0.8;
+    }
+    else if(servoExtention < 0.0){
+        servoExtention = 0.0;
+    }
+    frc::SmartDashboard::PutNumber("Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
+    m_hood.Set(servoExtention);
 }
 
 void Turret::ChangeLaunchSpeed(units::meters_per_second_t speed) 
@@ -335,10 +352,14 @@ void Turret::Periodic()
         frc::SmartDashboard::PutNumber("/Turret/Voltage", double(v));
 
         // Hood/Launch Angle
-        // ChangeHoodAngle(m_BallisticLaunchAngle.value());
+        ChangeHoodAngle(m_BallisticLaunchAngle);
 
+        bool override = frc::SmartDashboard::GetBoolean("Turret/Hood/Angle Manual Override", false);
+        if(override) {
+            // ChangeHoodAngle(frc::SmartDashboard::GetNumber("Turret/Hood/Angle Manual Set", 0.0));
+        }
         // Launch Speed
-        ChangeLaunchSpeed(m_BallisticLaunchSpeed);
+        // ChangeLaunchSpeed(m_BallisticLaunchSpeed);
         frc::SmartDashboard::PutNumber("Turret/LaunchAngle/Set Speed (mps)", m_BallisticLaunchSpeed.value());
 
         break;

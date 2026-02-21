@@ -78,7 +78,7 @@ void Turret_Shooter::RunSpindexerIndexer()
 {
     m_indexerMotor.Set(Turret_ShooterConstants::indexerSpeed);
     m_spindexerMotor.Set(Turret_ShooterConstants::spindexerSpeed);
-}
+ }
 
 void Turret_Shooter::StopSpindexerIndexer()
 {
