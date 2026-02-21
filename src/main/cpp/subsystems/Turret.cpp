@@ -371,6 +371,8 @@ void Turret::Periodic()
         if (allowShooting) {
             ChangeLaunchSpeed(m_BallisticLaunchSpeed);
             frc::SmartDashboard::PutNumber("Turret/LaunchAngle/Set Speed (mps)", m_BallisticLaunchSpeed.value());
+            
+            m_turret_shooter.RunSpindexerIndexer();
         }
         break;
     }

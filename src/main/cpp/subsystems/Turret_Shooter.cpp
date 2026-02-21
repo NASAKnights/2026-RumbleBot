@@ -61,6 +61,9 @@ Turret_Shooter::Turret_Shooter()
 
     frc::SmartDashboard::PutNumber("Shooter/Left_Motor_Voltage", 0.0);
     frc::SmartDashboard::PutNumber("Shooter/Right_Motor_Voltage", 0.0);
+
+    
+    frc::SmartDashboard::PutBoolean("Shooter/Running_Spindexer_Indexer", false);
 }
 
 void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed) {
@@ -78,12 +81,16 @@ void Turret_Shooter::RunSpindexerIndexer()
 {
     m_indexerMotor.Set(Turret_ShooterConstants::indexerSpeed);
     m_spindexerMotor.Set(Turret_ShooterConstants::spindexerSpeed);
+
+    frc::SmartDashboard::PutBoolean("Shooter/Running_Spindexer_Indexer", true);
  }
 
 void Turret_Shooter::StopSpindexerIndexer()
 {
     m_indexerMotor.Set(0.0);
     m_spindexerMotor.Set(0.0);
+
+    frc::SmartDashboard::PutBoolean("Shooter/Running_Spindexer_Indexer", false);
 }
 
 void Turret_Shooter::StopMotors()
