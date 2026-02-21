@@ -17,6 +17,8 @@
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Translation2d.h>
 #include <frc/geometry/Translation3d.h>
+#include <frc/geometry/Rotation2d.h>
+#include <frc/geometry/Rotation3d.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
 #include <frc/kinematics/SwerveDriveOdometry.h>
@@ -148,8 +150,13 @@ private:
   frc::AprilTagFieldLayout kTagLayout{
     frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::kDefaultField)};
   
-  photon::PhotonCamera jetsonCamera{"Arducam_B0495_camera1"};
-  photon::PhotonPoseEstimator pvPoseEstimation{kTagLayout, frc::Transform3d{}};
+  photon::PhotonCamera jetsonCamera1{"Arducam_B0495_camera1"};
+  photon::PhotonCamera jetsonCamera2{"Arducam_B0495_camera2"};
+  photon::PhotonPoseEstimator pvPoseEstimation1{kTagLayout, frc::Transform3d{}};
+  photon::PhotonPoseEstimator pvPoseEstimation2{kTagLayout, frc::Transform3d{}};
+
+  frc::Transform3d robot2Camera1{frc::Translation3d{-0.260_m, 0.320_m, 0.0_m}, frc::Rotation3d{180_deg, 15_deg, 90_deg}};
+  frc::Transform3d robot2Camera2{frc::Translation3d{-0.320_m, 0.260_m, 0.0_m}, frc::Rotation3d{180_deg, 15_deg, 180_deg}};
 
   std::string_view baseLink1 = "base_link_1";
   std::string_view baseLink2 = "base_link_2";

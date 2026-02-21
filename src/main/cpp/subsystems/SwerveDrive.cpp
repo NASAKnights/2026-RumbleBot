@@ -82,6 +82,8 @@ SwerveDrive::SwerveDrive(ctre::phoenix6::CANBus canBus)
     m_poseEstimator.SetVisionMeasurementStdDevs(visionStdDevs);
 
     m_visionPoseEstimator = PoseEstimator();
+    pvPoseEstimation1.SetRobotToCameraTransform(robot2Camera1);
+    pvPoseEstimation2.SetRobotToCameraTransform(robot2Camera2);
 
     timer.Start();
 
@@ -393,14 +395,24 @@ void SwerveDrive::UpdatePoseEstimate()
     // frc::AprilTagFieldLayout kTagLayout{
     //     frc::LoadAprilTagLayoutField(frc::AprilTagField::k2025ReefscapeAndyMark)
     // };
-    auto results = jetsonCamera.GetAllUnreadResults();
+    auto results = jetsonCamera2.GetAllUnreadResults();
     for (auto &result : results) {
         auto multiTagResult = result.MultiTagResult();
         auto singleTagResult = result.GetBestTarget();
+        auto estimatedRobotPose = pvPoseEstimation2.EstimateCoprocMultiTagPose(result);
+        if (!estimatedRobotPose){
+            estimatedRobotPose = pvPoseEstimation2.EstimateLowestAmbiguityPose(result);
+        }
+
+        if (estimatedRobotPose){
+            m_poseEstimator.AddVisionMeasurement(estimatedRobotPose->estimatedPose.ToPose2d(), 
+            estimatedRobotPose->timestamp);
+        }
+
         if (multiTagResult.has_value()) {
             frc::Transform3d fieldToCamera = multiTagResult->estimatedPose.best;
             posePublisher.Set(fieldToCamera);
-
+            
             frc::SmartDashboard::PutNumber("Camera2TagX",fieldToCamera.X().value());
         }
         else if (result.HasTargets()) {
@@ -410,6 +422,7 @@ void SwerveDrive::UpdatePoseEstimate()
             frc::SmartDashboard::PutNumber("Camera2TagX",fieldToCamera.X().value());
         }
     }
+    
 
    
     // auto visionEst = m_poseEstimator.GetEstimatedPosition();
