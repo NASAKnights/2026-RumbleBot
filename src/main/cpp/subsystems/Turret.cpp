@@ -97,6 +97,12 @@ void Turret::AllowShooting()
     frc::SmartDashboard::PutBoolean("/Turret/Shooter/AllowShooting", true);
 }
 
+void Turret::PauseShooting()
+{
+    allowShooting = false;
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/AllowShooting", false);
+}
+
 units::degree_t Turret::GetMeasurement()
 { // original get measurement function
     if constexpr (frc::RobotBase::IsSimulation())
@@ -374,12 +380,16 @@ void Turret::Periodic()
             
             m_turret_shooter.RunSpindexerIndexer();
         }
+        else if (!allowShooting){
+            ChangeLaunchSpeed(units::meters_per_second_t{0.0});
+            m_turret_shooter.StopSpindexerIndexer();
+        }
         break;
     }
     case TurretConstants::HOMING:
     {
         frc::SmartDashboard::PutString("/Turret/State", "HOMING");
-        v = units::voltage::volt_t(-0.75); // TODO: Set a proper value in the constants for constant slow movement in HOMING
+        v = units::voltage::volt_t(-2.5); // TODO: Set a proper value in the constants for constant slow movement in HOMING
         if(!m_magSwitch.Get()) {
             m_encoder.SetPosition(units::angle::degree_t{TurretConstants::kminAngle}.value());
             // m_TurretState = TurretConstants::HOLD;

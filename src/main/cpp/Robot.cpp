@@ -244,7 +244,7 @@ void Robot::BindCommands()
             frc2::InstantCommand([this]
                                  { return m_swerveDrive.ResetHeading(); })));
 
-    frc2::JoystickButton(&m_driverController, 6)
+    frc2::JoystickButton(&m_driverController, 1)
         .OnTrue(frc2::CommandPtr(
             frc2::InstantCommand([this]
                                 { m_turret.FindLimitSwitch();
@@ -256,7 +256,7 @@ void Robot::BindCommands()
     //                                 { m_wrist.SetAngle(90);
     //                                 return; })));
                                 
-    frc2::JoystickButton(&m_driverController, 5)
+    frc2::JoystickButton(&m_driverController, 6)
             .OnTrue(frc2::CommandPtr(
                 frc2::InstantCommand([this]
                                     { m_wrist.SetAngle(3);
@@ -312,6 +312,12 @@ void Robot::BindCommands()
             [this]
             {
                 m_turret.AllowShooting();
+                return;
+            })))
+            .OnFalse(frc2::CommandPtr(frc2::InstantCommand(
+            [this]
+            {
+                m_turret.PauseShooting();
                 return;
             })));
 }

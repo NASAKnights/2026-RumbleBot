@@ -150,6 +150,7 @@ public:
   void UseOutput();
   void SimulationPeriodic();
   void AllowShooting();
+  void PauseShooting();
   void Enable();
   void Disable();
   void SetAngle(units::degree_t angle, units::degrees_per_second_t velocity = 0_deg_per_s);

@@ -68,6 +68,10 @@ Turret_Shooter::Turret_Shooter()
 
 void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed) {
     units::turns_per_second_t motorSpeed = (kFlyWheelVelocityGain * ballSpeed * units::radian_t{1} * 4.0) / (kFlywheelDiameter * kGearRatio);
+
+    //Spin motor 10% faster than needed to account for loss of speed when shooting rapidly
+    motorSpeed += motorSpeed * Turret_ShooterConstants::kPercentBoost;
+    
     auto motorRequest = ctre::phoenix6::controls::VelocityVoltage{motorSpeed};
     ctre::phoenix::StatusCode leftStatus = m_leftMotor.SetControl(motorRequest.WithVelocity(motorSpeed).WithSlot(0));
     ctre::phoenix::StatusCode rightStatus = m_rightMotor.SetControl(motorRequest.WithVelocity(motorSpeed).WithSlot(0));

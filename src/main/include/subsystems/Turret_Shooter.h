@@ -37,8 +37,9 @@ namespace Turret_ShooterConstants {
   static const int kSpindexerMotorId = 5;
   static const int kIndexerMotorId = 6;
 
-  static const double spindexerSpeed = 0.85;
-  static const double indexerSpeed = 0.85;
+  static const double spindexerSpeed = 0.68;
+  static const double indexerSpeed = -0.85;
+  const double kPercentBoost = 0.85;
 }
 
 class Turret_Shooter : public frc2::SubsystemBase
@@ -73,7 +74,7 @@ private:
   double kD = 0.0;
   double kS = 0.6;
   double kA = 0.0;
-  double kV = 0.04;
+  double kV = 0.14;
 
   // determines how much faster the flywheel needs to spin
   // so that the exit velocity meets the specified speed 
