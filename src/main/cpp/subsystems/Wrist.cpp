@@ -22,7 +22,7 @@ Wrist::Wrist() : m_controller(
 {
     m_controller.SetIZone(WristConstants::kIZone);
     rev::spark::SparkBaseConfig config;
-    config.Inverted(true);
+    // config.Inverted(true);
     // config.limitSwitch.ForwardLimitSwitchTriggerBehavior(rev::spark::LimitSwitchConfig::Behavior::kStopMovingMotor);
     config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kBrake);
     // config.encoder.PositionConversionFactor(360 / 81.0);
@@ -174,7 +174,7 @@ void Wrist::printLog()
     frc::SmartDashboard::PutNumber("/Wrist/Goal Angle", m_controller.GetGoal().position.value());
     frc::SmartDashboard::PutNumber("/Wrist/setpoint",
                                    m_controller.GetSetpoint().position.value());
-    frc::SmartDashboard::PutBoolean("/Wrist/LimitSwitch", m_motor.GetForwardLimitSwitch().Get());
+    frc::SmartDashboard::PutBoolean("/Wrist/LimitSwitch", m_motor.GetReverseLimitSwitch().Get());
     m_AngleLog.Append(GetMeasurement().value());
     m_SetPointLog.Append(m_controller.GetSetpoint().position.value());
     m_StateLog.Append(m_WristState);

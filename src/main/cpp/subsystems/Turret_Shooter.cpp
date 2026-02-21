@@ -96,6 +96,20 @@ void Turret_Shooter::StopMotors()
     frc::SmartDashboard::PutNumber("Shooter/Commanded_Motor_RPM", 0.0);
 }
 
+void Turret_Shooter::RunAll()
+{
+    SetSpeed(units::meters_per_second_t{18.0});
+    m_indexerMotor.Set(-0.5);
+    m_spindexerMotor.Set(0.5);
+}
+
+void Turret_Shooter::StopAll()
+{
+    SetSpeed(units::meters_per_second_t{0.0});
+    m_indexerMotor.Set(0.0);
+    m_spindexerMotor.Set(0.0);
+}
+
 void Turret_Shooter::Periodic()
 {
     frc::SmartDashboard::PutNumber("Shooter/Left_Motor_Voltage", m_leftMotor.GetMotorVoltage().GetValue().value());

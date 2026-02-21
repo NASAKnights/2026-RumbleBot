@@ -63,7 +63,7 @@ Turret::Turret() : m_controller(
     frc::SmartDashboard::PutData("Turret Field", &m_turretField);
     m_motor.Configure(config, rev::spark::SparkMax::ResetMode::kResetSafeParameters, rev::spark::SparkMax::PersistMode::kPersistParameters);
     m_encoder.SetPosition(0.0);
-    SetAngle(0.0_deg);
+    SetAngle(TurretConstants::kmidPoint);
 
     if constexpr(frc::RobotBase::IsSimulation())
     {
@@ -219,20 +219,15 @@ void Turret::SetAngle(units::degree_t TurretAngleGoal, units::degrees_per_second
 {
     if (!(TurretAngleGoal.value() < m_goal.value() + TurretConstants::kTolerancePos.value() && TurretAngleGoal.value() > m_goal.value() - TurretConstants::kTolerancePos.value()))
     {
-        if ((TurretAngleGoal <= TurretConstants::kmaxAngle) &&
-            (TurretAngleGoal >= TurretConstants::kminAngle))
+        // units::degrees_per_second_t robotVel = units::degrees_per_second_t{frc::SmartDashboard::GetNumber("Angular velocity", 0.0)};
+        auto velocity = GetVelocity();
+        m_goal = units::angle::degree_t(TurretAngleGoal);
+        if (abs(velocity.value()) < (1_deg_per_s).value())
         {
-            // units::degrees_per_second_t robotVel = units::degrees_per_second_t{frc::SmartDashboard::GetNumber("Angular velocity", 0.0)};
-            auto velocity = GetVelocity();
-            m_goal = units::angle::degree_t(TurretAngleGoal);
-            if (abs(velocity.value()) < (1_deg_per_s).value())
-            {
-                velocity = 1_deg_per_s * copysign(1.0, velocity.value());
-            }
-            m_velocityGoal = velocityGoal;
-            m_controller.SetSetpoint(m_goal.value());
-            // m_feedforward.
+            velocity = 1_deg_per_s * copysign(1.0, velocity.value());
         }
+        m_velocityGoal = velocityGoal;
+        m_controller.SetSetpoint(m_goal.value());
     }
     frc::SmartDashboard::PutNumber("/Turret/m_goal", double(m_goal));
 }
@@ -293,21 +288,26 @@ void Turret::Periodic()
         frc::SmartDashboard::PutNumber("/Turret/VOLTAGEATCURRENT", ff.value());
         
         if(GetMeasurement() < TurretConstants::kminAngle && v.value() < 0) {
+            frc::SmartDashboard::PutString("/Turret/Stopped", "soft_min");
             v = units::volt_t(0);
         }
         else if(GetMeasurement() > TurretConstants::kmaxAngle && v.value() > 0) {
+            frc::SmartDashboard::PutString("/Turret/Stopped", "soft_max");
             v = units::volt_t(0);
         }
-
-        if (!m_magSwitch.Get() && GetMeasurement().value() < 0 && v.value() < 0)
+        else if (!m_magSwitch.Get() && GetMeasurement().value() < TurretConstants::kmidPoint.convert<units::deg>().value() && v.value() < 0)
         {
+            frc::SmartDashboard::PutString("/Turret/Stopped", "min");
             v = units::volt_t(0);
         }
-        else if (!m_magSwitch.Get() && GetMeasurement().value() > 0 && v.value() > 0)
+        else if (!m_magSwitch.Get() && GetMeasurement().value() > TurretConstants::kmidPoint.convert<units::deg>().value() && v.value() > 0)
         {
+            frc::SmartDashboard::PutString("/Turret/Stopped", "max");
             v = units::volt_t(0);
         }
-        
+        else{
+            frc::SmartDashboard::PutString("/Turret/Stopped", "not");
+        }
         
         // if(!m_magSwitch.Get() && v.value() < 0) {
         //     // if(v.value() < 0) m_encoder.SetPosition(-45); 
@@ -672,7 +672,7 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
 
     // turret angle is initialized during homing to align with robot frame x-direction
     // subtract the robot angle to get the desired turret angle
-    turret_angle = turret_yaw - robotPose.Rotation().Radians();
+    turret_angle = turret_yaw - robotPose.Rotation().Radians() - 0_deg;
     launch_speed = sol_launch_speed;
     launch_angle = sol_launch_angle;
 

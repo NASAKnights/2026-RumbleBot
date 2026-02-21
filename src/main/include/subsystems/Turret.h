@@ -66,12 +66,12 @@ namespace TurretConstants
     GROUND
   };
 
-  const double kAngleP = 0.01;
+  const double kAngleP = 0.2;
   const double kAngleI = 0.00;
   const double kAngleD = 0.0; // 0.0001
   const double kIZone = 0.0;
-  const auto kTurretVelLimit = units::degrees_per_second_t(500.0);
-  const auto kTurretAccelLimit = units::angular_acceleration::degrees_per_second_squared_t(800); // Mech limit 27 rad/s^2(1500 degree_second_squared)
+  const auto kTurretVelLimit = units::degrees_per_second_t(600.0);
+  const auto kTurretAccelLimit = units::angular_acceleration::degrees_per_second_squared_t(900); // Mech limit 27 rad/s^2(1500 degree_second_squared)
   const units::degree_t kTolerancePos = 1_deg;
   const units::degrees_per_second_t kToleranceVel = 0.5_deg_per_s;
   const int kAngleMotorId = 50;
@@ -93,15 +93,6 @@ namespace TurretConstants
       units::moment_of_inertia::kilogram_square_meter_t(0.06742); // I = MR^2
   const units::length::meter_t kTurretRadius = units::length::meter_t(0.3048);
   const units::mass::kilogram_t kTurretMass = units::mass::kilogram_t(2.26796);
-  // const units::angle::radian_t kminAngle = -225_deg;
-  // const units::angle::radian_t kmaxAngle = 45_deg;
-
-  // HOMING will find the kminAngle limit switch and set the encoder position to this
-  // value.  kminAngle should therefore be set based on the physical location of the
-  // limit switch, such that 0 deg will point the turret directly away from the intake, 
-  // orthogonal to the robot. 
-  const units::angle::radian_t kminAngle = -140_deg;
-  const units::angle::radian_t kmaxAngle = 140_deg;
 
   const bool kGravity = false;
   const units::angle::radian_t kTurretStartAngle = units::angle::radian_t(0.0);
@@ -113,7 +104,16 @@ namespace TurretConstants
   const double kYOffset = -0.18542;  // (m) 7.3 inches from center of robot
   const double kZOffset = 0.0;
   const units::degree_t kAngleOffset(0.0);
-  const units::volt_t kMaxVoltage = 4.0_V; 
+  const units::volt_t kMaxVoltage = 6.0_V; 
+  
+  // HOMING will find the kminAngle limit switch and set the encoder position to this
+  // value.  kminAngle should therefore be set based on the physical location of the
+  // limit switch, such that 0 deg will point the turret directly away from the intake, 
+  // orthogonal to the robot. 
+  const units::angle::radian_t kminAngle = -330_deg;
+  const units::angle::radian_t kmaxAngle = -50_deg;
+  const units::angle::radian_t kmidPoint = (kmaxAngle - kminAngle)/2.0 + kminAngle;
+
 
   const std::vector<double> BlueHubCoords = {4.625594, 4.034536, 1.829}; //in meters
   const std::vector<double> TopBlueCoords = {1.11252, 6.930136, 0.0};
@@ -240,7 +240,7 @@ private:
   void printLog();
   rev::spark::SparkMax m_motor{TurretConstants::kAngleMotorId, rev::spark::SparkLowLevel::MotorType::kBrushless};
   rev::spark::SparkRelativeEncoder m_encoder;
-  frc::DigitalInput m_magSwitch{0};
+  frc::DigitalInput m_magSwitch{1};
   frc::sim::DIOSim m_magSwitchSim{m_magSwitch};
 
   frc::Servo m_hood{7};

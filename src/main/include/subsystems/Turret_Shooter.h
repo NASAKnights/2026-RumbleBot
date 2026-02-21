@@ -54,6 +54,9 @@ public:
   void RunSpindexerIndexer();
   void StopSpindexerIndexer();
 
+  void RunAll();
+  void StopAll();
+
 private:
   ctre::phoenix6::hardware::TalonFXS m_leftMotor{Turret_ShooterConstants::kMotorIdLeft};
   ctre::phoenix6::hardware::TalonFXS m_rightMotor{Turret_ShooterConstants::kMotorIdRight};
@@ -75,9 +78,6 @@ private:
   // determines how much faster the flywheel needs to spin
   // so that the exit velocity meets the specified speed 
   double kFlyWheelVelocityGain = 1.0;
-
-  const int kMotorIdLeft = 1;
-  const int kMotorIdRight = 3;
 
   bool kEnableCurrentLimit = true;
   units::ampere_t kPeakCurrentLimit = units::ampere_t{53};
