@@ -395,10 +395,23 @@ void SwerveDrive::UpdatePoseEstimate()
     // frc::AprilTagFieldLayout kTagLayout{
     //     frc::LoadAprilTagLayoutField(frc::AprilTagField::k2025ReefscapeAndyMark)
     // };
-    auto results = jetsonCamera2.GetAllUnreadResults();
-    for (auto &result : results) {
-        auto multiTagResult = result.MultiTagResult();
-        auto singleTagResult = result.GetBestTarget();
+    auto results1 = jetsonCamera1.GetAllUnreadResults();
+    for (auto &result : results1){
+         auto estimatedRobotPose = pvPoseEstimation1.EstimateCoprocMultiTagPose(result);
+        if (!estimatedRobotPose){
+            estimatedRobotPose = pvPoseEstimation1.EstimateLowestAmbiguityPose(result);
+        }
+
+        if (estimatedRobotPose){
+            m_poseEstimator.AddVisionMeasurement(estimatedRobotPose->estimatedPose.ToPose2d(), 
+            estimatedRobotPose->timestamp);
+        }
+    }
+
+    auto results2 = jetsonCamera2.GetAllUnreadResults();
+    for (auto &result : results2) {
+        // auto multiTagResult = result.MultiTagResult();
+        // auto singleTagResult = result.GetBestTarget();
         auto estimatedRobotPose = pvPoseEstimation2.EstimateCoprocMultiTagPose(result);
         if (!estimatedRobotPose){
             estimatedRobotPose = pvPoseEstimation2.EstimateLowestAmbiguityPose(result);
@@ -409,18 +422,18 @@ void SwerveDrive::UpdatePoseEstimate()
             estimatedRobotPose->timestamp);
         }
 
-        if (multiTagResult.has_value()) {
-            frc::Transform3d fieldToCamera = multiTagResult->estimatedPose.best;
-            posePublisher.Set(fieldToCamera);
+        // if (multiTagResult.has_value()) {
+        //     frc::Transform3d fieldToCamera = multiTagResult->estimatedPose.best;
+        //     posePublisher.Set(fieldToCamera);
             
-            frc::SmartDashboard::PutNumber("Camera2TagX",fieldToCamera.X().value());
-        }
-        else if (result.HasTargets()) {
-            frc::Transform3d fieldToCamera = singleTagResult.GetBestCameraToTarget();
-            posePublisher.Set(fieldToCamera);
+        //     frc::SmartDashboard::PutNumber("Camera2TagX",fieldToCamera.X().value());
+        // }
+        // else if (result.HasTargets()) {
+        //     frc::Transform3d fieldToCamera = singleTagResult.GetBestCameraToTarget();
+        //     posePublisher.Set(fieldToCamera);
 
-            frc::SmartDashboard::PutNumber("Camera2TagX",fieldToCamera.X().value());
-        }
+        //     frc::SmartDashboard::PutNumber("Camera2TagX",fieldToCamera.X().value());
+        // }
     }
     
 
