@@ -2,6 +2,7 @@
 
 #include "Robot.hpp"
 
+
 Robot::Robot() : networkTableInst(nt::NetworkTableInstance::GetDefault())
 {
     this->CreateRobot();
@@ -12,6 +13,7 @@ void Robot::RobotInit()
 {
     frc::DataLogManager::Start();
     wpi::log::DataLog &log = frc::DataLogManager::GetLog();
+    
     m_VoltageLog = wpi::log::DoubleLogEntry(log, "/PDP/Voltage");
     m_CurrentLog = wpi::log::DoubleLogEntry(log, "/PDP/Current");
     m_PowerLog = wpi::log::DoubleLogEntry(log, "/PDP/Power");
@@ -38,6 +40,7 @@ void Robot::RobotPeriodic()
 {
     frc2::CommandScheduler::GetInstance().Run();
     this->UpdateDashboard();
+    
     m_VoltageLog.Append(m_pdh.GetVoltage());
     m_CurrentLog.Append(m_pdh.GetTotalCurrent());
     m_PowerLog.Append(m_pdh.GetTotalPower());
