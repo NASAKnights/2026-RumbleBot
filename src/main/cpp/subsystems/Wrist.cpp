@@ -55,7 +55,7 @@ Wrist::Wrist() : m_controller(
 void Wrist::SimulationPeriodic()
 {
     m_WristSim.Update(10_ms);
-    frc::SmartDashboard::PutNumber("Motor current draw", m_WristSim.GetCurrentDraw().value());
+    frc::SmartDashboard::PutNumber("/Wrist/Motor current draw", m_WristSim.GetCurrentDraw().value());
 }
 
 units::degree_t Wrist::GetMeasurement()
@@ -172,9 +172,9 @@ void Wrist::printLog()
 {
     frc::SmartDashboard::PutNumber("/Wrist/Actual Angle", GetMeasurement().value());
     frc::SmartDashboard::PutNumber("/Wrist/Goal Angle", m_controller.GetGoal().position.value());
-    frc::SmartDashboard::PutNumber("/Wrist/setpoint",
+    frc::SmartDashboard::PutNumber("/Wrist/Setpoint",
                                    m_controller.GetSetpoint().position.value());
-    frc::SmartDashboard::PutBoolean("/Wrist/LimitSwitch", m_motor.GetReverseLimitSwitch().Get());
+    frc::SmartDashboard::PutBoolean("/Wrist/Limit Switch", m_motor.GetReverseLimitSwitch().Get());
     m_AngleLog.Append(GetMeasurement().value());
     m_SetPointLog.Append(m_controller.GetSetpoint().position.value());
     m_StateLog.Append(m_WristState);

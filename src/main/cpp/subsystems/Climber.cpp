@@ -30,7 +30,7 @@ Climber::Climber()
 void Climber::Periodic()
 {
     m_AbsolutePosition.Append(climberWristEncoder.GetPosition());
-    frc::SmartDashboard::PutNumber("Climb Rotation", climberWristEncoder.GetPosition());
+    frc::SmartDashboard::PutNumber("/Climb/Climb Rotation", climberWristEncoder.GetPosition());
 }
 
 void Climber::Unspool()

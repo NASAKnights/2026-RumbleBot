@@ -48,10 +48,10 @@ Turret::Turret() : m_controller(
     m_PoseStaleLog = wpi::log::BooleanLogEntry(log, "/Turret/PoseStale");
 
     
-    frc::SmartDashboard::PutBoolean("/Turret/Shooter/AllowShooting", false);
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Allow Shooting", false);
 
-    frc::SmartDashboard::PutBoolean("Turret/Hood/Angle Manual Override", false);
-    frc::SmartDashboard::PutNumber("Turret/Hood/Angle Manual Set", 0.0);
+    frc::SmartDashboard::PutBoolean("/Turret/Hood/Angle Manual Override", false);
+    frc::SmartDashboard::PutNumber("/Turret/Hood/Angle Manual Set", 0.0);
     networkTableInst = nt::NetworkTableInstance::GetDefault();
     auto poseTable = networkTableInst.GetTable("ROS2Bridge");
     baseLinkSubscriber = poseTable->GetDoubleArrayTopic(robotPoseLink).Subscribe({}, {.periodic = 0.02, .sendAll = true});
@@ -86,7 +86,7 @@ Turret::Turret() : m_controller(
 void Turret::SimulationPeriodic()
 {
     m_TurretSim.Update(10_ms);
-    frc::SmartDashboard::PutNumber("Motor current draw", m_TurretSim.GetCurrentDraw().value());
+    frc::SmartDashboard::PutNumber("/Turret/Aim/Motor Current Draw", m_TurretSim.GetCurrentDraw().value());
     units::radian_t epsilon = 0.001_rad;
     m_magSwitchSim.SetValue(m_TurretSim.GetAngle() > TurretConstants::kminAngle + epsilon && m_TurretSim.GetAngle() < TurretConstants::kmaxAngle - epsilon);
 }
@@ -94,7 +94,7 @@ void Turret::SimulationPeriodic()
 void Turret::AllowShooting()
 {
     allowShooting = true;
-    frc::SmartDashboard::PutBoolean("/Turret/Shooter/AllowShooting", true);
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Allow Shooting", true);
 }
 
 void Turret::PauseShooting()
@@ -124,8 +124,8 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     auto baseLink = DoubleArrayToPose2d(baseLinkPose);
     if (!baseLink.has_value())
     {
-        frc::SmartDashboard::PutString("/Turret/PoseStatus", "No Pose Data");
-        frc::SmartDashboard::PutNumber("/Turret/PoseDataSize", baseLinkPose.size());
+        frc::SmartDashboard::PutString("/Turret/Pose/Pose Status", "No Pose Data");
+        frc::SmartDashboard::PutNumber("/Turret/Pose/Pose Data Size", baseLinkPose.size());
         m_PoseStaleLog.Append(true);
         return {GetMeasurement(), 0_deg_per_s};
     }
@@ -136,8 +136,8 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     {
         // Timestamp hasn't changed - pose is stale
         poseIsStale = true;
-        frc::SmartDashboard::PutString("/Turret/PoseStatus", "STALE - Timestamp Frozen");
-        // frc::SmartDashboard::PutNumber("DiffTime", poseTimestamp - m_lastPoseUpdateTime);
+        frc::SmartDashboard::PutString("/Turret/Pose/Pose Status", "STALE - Timestamp Frozen");
+        // frc::SmartDashboard::PutNumber("/Turrent/Pose/Diff Time", poseTimestamp - m_lastPoseUpdateTime);
     }
     else if (m_lastValidPose.has_value())
     {
@@ -155,23 +155,23 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
         // (though it could also just be stationary)
         if (poseDiff < 0.001 && angleDiff < 0.001)
         {
-            frc::SmartDashboard::PutString("/Turret/PoseStatus", "WARNING - Pose Unchanged");
+            frc::SmartDashboard::PutString("/Turret/Pose/Pose Status", "WARNING - Pose Unchanged");
         }
         else
         {
-            frc::SmartDashboard::PutString("/Turret/PoseStatus", "OK");
+            frc::SmartDashboard::PutString("/Turret/Pose/Pose Status", "OK");
         }
     }
     else
     {
-        frc::SmartDashboard::PutString("/Turret/PoseStatus", "First Update");
+        frc::SmartDashboard::PutString("/Turret/Pose/Pose Status", "First Update");
     }
 
     // Log staleness state
     m_PoseStaleLog.Append(poseIsStale);
-    frc::SmartDashboard::PutBoolean("/Turret/PoseStale", poseIsStale);
-    frc::SmartDashboard::PutNumber("/Turret/PoseTimestamp", poseTimestamp / 1e6); // Convert to seconds
-    frc::SmartDashboard::PutNumber("/Turret/PoseAge", (nt::Now() - poseTimestamp) / 1e6); // Age in seconds
+    frc::SmartDashboard::PutBoolean("/Turret/Pose/Pose Stale", poseIsStale);
+    frc::SmartDashboard::PutNumber("/Turret/Pose/Pose Timestamp", poseTimestamp / 1e6); // Convert to seconds
+    frc::SmartDashboard::PutNumber("/Turret/Pose/Pose Age", (nt::Now() - poseTimestamp) / 1e6); // Age in seconds
 
     // Update tracking variables
     m_lastPoseUpdateTime = poseTimestamp;
@@ -223,11 +223,11 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
 
     // Find smallest signed error
     units::radian_t error = frc::AngleModulus(turret_angle - GetMeasurement());
-    frc::SmartDashboard::PutNumber("/Turret/TurretAngleError_deg", units::degree_t{error}.value());
+    frc::SmartDashboard::PutNumber("/Turret/Aim/Turret Angle Error Deg", units::degree_t{error}.value());
 
-    frc::SmartDashboard::PutNumber("/Turret/LaunchSpeedAcceleration_mps2", m_LaunchSpeedAcceleration.value());
-    frc::SmartDashboard::PutNumber("/Turret/LaunchAngleVelocity_dps", units::degrees_per_second_t{m_LaunchAngleVelocity}.value());
-    frc::SmartDashboard::PutNumber("/Turret/TurretAngleVelocity_dps", units::degrees_per_second_t{m_TurretAngleVelocity}.value());
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Launch Speed Acceleration MPS", m_LaunchSpeedAcceleration.value());
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Launch Angle Velocity DPS", units::degrees_per_second_t{m_LaunchAngleVelocity}.value());
+    frc::SmartDashboard::PutNumber("/Turret/Aim/Turret Angle Velocity DPS", units::degrees_per_second_t{m_TurretAngleVelocity}.value());
     
     return {turret_angle, units::degrees_per_second_t{m_TurretAngleVelocity}};
 }
@@ -236,7 +236,7 @@ void Turret::SetAngle(units::degree_t TurretAngleGoal, units::degrees_per_second
 {
     if (!(TurretAngleGoal.value() < m_goal.value() + TurretConstants::kTolerancePos.value() && TurretAngleGoal.value() > m_goal.value() - TurretConstants::kTolerancePos.value()))
     {
-        // units::degrees_per_second_t robotVel = units::degrees_per_second_t{frc::SmartDashboard::GetNumber("Angular velocity", 0.0)};
+        // units::degrees_per_second_t robotVel = units::degrees_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Aim/Angular Velocity", 0.0)};
         auto velocity = GetVelocity();
         m_goal = units::angle::degree_t(TurretAngleGoal);
         if (abs(velocity.value()) < (1_deg_per_s).value())
@@ -246,7 +246,7 @@ void Turret::SetAngle(units::degree_t TurretAngleGoal, units::degrees_per_second
         m_velocityGoal = velocityGoal;
         m_controller.SetSetpoint(m_goal.value());
     }
-    frc::SmartDashboard::PutNumber("/Turret/m_goal", double(m_goal));
+    frc::SmartDashboard::PutNumber("/Turret/Aim/m_goal", double(m_goal));
 }
 
 void Turret::FindLimitSwitch() {
@@ -267,14 +267,14 @@ void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle)
         (4.41946*std::pow(10, -3)) * std::pow(ballLaunchAngleDegrees, 2) + 
         (0.124056) * ballLaunchAngleDegrees - 0.227319);
 
-    frc::SmartDashboard::PutNumber("Turret/Hood/Servo Extension", servoExtention);
+    frc::SmartDashboard::PutNumber("/Turret/Hood/Servo Extension", servoExtention);
     if (servoExtention > 0.8){
         servoExtention = 0.8;
     }
     else if(servoExtention < 0.0){
         servoExtention = 0.0;
     }
-    frc::SmartDashboard::PutNumber("Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
+    frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
     m_hood.Set(servoExtention);
 }
 
@@ -291,7 +291,7 @@ void Turret::Periodic()
     double fb;
     units::volt_t ff;
     units::volt_t v;
-    frc::SmartDashboard::PutBoolean("TurretLimitSwitch", m_magSwitch.Get());
+    frc::SmartDashboard::PutBoolean("Turret/Aim/Limit Switch", m_magSwitch.Get());
 
     switch (m_TurretState)
     {
@@ -317,35 +317,35 @@ void Turret::Periodic()
 
         // Tracking Angle
         auto [angle, velocity] = findTrackingAngle();
-        frc::SmartDashboard::PutNumber("/Turret/Measurement Value", GetMeasurement().value());
+        frc::SmartDashboard::PutNumber("/Turret/Aim/Measurement Value", GetMeasurement().value());
         SetAngle(angle, velocity);
         fb = m_controller.Calculate(GetMeasurement().value());
         ff = m_feedforward.Calculate(angle, velocity);
         v = units::volt_t{fb} + ff;
-        frc::SmartDashboard::PutNumber("/Turret/Velocity", velocity.value());
-        frc::SmartDashboard::PutNumber("/Turret/angle", angle.value());
-        frc::SmartDashboard::PutNumber("/Turret/VOLTAGEATCURRENT", ff.value());
+        frc::SmartDashboard::PutNumber("/Turret/Aim/Velocity", velocity.value());
+        frc::SmartDashboard::PutNumber("/Turret/Aim/Angle", angle.value());
+        frc::SmartDashboard::PutNumber("/Turret/Aim/Feedforward", ff.value());
         
         if(GetMeasurement() < TurretConstants::kminAngle && v.value() < 0) {
-            frc::SmartDashboard::PutString("/Turret/Stopped", "soft_min");
+            frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "soft_min");
             v = units::volt_t(0);
         }
         else if(GetMeasurement() > TurretConstants::kmaxAngle && v.value() > 0) {
-            frc::SmartDashboard::PutString("/Turret/Stopped", "soft_max");
+            frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "soft_max");
             v = units::volt_t(0);
         }
         else if (!m_magSwitch.Get() && GetMeasurement().value() < TurretConstants::kmidPoint.convert<units::deg>().value() && v.value() < 0)
         {
-            frc::SmartDashboard::PutString("/Turret/Stopped", "min");
+            frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "min");
             v = units::volt_t(0);
         }
         else if (!m_magSwitch.Get() && GetMeasurement().value() > TurretConstants::kmidPoint.convert<units::deg>().value() && v.value() > 0)
         {
-            frc::SmartDashboard::PutString("/Turret/Stopped", "max");
+            frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "max");
             v = units::volt_t(0);
         }
         else{
-            frc::SmartDashboard::PutString("/Turret/Stopped", "not");
+            frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "not");
         }
         
         // if(!m_magSwitch.Get() && v.value() < 0) {
@@ -357,27 +357,27 @@ void Turret::Periodic()
 
         // }
 
-        // units::degrees_per_second_t robotVel = units::degrees_per_second_t{frc::SmartDashboard::GetNumber("Angular velocity", 0.0)};
+        // units::degrees_per_second_t robotVel = units::degrees_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Aim/Angular Velocity", 0.0)};
         // auto turretVel = GetVelocity();
-        // frc::SmartDashboard::PutNumber("/Turret/GM", double(GetMeasurement()));
-        // frc::SmartDashboard::PutNumber("/Turret/FF", double(ff));
-        frc::SmartDashboard::PutNumber("/Turret/FB", double(fb));
-        // frc::SmartDashboard::PutNumber("/Turret/ff_vel  ", double(velocity));
+        // frc::SmartDashboard::PutNumber("/Turret/Aim/Get Measurement", double(GetMeasurement()));
+        // frc::SmartDashboard::PutNumber("/Turret/Aim/Feedforward", double(ff));
+        frc::SmartDashboard::PutNumber("/Turret/Aim/Feedback", double(fb));
+        // frc::SmartDashboard::PutNumber("/Turret/Aim/Feedforward Velocity  ", double(velocity));
 
-        frc::SmartDashboard::PutNumber("/Turret/Voltage", double(v));
+        frc::SmartDashboard::PutNumber("/Turret/Aim/Voltage", double(v));
 
         // Hood/Launch Angle
         ChangeHoodAngle(m_BallisticLaunchAngle);
 
-        bool override = frc::SmartDashboard::GetBoolean("Turret/Hood/Angle Manual Override", false);
+        bool override = frc::SmartDashboard::GetBoolean("/Turret/Hood/Angle Manual Override", false);
         if(override) {
-            // ChangeHoodAngle(frc::SmartDashboard::GetNumber("Turret/Hood/Angle Manual Set", 0.0));
+            // ChangeHoodAngle(frc::SmartDashboard::GetNumber("/Turret/Hood/Angle Manual Set", 0.0));
         }
         // Launch Speed
         if (allowShooting) {
             ChangeLaunchSpeed(m_BallisticLaunchSpeed);
-            frc::SmartDashboard::PutNumber("Turret/LaunchAngle/Set Speed (mps)", m_BallisticLaunchSpeed.value());
-            
+            frc::SmartDashboard::PutNumber("/Turret/Shooter/Set Speed MPS", m_BallisticLaunchSpeed.value());
+
             m_turret_shooter.RunSpindexerIndexer();
         }
         else if (!allowShooting){
@@ -411,7 +411,7 @@ void Turret::Periodic()
         m_TurretSim.SetInputVoltage(v);
         SimulationPeriodic();
     }
-    frc::SmartDashboard::PutNumber("/Turret/Voltage", double(v));
+    frc::SmartDashboard::PutNumber("/Turret/Aim/Voltage", double(v));
     m_motor.SetVoltage(v);
 
     std::string GameData;
@@ -443,11 +443,11 @@ TurretConstants::TurretState Turret::GetState()
 
 void Turret::printLog()
 {
-    frc::SmartDashboard::PutNumber("/Turret/Actual Angle", GetMeasurement().value());
-    frc::SmartDashboard::PutNumber("/Turret/Goal Angle", m_controller.GetSetpoint());
-    frc::SmartDashboard::PutNumber("/Turret/setpoint",
+    frc::SmartDashboard::PutNumber("/Turret/Aim/Actual Angle", GetMeasurement().value());
+    frc::SmartDashboard::PutNumber("/Turret/Aim/Goal Angle", m_controller.GetSetpoint());
+    frc::SmartDashboard::PutNumber("/Turret/Aim/Setpoint",
                                    m_controller.GetSetpoint());
-    frc::SmartDashboard::PutNumber("/Turret/velocity", double(GetVelocity()));
+    frc::SmartDashboard::PutNumber("/Turret/Aim/Velocity", double(GetVelocity()));
     m_AngleLog.Append(GetMeasurement().value());
     m_SetPointLog.Append(m_controller.GetSetpoint());
     m_StateLog.Append(m_TurretState);
@@ -650,9 +650,9 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
 
     // Get the robot's linear and angular velocity from the swervedrive.
     // The linear velocities are oriented relative to the robot, not the field.
-    auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vx", 0.0)};
-    auto robotVy = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vy", 0.0)};
-    auto robotOmega = units::radians_per_second_t{frc::SmartDashboard::GetNumber("drive/omega", 0.0)};
+    auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Pose/Drive/Velocity X", 0.0)};
+    auto robotVy = units::meters_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Pose/Drive/Velocity Y", 0.0)};
+    auto robotOmega = units::radians_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Pose/Drive/Omega", 0.0)};
 
     // Reorient robotVx, robotVy to the world reference frame (field)
     units::meters_per_second_t robotWorldVx = robotVx * std::cos(robotAngle.value()) - 
@@ -748,29 +748,29 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
         m_BallisticLaunchSpeed = sol_launch_speed;
         m_BallisticLaunchAngle = sol_launch_angle;
         m_BallisticLeadAngle = sol_lead_angle;
-        frc::SmartDashboard::PutNumber("/Turret/VelocityX_mps", turretVx.value());
-        frc::SmartDashboard::PutNumber("/Turret/VelocityY_mps", turretVy.value());
-        frc::SmartDashboard::PutNumber("/Turret/VelocityRadial_mps", turretVrad.value());
-        frc::SmartDashboard::PutNumber("/Turret/VelocityTangential_mps", turretVtan.value());
-        frc::SmartDashboard::PutNumber("/Turret/TargetDistance_m", dist.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Velocity X MPS", turretVx.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Velocity Y MPS", turretVy.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Velocity Radial MPS", turretVrad.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Velocity Tangential MPS", turretVtan.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Target Distance", dist.value());
         switch(solutionType)
         {
             case TurretConstants::BallisticSolutionType::HUB:
-                frc::SmartDashboard::PutString("/Turret/BallisticSolutionType", "HUB");
+                frc::SmartDashboard::PutString("/Turret/Ballistics/Ballistic Solution Type", "HUB");
                 break;
             case TurretConstants::BallisticSolutionType::GROUND:
-                frc::SmartDashboard::PutString("/Turret/BallisticSolutionType", "GROUND");
+                frc::SmartDashboard::PutString("/Turret/Ballistics/Ballistic Solution Type", "GROUND");
                 break;
         }
-        frc::SmartDashboard::PutNumber("/Turret/BallisticLaunchSpeed_mps", m_BallisticLaunchSpeed.value());
-        frc::SmartDashboard::PutNumber("/Turret/BallisticLaunchAngle_deg", units::degree_t{m_BallisticLaunchAngle}.value());
-        frc::SmartDashboard::PutNumber("/Turret/BallisticLeadAngle_deg", units::degree_t{m_BallisticLeadAngle}.value());
-        frc::SmartDashboard::PutNumber("/Turret/BallisticTurretAngle_deg", units::degree_t{turret_angle}.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Ballistic Launch Speed MPS", m_BallisticLaunchSpeed.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Ballistic Launch Angle Deg", units::degree_t{m_BallisticLaunchAngle}.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Ballistic Lead Angle Deg", units::degree_t{m_BallisticLeadAngle}.value());
+        frc::SmartDashboard::PutNumber("/Turret/Ballistics/Ballistic Turret Angle Deg", units::degree_t{turret_angle}.value());
         // Flag indicates if we have a valid solution.  We may or may not want to pause
         // shooting.  This typically occurs when driving the robot toward the hub at
         // high velocity, which should be a short-term temporary condition.  The hood's 
         // angle limit would be exceeded here because the robot's radial velocity
         // must be offset, resulting in a higher launch angle. 
-        frc::SmartDashboard::PutBoolean("/Turret/BallisticSolutionValid", m_BallisticSolutionValid);
+        frc::SmartDashboard::PutBoolean("/Turret/Ballistics/Ballistic Solution Valid", m_BallisticSolutionValid);
     }
 }

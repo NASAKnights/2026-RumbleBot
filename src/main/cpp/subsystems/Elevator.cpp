@@ -94,7 +94,7 @@ double Elevator::GetHeight()
 {
     if constexpr (frc::RobotBase::IsSimulation())
     {
-        // frc::SmartDashboard::PutBoolean("isSim", true);
+        // frc::SmartDashboard::PutBoolean("/Elevator/isSim", true);
         return m_elevatorSim.GetPosition().value();
     }
     if (ElevatorConstants::kDisableHallSensor)
@@ -112,16 +112,16 @@ void Elevator::printLog()
 {
     double encoderHeight = GetEncoderHeight();
     double hallHeight = GetHallHeight(encoderHeight / 2.0 - m_heightCorrection);
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_HEIGHT", GetMeasurement().value());
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_HEIGHT_FUSED", GetFusedHeight());
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_ENC_ABS_LEFT", m_encoderLeft.GetPosition());
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_ENC_ABS_RIGHT", m_encoderRight.GetPosition());
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_ENC_HEIGHT", encoderHeight);
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_HALL_PWM", m_hallPwm);
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_HALL_HEIGHT", hallHeight);
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_HEIGHT_CORRECTION", m_heightCorrection);
-    frc::SmartDashboard::PutNumber("/Elevator/elevatorGoal_POS", m_controller.GetGoal().position.value());
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_setpoint",
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Height", GetMeasurement().value());
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Height Fused", GetFusedHeight());
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Encoder ABS Left", m_encoderLeft.GetPosition());
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Encoder ABS Right", m_encoderRight.GetPosition());
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Encoder Height", encoderHeight);
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Hall PWM", m_hallPwm);
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Hall Height", hallHeight);
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Height Correction", m_heightCorrection);
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Goal Pose", m_controller.GetGoal().position.value());
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Setpoint",
                                    m_controller.GetSetpoint().position.value());
     m_HeightLog.Append(GetMeasurement().value());
     m_SetPointLog.Append(m_controller.GetSetpoint().position.value());
@@ -156,17 +156,17 @@ void Elevator::Periodic()
     // normalize to positive value from 0 to 1.0 in case candi is counting revolutions
     proxPwm = (proxPwm < 0 ? -1 : 1) * proxPwm;
     proxPwm -= std::trunc(proxPwm);
-    frc::SmartDashboard::PutNumber("/Algae/ProximityPWM", proxPwm);
+    frc::SmartDashboard::PutNumber("/Elevator/Proximity PWM", proxPwm);
 
     switch (m_ElevatorState)
     {
     case ElevatorConstants::ZEROING:
         m_motorLeft.SetVoltage(units::volt_t{-0.1});
         m_motorRight.SetVoltage(units::volt_t{-0.1});
-        frc::SmartDashboard::PutString("/Elevator/ElevState", "ZEROING");
+        frc::SmartDashboard::PutString("/Elevator/Elevator State", "ZEROING");
         break;
     case ElevatorConstants::DISABLED:
-        frc::SmartDashboard::PutString("/Elevator/ElevState", "DISABLED");
+        frc::SmartDashboard::PutString("/Elevator/Elevator State", "DISABLED");
         break;
     case ElevatorConstants::START_HOLD:
         m_controller.SetTolerance(ElevatorConstants::kTolerancePos,
@@ -175,7 +175,7 @@ void Elevator::Periodic()
                            units::meters_per_second_t{GetEncoderVelocity()});
         m_controller.SetGoal(m_goal);
         m_ElevatorState = ElevatorConstants::HOLDING;
-        frc::SmartDashboard::PutString("/Elevator/ElevState", "HOLDING");
+        frc::SmartDashboard::PutString("/Elevator/Elevator State", "HOLDING");
         break;
     case ElevatorConstants::HOLDING:
         fb = m_controller.Calculate(units::meter_t{GetHeight()});
@@ -191,10 +191,10 @@ void Elevator::Periodic()
 
         AutoCalibrateHeight();
 
-        frc::SmartDashboard::PutNumber("/Elevator/Elev_UO_PID", fb);
-        frc::SmartDashboard::PutNumber("/Elevator/Elev_UO_FF", ff.value());
-        frc::SmartDashboard::PutNumber("/Elevator/Elev_UO_Volt", v.value());
-        frc::SmartDashboard::PutString("/Elevator/ElevState", "HOLDING");
+        frc::SmartDashboard::PutNumber("/Elevator/Elevator UO PID", fb);
+        frc::SmartDashboard::PutNumber("/Elevator/Elevator UO Feedforward", ff.value());
+        frc::SmartDashboard::PutNumber("/Elevator/Elevator UO Voltage", v.value());
+        frc::SmartDashboard::PutString("/Elevator/Elevator State", "HOLDING");
         break;
     case ElevatorConstants::START_MOVE:
         m_controller.SetTolerance(ElevatorConstants::kTolerancePos,
@@ -203,13 +203,13 @@ void Elevator::Periodic()
                            units::meters_per_second_t{GetEncoderVelocity()});
         m_controller.SetGoal(m_goal);
         m_ElevatorState = ElevatorConstants::MOVING;
-        frc::SmartDashboard::PutString("/Elevator/ElevState", "MOVING");
+        frc::SmartDashboard::PutString("/Elevator/Elevator State", "MOVING");
         break;
     case ElevatorConstants::MOVING:
         if (m_controller.AtGoal())
         {
             m_ElevatorState = ElevatorConstants::ElevatorState::HOLDING;
-            frc::SmartDashboard::PutString("/Elevator/ElevState", "HOLDING");
+            frc::SmartDashboard::PutString("/Elevator/Elevator State", "HOLDING");
         }
         else
         {
@@ -223,10 +223,10 @@ void Elevator::Periodic()
             m_motorLeft.SetVoltage(v);
             m_motorRight.SetVoltage(v);
 
-            frc::SmartDashboard::PutNumber("/Elevator/Elev_UO_PID", fb);
-            frc::SmartDashboard::PutNumber("/Elevator/Elev_UO_FF", ff.value());
-            frc::SmartDashboard::PutNumber("/Elevator/Elev_UO_Volt", v.value());
-            frc::SmartDashboard::PutString("/Elevator/ElevState", "MOVING");
+            frc::SmartDashboard::PutNumber("/Elevator/Elevator UO PID", fb);
+            frc::SmartDashboard::PutNumber("/Elevator/Elevator UO Feedforward", ff.value());
+            frc::SmartDashboard::PutNumber("/Elevator/Elevator UO Voltage", v.value());
+            frc::SmartDashboard::PutString("/Elevator/Elevator State", "MOVING");
         }
         break;
     }
@@ -338,8 +338,8 @@ double Elevator::GetHallHeight(double heightEstimate)
     double positionEstimate = heightEstimate - ElevatorConstants::kHallMagnetHeights[index];
     int magnetCount = ElevatorConstants::kHallMagnetCounts[index];
     double position = GetHallPosition(positionEstimate, magnetCount);
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_HALL_MAG_INDEX", index);
-    frc::SmartDashboard::PutNumber("/Elevator/ELEVATOR_HALL_MAG_POSITION", position);
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Hall Mag Index", index);
+    frc::SmartDashboard::PutNumber("/Elevator/Elevator Hall Mag Position", position);
     if (position < -999.0)
         return position;
     else
@@ -465,12 +465,12 @@ void Elevator::AutoCalibrateHeight()
 {
     if (units::meters_per_second_t{std::abs(GetEncoderVelocity())} < ElevatorConstants::kAutoCalMaxVelocity)
     {
-        frc::SmartDashboard::PutNumber("/Elevator/Calibrate vel", 10);
+        frc::SmartDashboard::PutNumber("/Elevator/Calibrate Velocity", 10);
         double encoderHeight = GetEncoderHeight();
         double stage1Height = encoderHeight / 2.0;
         if (units::meter_t{stage1Height} > ElevatorConstants::kAutoCalMinHeight)
         {
-            frc::SmartDashboard::PutNumber("/Elevator/Calibrate stage", 10);
+            frc::SmartDashboard::PutNumber("/Elevator/Calibrate Stage", 10);
             // apply the previously determined height correction to get an estimate of the
             // height of stage2 (carriage) relative to stage 1
             double stage2HeightEstimate = stage1Height - m_heightCorrection;
@@ -478,11 +478,11 @@ void Elevator::AutoCalibrateHeight()
             // using the estimated height, get the height of stage2 (carriage) relative to
             // stage 1
             double stage2Height = GetHallHeight(stage2HeightEstimate);
-            frc::SmartDashboard::PutNumber("/Elevator/Calibration height", stage2Height);
+            frc::SmartDashboard::PutNumber("/Elevator/Calibration Height", stage2Height);
             // if no data, return the estimated total height
             if (stage2Height > -999.0)
             {
-                frc::SmartDashboard::PutNumber("/Elevator/Calibrate valid", 10);
+                frc::SmartDashboard::PutNumber("/Elevator/Calibrate Valid", 10);
                 m_heightCorrection = stage1Height - stage2Height;
                 if (m_heightCorrection > ElevatorConstants::kMaxHallCalibration || m_heightCorrection < -ElevatorConstants::kMaxHallCalibration)
                 {

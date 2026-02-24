@@ -37,8 +37,8 @@ Turret_Shooter::Turret_Shooter()
     ctre::phoenix::StatusCode leftStatus = m_leftMotor.GetConfigurator().Apply(leftMotorConfig);
     ctre::phoenix::StatusCode rightStatus = m_rightMotor.GetConfigurator().Apply(rightMotorConfig);
 
-    frc::SmartDashboard::PutBoolean("Shooter/Left_Motor_Status", false);
-    frc::SmartDashboard::PutBoolean("Shooter/Right_Motor_Status", false);
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Left Motor Status", false);
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Right Motor Status", false);
 
     // while (!leftStatus.IsOK()) {
     // ctre::phoenix::StatusCode leftStatus = m_leftMotor.GetConfigurator().Apply(leftMotorConfig);
@@ -47,23 +47,23 @@ Turret_Shooter::Turret_Shooter()
     // ctre::phoenix::StatusCode rightStatus = m_rightMotor.GetConfigurator().Apply(rightMotorConfig);
     // }
 
-    frc::SmartDashboard::PutBoolean("Shooter/Left_Motor_Status", leftStatus.IsOK());
-    frc::SmartDashboard::PutBoolean("Shooter/Right_Motor_Status", rightStatus.IsOK());
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Left Motor Status", leftStatus.IsOK());
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Right Motor Status", rightStatus.IsOK());
 
-    frc::SmartDashboard::PutNumber("Shooter/Commanded_Ball_Speed_MPS", 0.0);
-    frc::SmartDashboard::PutNumber("Shooter/Commanded_Motor_RPM", 0.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Ball Speed MPS", 0.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Motor RPM", 0.0);
 
-    frc::SmartDashboard::PutBoolean("Shooter/Ball_Speed_Manual_Override", false);
-    frc::SmartDashboard::PutNumber("Shooter/Ball_Speed_Manual_Set_MPS", 0.0);
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Ball Speed Manual Override", false);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Ball Speed Manual Set MPS", 0.0);
 
-    frc::SmartDashboard::PutNumber("Shooter/Actual_Motor_RPM", 0.0);
-    frc::SmartDashboard::PutNumber("Shooter/Actual_Ball_Speed_MPS", 0.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Actual Motor RPM", 0.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Actual Ball Speed MPS", 0.0);
 
-    frc::SmartDashboard::PutNumber("Shooter/Left_Motor_Voltage", 0.0);
-    frc::SmartDashboard::PutNumber("Shooter/Right_Motor_Voltage", 0.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Left Motor Voltage", 0.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Right Motor Voltage", 0.0);
 
     
-    frc::SmartDashboard::PutBoolean("Shooter/Running_Spindexer_Indexer", false);
+    frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
 }
 
 void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed) {
@@ -75,10 +75,10 @@ void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed) {
     auto motorRequest = ctre::phoenix6::controls::VelocityVoltage{motorSpeed};
     ctre::phoenix::StatusCode leftStatus = m_leftMotor.SetControl(motorRequest.WithVelocity(motorSpeed).WithSlot(0));
     ctre::phoenix::StatusCode rightStatus = m_rightMotor.SetControl(motorRequest.WithVelocity(motorSpeed).WithSlot(0));
-    frc::SmartDashboard::PutBoolean("Shooter/Left_Motor_Status", leftStatus.IsOK());
-    frc::SmartDashboard::PutBoolean("Shooter/Right_Motor_Status", rightStatus.IsOK());
-    frc::SmartDashboard::PutNumber("Shooter/Commanded_Ball_Speed_MPS", ballSpeed.value());
-    frc::SmartDashboard::PutNumber("Shooter/Commanded_Motor_RPM", motorSpeed.value() * 60.0);
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Left Motor Status", leftStatus.IsOK());
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Right Motor Status", rightStatus.IsOK());
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Ball Speed MPS", ballSpeed.value());
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Motor RPM", motorSpeed.value() * 60.0);
 }
 
 void Turret_Shooter::RunSpindexerIndexer() 
@@ -86,7 +86,7 @@ void Turret_Shooter::RunSpindexerIndexer()
     m_indexerMotor.Set(Turret_ShooterConstants::indexerSpeed);
     m_spindexerMotor.Set(Turret_ShooterConstants::spindexerSpeed);
 
-    frc::SmartDashboard::PutBoolean("Shooter/Running_Spindexer_Indexer", true);
+    frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", true);
  }
 
 void Turret_Shooter::StopSpindexerIndexer()
@@ -94,7 +94,7 @@ void Turret_Shooter::StopSpindexerIndexer()
     m_indexerMotor.Set(0.0);
     m_spindexerMotor.Set(0.0);
 
-    frc::SmartDashboard::PutBoolean("Shooter/Running_Spindexer_Indexer", false);
+    frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
 }
 
 void Turret_Shooter::StopMotors()
@@ -103,8 +103,8 @@ void Turret_Shooter::StopMotors()
     auto motorSpeed = units::radians_per_second_t{0.0};
     m_leftMotor.SetControl(motorRequest.WithVelocity(motorSpeed));
     m_rightMotor.SetControl(motorRequest.WithVelocity(motorSpeed));
-    frc::SmartDashboard::PutNumber("Shooter/Commanded_Ball_Speed_MPS", 0.0);
-    frc::SmartDashboard::PutNumber("Shooter/Commanded_Motor_RPM", 0.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Ball Speed MPS", 0.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Motor RPM", 0.0);
 }
 
 void Turret_Shooter::RunAll()
@@ -123,18 +123,18 @@ void Turret_Shooter::StopAll()
 
 void Turret_Shooter::Periodic()
 {
-    frc::SmartDashboard::PutNumber("Shooter/Left_Motor_Voltage", m_leftMotor.GetMotorVoltage().GetValue().value());
-    frc::SmartDashboard::PutNumber("Shooter/Right_Motor_Voltage", m_rightMotor.GetMotorVoltage().GetValue().value());
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Left Motor Voltage", m_leftMotor.GetMotorVoltage().GetValue().value());
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Right Motor Voltage", m_rightMotor.GetMotorVoltage().GetValue().value());
 
     // left and right motors are same speed
     units::turns_per_second_t motorSpeed = m_leftMotor.GetVelocity().GetValue();
     units::meters_per_second_t ballSpeed = motorSpeed * (kFlywheelDiameter * kGearRatio) / (kFlyWheelVelocityGain * units::radian_t{1} * 4.0); 
 
-    frc::SmartDashboard::PutNumber("Shooter/Actual_Motor_RPM", motorSpeed.value() * 60.0);
-    frc::SmartDashboard::PutNumber("Shooter/Actual_Ball_Speed_MPS", ballSpeed.value()); 
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Actual Motor RPM", motorSpeed.value() * 60.0);
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Actual Ball Speed MPS", ballSpeed.value()); 
 
-    bool override = frc::SmartDashboard::GetBoolean("Shooter/Ball_Speed_Manual_Override", false);
+    bool override = frc::SmartDashboard::GetBoolean("/Turret/Shooter/Ball Speed Manual Override", false);
     if (override) {
-        SetSpeed(units::meters_per_second_t{frc::SmartDashboard::GetNumber("Shooter/Ball_Speed_Manual_Set_MPS", 0.0)});
+        SetSpeed(units::meters_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Shooter/Ball Speed Manual Set MPS", 0.0)});
     }
 }
