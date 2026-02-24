@@ -42,6 +42,10 @@
 #include "subsystems/LEDController.h"
 
 #include "commands/AutoWheelOffsets.h"
+#include "commands/Climb.h"
+#include "commands/FlattenMoonKnight.h"
+#include "commands/Intake.h"
+#include "commands/Shoot.h"
 
 #include <cmath>
 
@@ -140,7 +144,7 @@ private:
     // Robot Container methods
     void CreateRobot();
     void BindCommands();
-    
+
     frc::Pose2d autoStartPose;
 
     frc2::CommandPtr GetAutonomousCommand();

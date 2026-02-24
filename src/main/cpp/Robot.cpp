@@ -186,6 +186,10 @@ void Robot::CreateRobot()
     //             m_pathfind = frc2::CommandPtr(AutoBuilder::followPath(path).Unwrap());
     //             m_pathfind.Schedule(); })
     //         .Unwrap());
+    pathplanner::EventTrigger("Intake").WhileTrue(std::move(Intake(&m_intake, &m_wrist).ToPtr()));
+    pathplanner::EventTrigger("FlattenMoonKnight").WhileTrue(std::move(FlattenMoonKnight(&m_turret, &m_intake, &m_wrist).ToPtr()));
+    pathplanner::EventTrigger("Shoot").WhileTrue(std::move(Shoot(&m_turret).ToPtr()));
+    //TODO: need to add one for climb
 
     m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
         [this]
