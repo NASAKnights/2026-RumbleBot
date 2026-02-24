@@ -187,7 +187,7 @@ void Robot::CreateRobot()
     //             m_pathfind.Schedule(); })
     //         .Unwrap());
     pathplanner::EventTrigger("Intake").WhileTrue(std::move(Intake(&m_intake, &m_wrist).ToPtr()));
-    pathplanner::EventTrigger("FlattenMoonKnight").WhileTrue(std::move(FlattenMoonKnight(&m_turret, &m_intake, &m_wrist).ToPtr()));
+    pathplanner::EventTrigger("FlattenMoonKnight").WhileTrue(std::move(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr()));
     pathplanner::EventTrigger("Shoot").WhileTrue(std::move(Shoot(&m_turret).ToPtr()));
     //TODO: need to add one for climb
 
@@ -272,6 +272,9 @@ void Robot::BindCommands()
             .OnFalse(frc2::CommandPtr(
             frc2::InstantCommand([this]
                                  { return m_intake.StopIntake(); })));
+
+    frc2::JoystickButton(&m_driverController, 6)
+            .OnTrue(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());
                                 
     // frc2::JoystickButton(&m_driverController, 1)
     //     .WhileTrue(frc2::CommandPtr(

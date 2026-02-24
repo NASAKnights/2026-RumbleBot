@@ -23,7 +23,7 @@ class FlattenMoonKnight
   /* You should consider using the more terse Command factories API instead
    * https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands
    */
-  FlattenMoonKnight(Turret *turret, TurretIntake *turretIntake, Wrist *wrist);
+  FlattenMoonKnight(Turret *turret, Wrist *wrist);
 
   void Initialize() override;
 
@@ -34,6 +34,5 @@ class FlattenMoonKnight
   bool IsFinished() override;
 
   Turret *m_turret;
-  TurretIntake *m_turretIntake;
   Wrist *m_wrist;
 };

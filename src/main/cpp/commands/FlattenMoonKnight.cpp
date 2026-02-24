@@ -4,13 +4,12 @@
 
 #include "commands/FlattenMoonKnight.h"
 
-FlattenMoonKnight::FlattenMoonKnight(Turret *turret, TurretIntake *turretIntake, Wrist *wrist) : m_turret{turret}, m_turretIntake{turretIntake}, m_wrist{wrist}
+FlattenMoonKnight::FlattenMoonKnight(Turret *turret, Wrist *wrist) : m_turret{turret}, m_wrist{wrist}
 {
 
   // Use addRequirements() here to declare subsystem dependencies.
 
   AddRequirements(m_turret);
-  AddRequirements(m_turretIntake);
   AddRequirements(m_wrist);
 }
 
@@ -21,7 +20,6 @@ void FlattenMoonKnight::Initialize() {}
 void FlattenMoonKnight::Execute() 
 {
   m_turret->ChangeHoodAngle(units::angle::radian_t(0.0));
-  m_turretIntake->Intake();
   m_wrist->SetAngle(3.0);
 }
 
