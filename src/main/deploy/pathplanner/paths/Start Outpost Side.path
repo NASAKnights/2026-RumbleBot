@@ -152,7 +152,14 @@
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "FlattenMoonKnight",
+      "waypointRelativePos": 4.310255198487712,
+      "endWaypointRelativePos": 5.334948015122866,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 5.212,
     "maxAcceleration": 3.0,
