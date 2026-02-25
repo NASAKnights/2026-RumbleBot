@@ -1,68 +1,133 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+// the WPILib BSD license file in the root directory of this project.ßöä
 #include "subsystems/Climber.h"
 
-Climber::Climber()
+Climber::Climber() : 
+    climberFollower(climberMotor1.GetDeviceID(), false)
 {
 
-    climbMainConfig.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kBrake);
-    climbMainConfig.SmartCurrentLimit(30);
-    climbMainConfig.VoltageCompensation(12.0);
+    climberMotor2.SetControl(climberFollower);
 
-    climbFollowConfig.Follow(climbMain, true);
-    climbFollowConfig.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kBrake);
-    climbFollowConfig.SmartCurrentLimit(30);
-    climbFollowConfig.VoltageCompensation(12.0);
-    climbFollowConfig.absoluteEncoder.PositionConversionFactor(2 * std::numbers::pi);
-
-    climbMain.Configure(climbMainConfig, rev::spark::SparkBase::ResetMode::kNoResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    climbFollower.Configure(climbFollowConfig, rev::spark::SparkBase::ResetMode::kNoResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-
-    climbWristController.Reset();
-
-    wpi::log::DataLog &log = frc::DataLogManager::GetLog();
-    m_AbsolutePosition = wpi::log::DoubleLogEntry(log, "/Climber/AbsolutePos");
-};
+    // Initialize Climber Logging
+    wpi::log::DataLog& log = frc::DataLogManager::GetLog();
+    m_PositionLog = wpi::log::DoubleLogEntry(log, "/Climber/Position");
+    m_StateLog = wpi::log::IntegerLogEntry(log, "/Climber/State");
+    m_LimitSwitchLog = wpi::log::BooleanLogEntry(log, "/Climber/LimitSwitch");
+}
 
 // This method will be called once per scheduler run
-void Climber::Periodic()
-{
-    m_AbsolutePosition.Append(climberWristEncoder.GetPosition());
-    frc::SmartDashboard::PutNumber("/Climb/Climb Rotation", climberWristEncoder.GetPosition());
+void Climber::Periodic() {
+  frc::SmartDashboard::PutBoolean("Climber at Bot?",botLimit1.Get());
+  frc::SmartDashboard::PutNumber("Climber_Position",climberMotor1.GetPosition().GetValueAsDouble());
+
+  // Write out to Log file
+  m_PositionLog.Append(climberMotor1.GetPosition().GetValueAsDouble());
+  m_StateLog.Append(m_ClimberState);
+  m_LimitSwitchLog.Append(botLimit1.Get());
+
 }
 
-void Climber::Unspool()
-{
-    climbMain.Set(-0.4);
+void Climber::moveMotor() {
+    climberMotor1.Set(0.1); // retracts when set to 0.1
 }
 
-void Climber::Deploy()
-{
-    // Deploys the climber out
-    // climbMain.Set(climbWristController.Calculate(climberWristEncoder.GetPosition(), kClimbDeploySetPoint));
-    climbMain.Set(0.8);
+void Climber::stopMotor() {
+    climberMotor1.Set(0.0);
 }
 
-void Climber::Climb()
-{
-    // Pulls the winch back in
-    // climbMain.Set(climbWristController.Calculate(climberWristEncoder.GetPosition(), kClimbClimbSetPoint));
-    climbMain.Set(0.8);
+void Climber::Zero() {
+    if (!botLimit1.Get())
+    {
+        climberMotor1.Set(-0.1);
+    }
+    else 
+    {
+        climberMotor1.Set(0.0);
+        //set encoder to zero
+    }
+
 }
 
-void Climber::Stop()
-{
-    climbMain.Set(0.0);
+void Climber::extend() {
+  switch (m_ClimberState)
+  {
+    case CLIMBER_EXTEND_START:
+    { 
+      m_ClimberState = CLIMBER_EXTEND_BRAKE_DISENGAGE;
+    //   disengage();
+      break;
+    }
+    case CLIMBER_EXTEND_BRAKE_DISENGAGE:
+    {
+      if ((frc::GetTime() - time_brake_released).value() > 0.2)
+      {
+        m_ClimberState = CLIMBER_EXTEND_MOVING;
+      }
+      break;
+    }
+    case CLIMBER_EXTEND_MOVING: 
+    {
+      climberMotor1.Set(-0.9);
+      if (fabs(climberMotor1.GetPosition().GetValueAsDouble()) >= 300)
+      {
+        climberMotor1.Set(0);
+        m_ClimberState = CLIMBER_EXTEND_DONE;
+      }
+      break;
+    }
+    case CLIMBER_EXTEND_DONE:
+    {
+    //   engage();
+      break;
+    }
+    default:
+      break;
+  }
 }
 
-bool Climber::atClimbAngle()
-{
-    return climberWristEncoder.GetPosition() < Climber::kClimbClimbSetPoint;
+void Climber::retract(){
+  switch (m_ClimberState)
+  {
+    case CLIMBER_RETRACT_START:
+    { 
+      m_ClimberState = CLIMBER_RETRACT_MOVING;
+  
+      break;
+    }
+    case CLIMBER_RETRACT_MOVING: 
+    {
+      climberMotor1.Set(0.9);
+      // Soft Limit
+      if (fabs(climberMotor1.GetPosition().GetValueAsDouble()) <= 75)
+      {
+        climberMotor1.Set(0);
+        m_ClimberState = CLIMBER_RETRACT_DONE;
+      }
+      break;
+    }
+    case CLIMBER_RETRACT_DONE:
+    {
+      break;
+    }
+    default:
+      break;
+  
+}
 }
 
-bool Climber::atDeployAngle()
-{
-    return climberWristEncoder.GetPosition() > Climber::kClimbDeploySetPoint;
+void Climber::retractLimit_Pit(){
+    
+    if (botLimit1.Get()) {
+      climberMotor1.Set(0.1);
+    }
+    else {
+      //climberMotor1.StopMotor();
+      climberMotor1.Set(0);
+      while(climberMotor1.SetPosition(units::angle::turn_t{0}) != ctre::phoenix::StatusCode::OK){};
+    }
+}
+
+bool Climber::atBot() {
+  return (!botLimit1.Get());
 }

@@ -4,60 +4,66 @@
 
 #pragma once
 
-#include <frc2/command/SubsystemBase.h>
-#include <frc/controller/PIDController.h>
 #include "frc/DataLogManager.h"
 #include "wpi/DataLog.h"
-#include <rev/SparkFlex.h>
-#include <rev/AbsoluteEncoder.h>
-#include <rev/SparkAbsoluteEncoder.h>
-#include <rev/SparkMax.h>
+#include <ctre/phoenix6/TalonFX.hpp>
+#include <frc/DigitalInput.h>
+#include <frc/Servo.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc2/command/SubsystemBase.h>
+
+enum ResetState
+{
+    CLIMBER_EXTEND_START,
+    CLIMBER_EXTEND_MOVING,
+    CLIMBER_EXTEND_DONE,
+    CLIMBER_EXTEND_BRAKE_DISENGAGE,
+    CLIMBER_RETRACT_START,
+    CLIMBER_RETRACT_MOVING,
+    CLIMBER_RETRACT_DONE
+};
+
+namespace ClimberConstants 
+{
+    const int ClimbMotorId1 = 13;
+    const int ClimbMotorId2 = 14;
+    const double MaxDegrees = 0.0; //TODO figure out correct number
+}
 
 class Climber : public frc2::SubsystemBase
 {
-public:
-  Climber();
+  public:
+    Climber();
 
-  /**
-   * Will be called periodically whenever the CommandScheduler runs.
-   */
-  void Periodic() override;
+    /**
+     * Will be called periodically whenever the CommandScheduler runs.
+     */
+    void Periodic() override;
 
-  void Deploy();
-  void Climb();
-  void Unspool();
-  bool atDeployAngle();
-  bool atClimbAngle();
-  void Stop();
+    void extend();
+    void retract();
+    void retractLimit_Pit();
 
-private:
-  double kClimbP = 0.1;
-  double kClimbI = 0.0;
-  double kClimbD = 0.0;
+    void Zero();
 
-  double kClimbDeploySetPoint = 0.79 * (2 * std::numbers::pi);
-  double kClimbClimbSetPoint = 0.6 * (2 * std::numbers::pi); // radians
+    void moveMotor();
+    void stopMotor();
+    bool atBot();
+    ResetState m_ClimberState;
 
-  rev::spark::SparkFlex climbMain{7, rev::spark::SparkLowLevel::MotorType::kBrushless};
-  rev::spark::SparkFlex climbFollower{8, rev::spark::SparkLowLevel::MotorType::kBrushless};
+  private:
+    // Components (e.g. motor controllers and sensors) should generally be
+    // declared private and exposed only through public methods.
+    ctre::phoenix6::hardware::TalonFX climberMotor1{ClimberConstants::ClimbMotorId1};
+    ctre::phoenix6::hardware::TalonFX climberMotor2{ClimberConstants::ClimbMotorId2};
 
-  rev::spark::SparkClosedLoopController climbPID = climbMain.GetClosedLoopController();
-  rev::spark::SparkBaseConfig climbMainConfig;
-  rev::spark::SparkBaseConfig climbFollowConfig;
+    frc::DigitalInput botLimit1{9};
 
-  // rev::spark::SparkMax absoluteEncoderSub{9, rev::spark::SparkLowLevel::MotorType::kBrushed};
+    ctre::phoenix6::controls::Follower climberFollower;
 
-  rev::spark::SparkAbsoluteEncoder climberWristEncoder = climbFollower.GetAbsoluteEncoder();
-  // rev::spark::SparkFlexExternalEncoder climberWristEncoder = climbMain.GetExternalEncoder();
-  // rev::spark::SparkRelativeEncoder climberWristEncoder = climbMain.GetEncoder();
+    wpi::log::DoubleLogEntry m_PositionLog;
+    wpi::log::IntegerLogEntry m_StateLog;
+    wpi::log::BooleanLogEntry m_LimitSwitchLog;
 
-  frc::PIDController climbWristController{kClimbP, kClimbI, kClimbD};
-
-  // Maybe for the spark flex?
-  // rev::spark::SparkFlexExternalEncoder climberWristFlexEncoder = climbMain.GetExternalEncoder();
-
-  // Logging
-
-  wpi::log::DoubleLogEntry m_AbsolutePosition;
+    units::time::second_t time_brake_released;
 };
