@@ -27,7 +27,7 @@ Turret::Turret() : m_controller(
     // m_motor.SetInverted(true);
     m_motor.SetInverted(true);
     rev::spark::SparkBaseConfig config;
-    config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kBrake);
+    config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kCoast);
     config.encoder.PositionConversionFactor(TurretConstants::turretPositionConversionFactor);
     config.encoder.VelocityConversionFactor(TurretConstants::turretVelocityConversionFactor);
     config.SmartCurrentLimit(30, 0, 20000);
@@ -377,8 +377,11 @@ void Turret::Periodic()
         if (allowShooting) {
             ChangeLaunchSpeed(m_BallisticLaunchSpeed);
             frc::SmartDashboard::PutNumber("/Turret/Shooter/Set Speed MPS", m_BallisticLaunchSpeed.value());
-
-            m_turret_shooter.RunSpindexerIndexer();
+            if (m_turret_shooter.GetActualBallSpeed() >= m_BallisticLaunchSpeed)
+            {
+                m_turret_shooter.RunSpindexerIndexer();
+            }
+            
         }
         else if (!allowShooting){
             ChangeLaunchSpeed(units::meters_per_second_t{0.0});
@@ -389,7 +392,7 @@ void Turret::Periodic()
     case TurretConstants::HOMING:
     {
         frc::SmartDashboard::PutString("/Turret/State", "HOMING");
-        v = units::voltage::volt_t(-2.5); // TODO: Set a proper value in the constants for constant slow movement in HOMING
+        v = units::voltage::volt_t(-1.5); // TODO: Set a proper value in the constants for constant slow movement in HOMING
         if(!m_magSwitch.Get()) {
             m_encoder.SetPosition(units::angle::degree_t{TurretConstants::kminAngle}.value());
             // m_TurretState = TurretConstants::HOLD;
@@ -572,7 +575,7 @@ frc::Pose2d Turret::CalculateTurretPose(const frc::Pose2d &robotPose)
         frc::Translation2d{
             units::meter_t{TurretConstants::kXOffset},
             units::meter_t{TurretConstants::kYOffset}},
-        frc::Rotation2d{GetMeasurement() + TurretConstants::kAngleOffset}};
+        frc::Rotation2d{GetMeasurement()}};
 
     // Apply that transform in the robot's frame to get field-relative turret pose
     return robotPose.TransformBy(turretTransform);

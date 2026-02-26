@@ -121,6 +121,13 @@ void Turret_Shooter::StopAll()
     m_spindexerMotor.Set(0.0);
 }
 
+units::meters_per_second_t Turret_Shooter::GetActualBallSpeed()
+{
+    units::turns_per_second_t motorSpeed = m_leftMotor.GetVelocity().GetValue();
+    units::meters_per_second_t ballSpeed = motorSpeed * (kFlywheelDiameter * kGearRatio) / (kFlyWheelVelocityGain * units::radian_t{1} * 4.0); 
+    return ballSpeed;
+}
+
 void Turret_Shooter::Periodic()
 {
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Left Motor Voltage", m_leftMotor.GetMotorVoltage().GetValue().value());

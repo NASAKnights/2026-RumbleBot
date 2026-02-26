@@ -91,7 +91,7 @@ namespace TurretConstants
 
   const std::array<double, 2> kSimNoise = {0.0};
   const frc::DCMotor kSimMotor = frc::DCMotor::KrakenX60(1);
-  const double kGearRatio = 79.116; // gear ratio for motor to arm
+  const double kGearRatio = 86.61; // gear ratio for motor to arm
   const units::moment_of_inertia::kilogram_square_meter_t kmoi =
       units::moment_of_inertia::kilogram_square_meter_t(0.06742); // I = MR^2
   const units::length::meter_t kTurretRadius = units::length::meter_t(0.3048);
@@ -113,8 +113,8 @@ namespace TurretConstants
   // value.  kminAngle should therefore be set based on the physical location of the
   // limit switch, such that 0 deg will point the turret directly away from the intake, 
   // orthogonal to the robot. 
-  const units::angle::radian_t kminAngle = -330_deg;
-  const units::angle::radian_t kmaxAngle = -50_deg;
+  const units::angle::radian_t kminAngle = 27_deg;
+  const units::angle::radian_t kmaxAngle = 270_deg;
   const units::angle::radian_t kmidPoint = (kmaxAngle - kminAngle)/2.0 + kminAngle;
 
 

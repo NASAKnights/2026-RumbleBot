@@ -37,8 +37,8 @@ namespace Turret_ShooterConstants {
   static const int kSpindexerMotorId = 5;
   static const int kIndexerMotorId = 6;
 
-  static const double spindexerSpeed = 0.68;
-  static const double indexerSpeed = -0.85;
+  static const double spindexerSpeed = 0.48;
+  static const double indexerSpeed = -0.75;
   const double kPercentBoost = 0.85;
 }
 
@@ -51,6 +51,7 @@ public:
 
   void StopMotors();
   void SetSpeed(units::meters_per_second_t speed); // speed of the ball leaving the shooter
+  units::meters_per_second_t GetActualBallSpeed();
 
   void RunSpindexerIndexer();
   void StopSpindexerIndexer();
@@ -69,12 +70,12 @@ private:
   static constexpr int kGearRatio = 2;
   static constexpr units::inch_t kBallDiameter = units::inch_t{5.91};
 
-  double kP = 0.003;
+  double kP = 0.08;
   double kI = 0.0;
   double kD = 0.0;
   double kS = 0.6;
-  double kA = 0.0;
-  double kV = 0.14;
+  double kA = 0.005;
+  double kV = 0.12;
 
   // determines how much faster the flywheel needs to spin
   // so that the exit velocity meets the specified speed 

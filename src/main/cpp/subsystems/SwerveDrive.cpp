@@ -72,8 +72,9 @@ SwerveDrive::SwerveDrive(ctre::phoenix6::CANBus canBus)
     m_pigeon.SetYaw(0_deg);
     
     // Reseed the pose estimator with the correct initial rotation
+    // m_poseEstimator.ResetPosition(GetHeading(), GetModulePositions(), frc::Pose2d());
     m_poseEstimator.ResetPosition(GetHeading(), GetModulePositions(), frc::Pose2d());
-
+    
 
     speeds = frc::ChassisSpeeds();
     networkTableInst.StartServer();

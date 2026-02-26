@@ -33,7 +33,7 @@ void Robot::RobotInit()
 
     auto sdTable = networkTableInst.GetTable("SmartDashboard");
     modelPosePublisher = sdTable->GetStructArrayTopic<frc::Pose3d>("ModelPoses").Publish();
-};
+}
 
 // This function is called every 20 ms
 void Robot::RobotPeriodic()
@@ -186,9 +186,11 @@ void Robot::CreateRobot()
     //             m_pathfind = frc2::CommandPtr(AutoBuilder::followPath(path).Unwrap());
     //             m_pathfind.Schedule(); })
     //         .Unwrap());
+
     pathplanner::EventTrigger("Intake").WhileTrue(std::move(Intake(&m_intake, &m_wrist).ToPtr()));
     pathplanner::EventTrigger("FlattenMoonKnight").WhileTrue(std::move(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr()));
     pathplanner::EventTrigger("Shoot").WhileTrue(std::move(Shoot(&m_turret).ToPtr()));
+
     //TODO: need to add one for climb
 
     m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
@@ -257,24 +259,24 @@ void Robot::BindCommands()
                                 { m_turret.FindLimitSwitch();
                                 return; })));
 
-    frc2::JoystickButton(&m_driverController, 2)
-            .OnTrue(frc2::CommandPtr(
-                frc2::InstantCommand([this]
-                                    { m_wrist.SetAngle(90);
-                                    return; })));
+    // frc2::JoystickButton(&m_driverController, 2)
+    //         .OnTrue(frc2::CommandPtr(
+    //             frc2::InstantCommand([this]
+    //                                 { m_wrist.SetAngle(90);
+    //                                 return; })));
                                 
-    frc2::JoystickButton(&m_driverController, 6)
-            .OnTrue(frc2::CommandPtr(
-                frc2::InstantCommand([this]
-                                    { m_wrist.SetAngle(3);
-                                    m_intake.Intake();
-                                    return; })))
-            .OnFalse(frc2::CommandPtr(
-            frc2::InstantCommand([this]
-                                 { return m_intake.StopIntake(); })));
+    // frc2::JoystickButton(&m_driverController, 6)
+    //         .OnTrue(frc2::CommandPtr(
+    //             frc2::InstantCommand([this]
+    //                                 { m_wrist.SetAngle(3);
+    //                                 m_intake.Intake();
+    //                                 return; })))
+    //         .OnFalse(frc2::CommandPtr(
+    //         frc2::InstantCommand([this]
+    //                              { return m_intake.StopIntake(); })));
 
-    frc2::JoystickButton(&m_driverController, 6)
-            .OnTrue(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());
+    // frc2::JoystickButton(&m_driverController, 6)
+    //         .OnTrue(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());
                                 
     // frc2::JoystickButton(&m_driverController, 1)
     //     .WhileTrue(frc2::CommandPtr(
@@ -317,19 +319,19 @@ void Robot::BindCommands()
     //         frc2::InstantCommand([this]
     //                                     { return m_turret.ChangeHoodAngle(0); })));
 
-    // frc2::JoystickButton(&m_operatorController, 2)
-    //     .OnTrue(frc2::CommandPtr(frc2::InstantCommand(
-    //         [this]
-    //         {
-    //             m_turret.AllowShooting();
-    //             return;
-    //         })))
-    //         .OnFalse(frc2::CommandPtr(frc2::InstantCommand(
-    //         [this]
-    //         {
-    //             m_turret.PauseShooting();
-    //             return;
-    //         })));
+    frc2::JoystickButton(&m_driverController, 2)
+        .OnTrue(frc2::CommandPtr(frc2::InstantCommand(
+            [this]
+            {
+                m_turret.AllowShooting();
+                return;
+            })))
+            .OnFalse(frc2::CommandPtr(frc2::InstantCommand(
+            [this]
+            {
+                m_turret.PauseShooting();
+                return;
+            })));
 }
 
 void Robot::DisabledPeriodic()
