@@ -96,6 +96,7 @@
     "format": "cpp",
     "queue": "cpp",
     "stack": "cpp",
-    "text_encoding": "cpp"
+    "text_encoding": "cpp",
+    "*.inc": "cpp"
   }
 }

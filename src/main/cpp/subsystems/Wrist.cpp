@@ -100,7 +100,7 @@ void Wrist::Periodic()
     case WristConstants::ZEROING:
     {
         frc::SmartDashboard::PutString("/Wrist/State", "ZEROING");
-        m_motor.Set(0.1);
+        // m_motor.Set(0.1);
         break;
     }
     case WristConstants::MOVE:
@@ -165,7 +165,7 @@ WristConstants::WristState Wrist::GetState()
 
 void Wrist::Zero()
 {
-    m_WristState = WristConstants::ZEROING;
+    // m_WristState = WristConstants::ZEROING;
 }
 
 void Wrist::printLog()

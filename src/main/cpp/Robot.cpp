@@ -259,21 +259,21 @@ void Robot::BindCommands()
                                 { m_turret.FindLimitSwitch();
                                 return; })));
 
-    // frc2::JoystickButton(&m_driverController, 2)
-    //         .OnTrue(frc2::CommandPtr(
-    //             frc2::InstantCommand([this]
-    //                                 { m_wrist.SetAngle(90);
-    //                                 return; })));
+    frc2::JoystickButton(&m_driverController, 2)
+            .OnTrue(frc2::CommandPtr(
+                frc2::InstantCommand([this]
+                                    { m_wrist.SetAngle(90);
+                                    return; })));
                                 
-    // frc2::JoystickButton(&m_driverController, 6)
-    //         .OnTrue(frc2::CommandPtr(
-    //             frc2::InstantCommand([this]
-    //                                 { m_wrist.SetAngle(3);
-    //                                 m_intake.Intake();
-    //                                 return; })))
-    //         .OnFalse(frc2::CommandPtr(
-    //         frc2::InstantCommand([this]
-    //                              { return m_intake.StopIntake(); })));
+    frc2::JoystickButton(&m_driverController, 6)
+            .OnTrue(frc2::CommandPtr(
+                frc2::InstantCommand([this]
+                                    { m_wrist.SetAngle(3);
+                                    m_intake.Intake();
+                                    return; })))
+            .OnFalse(frc2::CommandPtr(
+            frc2::InstantCommand([this]
+                                 { return m_intake.StopIntake(); })));
 
     // frc2::JoystickButton(&m_driverController, 6)
     //         .OnTrue(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());

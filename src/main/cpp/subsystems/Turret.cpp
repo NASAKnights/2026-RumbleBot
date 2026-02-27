@@ -221,8 +221,27 @@ std::pair<units::degree_t, units::degrees_per_second_t> Turret::findTrackingAngl
     m_LaunchAngleVelocity     = (future_launch_angle - launch_angle) / dt;
     m_TurretAngleVelocity     = (future_turret_angle - turret_angle) / dt;
 
+
+
     // Find smallest signed error
     units::radian_t error = frc::AngleModulus(turret_angle - GetMeasurement());
+
+    // If the computed target exceeds the upper limit by >180°, it likely wrapped
+    if (turret_angle > TurretConstants::kmaxAngle)
+    {
+        // If we're only just beyond by less than 180°, clamp
+        if (turret_angle - 360_deg >= TurretConstants::kminAngle)
+            turret_angle -= 360_deg;
+        else
+            turret_angle = TurretConstants::kmaxAngle;
+    }
+    else if (turret_angle < TurretConstants::kminAngle)
+    {
+        if (turret_angle + 360_deg <= TurretConstants::kmaxAngle)
+            turret_angle += 360_deg;
+        else
+            turret_angle = TurretConstants::kminAngle;
+    }
     frc::SmartDashboard::PutNumber("/Turret/Aim/Turret Angle Error Deg", units::degree_t{error}.value());
 
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Launch Speed Acceleration MPS", m_LaunchSpeedAcceleration.value());
@@ -344,6 +363,16 @@ void Turret::Periodic()
             frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "max");
             v = units::volt_t(0);
         }
+        // else if (!m_magSwitch.Get() && GetMeasurement().value() < TurretConstants::kmidPoint.convert<units::deg>().value())
+        // {
+        //     frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "min");
+        //     v = units::volt_t(0);
+        // }
+        // else if (!m_magSwitch.Get() && GetMeasurement().value() > TurretConstants::kmidPoint.convert<units::deg>().value())
+        // {
+        //     frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "max");
+        //     v = units::volt_t(0);
+        // }
         else{
             frc::SmartDashboard::PutString("/Turret/Aim/Stopped", "not");
         }
@@ -739,7 +768,7 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
 
     // Normalize the turret angle into the turret's physical range.
     double angle_val = turret_angle.convert<units::deg>().value();
-    double min_angle = TurretConstants::kminAngle.convert<units::deg>().value();
+    double min_angle = TurretConstants::kminAngle.convert<units::deg>().value();    
     angle_val = angle_val - 360.0 * std::floor((angle_val - min_angle) / 360.0);
     turret_angle = units::degree_t{angle_val};
 

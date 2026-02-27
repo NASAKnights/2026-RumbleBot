@@ -56,7 +56,7 @@ namespace WristConstants
     const double kWristPeakCurrentDuration = 0.1;
 
     const std::array<double, 1> kSimNoise = {0.0087};
-    const frc::DCMotor kSimMotor = frc::DCMotor::NEO550(1);
+    const frc::DCMotor kSimMotor = frc::DCMotor::NEO(1);
 
     // const double kGearRatio = 81.0; // gear ratio for motor to arm
     const double kGearRatio = 1.0; //using absolute encoder -> 
