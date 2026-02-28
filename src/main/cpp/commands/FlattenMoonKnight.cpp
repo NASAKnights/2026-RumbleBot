@@ -9,22 +9,26 @@ FlattenMoonKnight::FlattenMoonKnight(Turret *turret, Wrist *wrist) : m_turret{tu
 
   // Use addRequirements() here to declare subsystem dependencies.
 
-  AddRequirements(m_turret);
-  AddRequirements(m_wrist);
+  // AddRequirements(m_turret);
+  // AddRequirements(m_wrist);
 }
 
 // Called when the command is initially scheduled.
-void FlattenMoonKnight::Initialize() {}
+void FlattenMoonKnight::Initialize() {
+  m_turret->Flatten = true;
+}
 
 // Called repeatedly when this Command is scheduled to run
 void FlattenMoonKnight::Execute() 
 {
-  m_turret->ChangeHoodAngle(units::angle::radian_t(0.0));
+  // m_turret->ChangeHoodAngle(units::angle::radian_t(0.0));
   m_wrist->SetAngle(3.0);
 }
 
 // Called once the command ends or is interrupted.
-void FlattenMoonKnight::End(bool interrupted) {}
+void FlattenMoonKnight::End(bool interrupted) {
+  // m_turret->Flatten = false;
+}
 
 // Returns true when the command should end.
 bool FlattenMoonKnight::IsFinished() {

@@ -35,18 +35,18 @@ namespace WristConstants
         DISABLED
     };
 
-    const double kAngleP = 0.3;
+    const double kAngleP = 0.0;
     const double kAngleI = 0.0;
     const double kAngleD = 0.0; // 0.0001
     const double kIZone = 1.0;
-    const auto kArmVelLimit = units::degrees_per_second_t(45.0);
+    const auto kArmVelLimit = units::degrees_per_second_t(60.0);
     const auto kArmAccelLimit = units::angular_acceleration::degrees_per_second_squared_t(1000); // Mech limit 27 rad/s^2(1500 degree_second_squared)
     const units::degree_t kTolerancePos = 1_deg;
     const units::degrees_per_second_t kToleranceVel = 0.5_deg_per_s;
     const int kAngleMotorId = 7;
 
-    const auto kFFks = units::volt_t(0.23);                               // Volts static (motor)
-    const auto kFFkg = units::volt_t(0.15);                               // Volts
+    const auto kFFks = units::volt_t(0.43);                               // Volts static (motor)
+    const auto kFFkg = units::volt_t(0.29);                               // Volts
     const auto kFFkV = units::unit_t<frc::ArmFeedforward::kv_unit>(2.0); // volts*s/rad
     const auto kFFkA = units::unit_t<frc::ArmFeedforward::ka_unit>(0); // volts*s^2/rad
 

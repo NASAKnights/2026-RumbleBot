@@ -169,7 +169,8 @@ public:
   units::degrees_per_second_t GetVelocity();
   TurretConstants::TurretState GetState();
   bool isTracking = true;
-
+  bool Flatten = false;
+  
   // units::time::second_t time_brake_released;
 
 private:

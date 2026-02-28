@@ -26,8 +26,8 @@ enum ResetState
 namespace ClimberConstants 
 {
     const int ClimbMotorId1 = 13;
-    const int ClimbMotorId2 = 14;
-    const double MaxDegrees = 0.0; //TODO figure out correct number
+    // const int ClimbMotorId2 = 14;
+    const units::degree_t UpperLimit = units::degree_t{20}; //TODO figure out correct number
 }
 
 class Climber : public frc2::SubsystemBase
@@ -42,22 +42,22 @@ class Climber : public frc2::SubsystemBase
 
     void extend();
     void retract();
-    void retractLimit_Pit();
+    // void retractLimit_Pit();
 
     void Zero();
 
     void moveMotor();
     void stopMotor();
-    bool atBot();
+    // bool atBottomLimit();
     ResetState m_ClimberState;
 
   private:
     // Components (e.g. motor controllers and sensors) should generally be
     // declared private and exposed only through public methods.
     ctre::phoenix6::hardware::TalonFX climberMotor1{ClimberConstants::ClimbMotorId1};
-    ctre::phoenix6::hardware::TalonFX climberMotor2{ClimberConstants::ClimbMotorId2};
+    // ctre::phoenix6::hardware::TalonFX climberMotor2{ClimberConstants::ClimbMotorId2};
 
-    frc::DigitalInput botLimit1{9};
+    frc::DigitalInput bottomLimit1{2};
 
     ctre::phoenix6::controls::Follower climberFollower;
 

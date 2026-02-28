@@ -7,7 +7,7 @@ Climber::Climber() :
     climberFollower(climberMotor1.GetDeviceID(), false)
 {
 
-    climberMotor2.SetControl(climberFollower);
+    // climberMotor2.SetControl(climberFollower);
 
     // Initialize Climber Logging
     wpi::log::DataLog& log = frc::DataLogManager::GetLog();
@@ -18,13 +18,13 @@ Climber::Climber() :
 
 // This method will be called once per scheduler run
 void Climber::Periodic() {
-  frc::SmartDashboard::PutBoolean("Climber at Bot?",botLimit1.Get());
+  frc::SmartDashboard::PutBoolean("Climber at Bot?",bottomLimit1.Get());
   frc::SmartDashboard::PutNumber("Climber_Position",climberMotor1.GetPosition().GetValueAsDouble());
 
   // Write out to Log file
   m_PositionLog.Append(climberMotor1.GetPosition().GetValueAsDouble());
   m_StateLog.Append(m_ClimberState);
-  m_LimitSwitchLog.Append(botLimit1.Get());
+  m_LimitSwitchLog.Append(bottomLimit1.Get());
 
 }
 
@@ -37,7 +37,7 @@ void Climber::stopMotor() {
 }
 
 void Climber::Zero() {
-    if (!botLimit1.Get())
+    if (!bottomLimit1.Get())
     {
         climberMotor1.Set(-0.1);
     }
@@ -50,84 +50,29 @@ void Climber::Zero() {
 }
 
 void Climber::extend() {
-  switch (m_ClimberState)
-  {
-    case CLIMBER_EXTEND_START:
-    { 
-      m_ClimberState = CLIMBER_EXTEND_BRAKE_DISENGAGE;
-    //   disengage();
-      break;
-    }
-    case CLIMBER_EXTEND_BRAKE_DISENGAGE:
-    {
-      if ((frc::GetTime() - time_brake_released).value() > 0.2)
-      {
-        m_ClimberState = CLIMBER_EXTEND_MOVING;
-      }
-      break;
-    }
-    case CLIMBER_EXTEND_MOVING: 
-    {
-      climberMotor1.Set(-0.9);
-      if (fabs(climberMotor1.GetPosition().GetValueAsDouble()) >= 300)
-      {
-        climberMotor1.Set(0);
-        m_ClimberState = CLIMBER_EXTEND_DONE;
-      }
-      break;
-    }
-    case CLIMBER_EXTEND_DONE:
-    {
-    //   engage();
-      break;
-    }
-    default:
-      break;
-  }
+
 }
 
 void Climber::retract(){
-  switch (m_ClimberState)
+  if (climberMotor1.Get())
   {
-    case CLIMBER_RETRACT_START:
-    { 
-      m_ClimberState = CLIMBER_RETRACT_MOVING;
+    /* code */
+  }
   
-      break;
-    }
-    case CLIMBER_RETRACT_MOVING: 
-    {
-      climberMotor1.Set(0.9);
-      // Soft Limit
-      if (fabs(climberMotor1.GetPosition().GetValueAsDouble()) <= 75)
-      {
-        climberMotor1.Set(0);
-        m_ClimberState = CLIMBER_RETRACT_DONE;
-      }
-      break;
-    }
-    case CLIMBER_RETRACT_DONE:
-    {
-      break;
-    }
-    default:
-      break;
-  
-}
 }
 
-void Climber::retractLimit_Pit(){
+// void Climber::retractLimit_Pit(){
     
-    if (botLimit1.Get()) {
-      climberMotor1.Set(0.1);
-    }
-    else {
-      //climberMotor1.StopMotor();
-      climberMotor1.Set(0);
-      while(climberMotor1.SetPosition(units::angle::turn_t{0}) != ctre::phoenix::StatusCode::OK){};
-    }
-}
+//     if (bottomLimit1.Get()) {
+//       climberMotor1.Set(0.1);
+//     }
+//     else {
+//       //climberMotor1.StopMotor();
+//       climberMotor1.Set(0);
+//       while(climberMotor1.SetPosition(units::angle::turn_t{0}) != ctre::phoenix::StatusCode::OK){};
+//     }
+// }
 
-bool Climber::atBot() {
-  return (!botLimit1.Get());
-}
+// bool Climber::atBottomlimit() {
+//   return (!bottomLimit1.Get());
+// }

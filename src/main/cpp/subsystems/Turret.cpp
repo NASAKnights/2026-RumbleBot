@@ -396,7 +396,12 @@ void Turret::Periodic()
         frc::SmartDashboard::PutNumber("/Turret/Aim/Voltage", double(v));
 
         // Hood/Launch Angle
-        ChangeHoodAngle(m_BallisticLaunchAngle);
+        if (Flatten){
+            ChangeHoodAngle(units::degree_t{90.});
+        }
+        else if (!Flatten){
+            ChangeHoodAngle(m_BallisticLaunchAngle);
+        }
 
         bool override = frc::SmartDashboard::GetBoolean("/Turret/Hood/Angle Manual Override", false);
         if(override) {
