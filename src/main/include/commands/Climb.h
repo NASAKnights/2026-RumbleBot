@@ -14,13 +14,12 @@
  * directly; this is crucially important, or else the decorator functions in
  * Command will *not* work!
  */
+#include "subsystems/Climber.h"
+
 class Climb
     : public frc2::CommandHelper<frc2::Command, Climb> {
  public:
-  /* You should consider using the more terse Command factories API instead
-   * https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands
-   */
-  Climb();
+  Climb(Climber* climber, bool extend);
 
   void Initialize() override;
 
@@ -29,4 +28,8 @@ class Climb
   void End(bool interrupted) override;
 
   bool IsFinished() override;
+
+ private:
+  Climber* m_climber;
+  bool m_extend;
 };

@@ -23,7 +23,9 @@ void Intake::Execute()
 }
 
 // Called once the command ends or is interrupted.
-void Intake::End(bool interrupted) {}
+void Intake::End(bool interrupted) {
+  m_turretIntake->StopIntake();
+}
 
 // Returns true when the command should end.
 bool Intake::IsFinished() {

@@ -19,6 +19,7 @@
 #include <units/angular_acceleration.h>
 #include <units/voltage.h>
 #include <units/moment_of_inertia.h>
+#include <map>
 
 #include <frc/DriverStation.h>
 
@@ -50,7 +51,7 @@ public:
   void Periodic() override;
 
   void StopMotors();
-  void SetSpeed(units::meters_per_second_t speed); // speed of the ball leaving the shooter
+  void SetSpeed(units::meters_per_second_t speed, units::meter_t distance); // speed of the ball leaving the shooter
   units::meters_per_second_t GetActualBallSpeed();
   units::turns_per_second_t GetActualMotorSpeed();
   units::turns_per_second_t ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed);
@@ -81,7 +82,16 @@ private:
 
   // determines how much faster the flywheel needs to spin
   // so that the exit velocity meets the specified speed 
-  double kFlyWheelVelocityGain = 1.95;
+  // Map of Distance (meters) to Multiplier Gain
+  std::map<double, double> kFlyWheelGainMap = {
+      {1.0, 1.90},
+      {2.0, 1.95},
+      {3.0, 2.10},
+      {4.0, 2.25},
+      {5.0, 2.40},
+      {6.0, 2.55},
+      {7.0, 2.65}
+  };
 
   bool kEnableCurrentLimit = true;
   units::ampere_t kPeakCurrentLimit = units::ampere_t{53};

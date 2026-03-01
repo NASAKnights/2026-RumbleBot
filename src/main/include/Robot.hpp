@@ -33,10 +33,8 @@
 #include <units/velocity.h>
 
 #include "subsystems/SwerveDrive.hpp"
-#include "subsystems/Elevator.h"
 #include "subsystems/Wrist.h"
 #include "subsystems/Turret.h"
-#include "subsystems/Turret_Shooter.h"
 #include "subsystems/TurretIntake.h"
 #include "subsystems/Climber.h"
 #include "subsystems/LEDController.h"
@@ -92,8 +90,7 @@ private:
     SwerveDrive m_swerveDrive{NKCANBus};
     // SwerveDrive m_swerveDrive{RioCANBus};
     Wrist m_wrist;
-    // Elevator m_elevator;
-    // Climber m_climber;
+    Climber m_climber;
     Turret m_turret;
     TurretIntake m_intake;
 

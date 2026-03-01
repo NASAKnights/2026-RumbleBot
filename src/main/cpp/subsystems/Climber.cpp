@@ -12,20 +12,27 @@ Climber::Climber() :
     // Initialize Climber Logging
     wpi::log::DataLog& log = frc::DataLogManager::GetLog();
     m_PositionLog = wpi::log::DoubleLogEntry(log, "/Climber/Position");
+    m_PositionInchesLog = wpi::log::DoubleLogEntry(log, "/Climber/PositionInches");
     m_StateLog = wpi::log::IntegerLogEntry(log, "/Climber/State");
     m_LimitSwitchLog = wpi::log::BooleanLogEntry(log, "/Climber/LimitSwitch");
 }
 
 // This method will be called once per scheduler run
 void Climber::Periodic() {
-  frc::SmartDashboard::PutBoolean("Climber at Bot?",bottomLimit1.Get());
-  frc::SmartDashboard::PutNumber("Climber_Position",climberMotor1.GetPosition().GetValueAsDouble());
+  bool atBottom = bottomLimit1.Get();
+  if (atBottom) {
+    climberMotor1.SetPosition(0_tr);
+  }
+
+  frc::SmartDashboard::PutBoolean("/Climber/AtBottom", atBottom);
+  frc::SmartDashboard::PutNumber("/Climber/Position_Rotations", climberMotor1.GetPosition().GetValueAsDouble());
+  frc::SmartDashboard::PutNumber("/Climber/Position_Inches", GetPositionInches().value());
 
   // Write out to Log file
   m_PositionLog.Append(climberMotor1.GetPosition().GetValueAsDouble());
+  m_PositionInchesLog.Append(GetPositionInches().value());
   m_StateLog.Append(m_ClimberState);
-  m_LimitSwitchLog.Append(bottomLimit1.Get());
-
+  m_LimitSwitchLog.Append(atBottom);
 }
 
 void Climber::moveMotor() {
@@ -44,21 +51,31 @@ void Climber::Zero() {
     else 
     {
         climberMotor1.Set(0.0);
-        //set encoder to zero
+        climberMotor1.SetPosition(0_tr);
     }
+}
 
+units::length::inch_t Climber::GetPositionInches() {
+    // TalonFX GetPosition returns rotations (units::angle::turn_t)
+    return units::length::inch_t{climberMotor1.GetPosition().GetValueAsDouble() * ClimberConstants::InchesPerRotation};
 }
 
 void Climber::extend() {
-
+    // Going up (positive direction), but don't exceed 12 inches
+    if (GetPositionInches() < ClimberConstants::MaxExtensionInches) {
+        climberMotor1.Set(0.5);
+    } else {
+        climberMotor1.Set(0.0);
+    }
 }
 
-void Climber::retract(){
-  if (climberMotor1.Get())
-  {
-    /* code */
-  }
-  
+void Climber::retract() {
+    // Going down, but don't pull past min retract inches
+    if (GetPositionInches() > ClimberConstants::MinRetractInches) {
+        climberMotor1.Set(-0.3);
+    } else {
+        climberMotor1.Set(0.0);
+    }
 }
 
 // void Climber::retractLimit_Pit(){

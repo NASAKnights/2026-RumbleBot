@@ -11,6 +11,9 @@
 #include <frc/Servo.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/SubsystemBase.h>
+#include <numbers>
+#include <units/length.h>
+
 
 enum ResetState
 {
@@ -27,7 +30,12 @@ namespace ClimberConstants
 {
     const int ClimbMotorId1 = 13;
     // const int ClimbMotorId2 = 14;
-    const units::degree_t UpperLimit = units::degree_t{20}; //TODO figure out correct number
+    constexpr double SpoolDiameterInches = 0.6;
+    constexpr double GearReduction = 12.0;
+    // (Spool Diameter * PI) / Gear Reduction
+    constexpr double InchesPerRotation = (SpoolDiameterInches * std::numbers::pi) / GearReduction;
+    constexpr units::length::inch_t MinRetractInches{0.5};
+    constexpr units::length::inch_t MaxExtensionInches{12.0};
 }
 
 class Climber : public frc2::SubsystemBase
@@ -46,6 +54,8 @@ class Climber : public frc2::SubsystemBase
 
     void Zero();
 
+    units::length::inch_t GetPositionInches();
+
     void moveMotor();
     void stopMotor();
     // bool atBottomLimit();
@@ -62,6 +72,7 @@ class Climber : public frc2::SubsystemBase
     ctre::phoenix6::controls::Follower climberFollower;
 
     wpi::log::DoubleLogEntry m_PositionLog;
+    wpi::log::DoubleLogEntry m_PositionInchesLog;
     wpi::log::IntegerLogEntry m_StateLog;
     wpi::log::BooleanLogEntry m_LimitSwitchLog;
 

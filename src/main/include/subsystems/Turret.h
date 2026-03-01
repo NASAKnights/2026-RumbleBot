@@ -132,7 +132,7 @@ namespace TurretConstants
 
   const double kPI = 3.14159265358979323846;
 
-
+  const units::angle::degree_t kHoodFlattenAngle = 90_deg;
 } // namespace TurretConstants
 
 /**
@@ -163,7 +163,7 @@ public:
   }
 
   void ChangeHoodAngle(units::angle::radian_t launchAngle);
-  void ChangeLaunchSpeed(units::meters_per_second_t speed);
+  void ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance);
   // void get_pigeon();
   units::degree_t GetMeasurement();
   units::degrees_per_second_t GetVelocity();
@@ -239,6 +239,7 @@ private:
         ballistics_rv_gnd::rel_vz
   };
   units::meters_per_second_t m_BallisticLaunchSpeed = 0.0_mps;
+  units::meter_t m_BallisticDistance = 0.0_m;
   units::radian_t m_BallisticLaunchAngle = 0.0_rad;
   units::radian_t m_BallisticLeadAngle = 0.0_rad;
   units::meters_per_second_squared_t m_LaunchSpeedAcceleration = 0.0_mps_sq;

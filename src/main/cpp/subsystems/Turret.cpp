@@ -299,9 +299,9 @@ void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle)
     m_hood.Set(servoExtention);
 }
 
-void Turret::ChangeLaunchSpeed(units::meters_per_second_t speed) 
+void Turret::ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance) 
 {
-    m_turret_shooter.SetSpeed(speed);
+    m_turret_shooter.SetSpeed(speed, distance);
 }
 
 void Turret::Periodic()
@@ -398,11 +398,14 @@ void Turret::Periodic()
         frc::SmartDashboard::PutNumber("/Turret/Aim/Voltage", double(v));
 
         // Hood/Launch Angle
-        if (Flatten){
-            ChangeHoodAngle(units::degree_t{90.});
+        if(Flatten){
+            ChangeHoodAngle(TurretConstants::kHoodFlattenAngle);
         }
-        else if (!Flatten){
+        else if (allowShooting){
             ChangeHoodAngle(m_BallisticLaunchAngle);
+        }
+        else {
+            ChangeHoodAngle(TurretConstants::kHoodFlattenAngle);
         }
 
         bool override = frc::SmartDashboard::GetBoolean("/Turret/Hood/Angle Manual Override", false);
@@ -411,7 +414,7 @@ void Turret::Periodic()
         }
         // Launch Speed
         if (allowShooting) {
-            ChangeLaunchSpeed(m_BallisticLaunchSpeed);
+            ChangeLaunchSpeed(m_BallisticLaunchSpeed, m_BallisticDistance);
             // units::turns_per_second_t commandMotorSpeed = 
             frc::SmartDashboard::PutNumber("/Turret/Shooter/Set Speed MPS", m_BallisticLaunchSpeed.value());
             units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed);
@@ -422,7 +425,7 @@ void Turret::Periodic()
             
         }
         else if (!allowShooting){
-            ChangeLaunchSpeed(units::meters_per_second_t{0.0});
+            ChangeLaunchSpeed(units::meters_per_second_t{0.0}, 0.0_m);
             m_turret_shooter.StopSpindexerIndexer();
         }
         break;
@@ -789,6 +792,7 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
     if (update) {
         m_BallisticSolutionValid = sol_valid;
         m_BallisticLaunchSpeed = sol_launch_speed;
+        m_BallisticDistance = dist;
         m_BallisticLaunchAngle = sol_launch_angle;
         m_BallisticLeadAngle = sol_lead_angle;
         frc::SmartDashboard::PutNumber("/Turret/Ballistics/Velocity X MPS", turretVx.value());
