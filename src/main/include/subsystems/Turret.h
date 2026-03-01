@@ -103,8 +103,8 @@ namespace TurretConstants
   const double turretPositionConversionFactor  = 360.0 / TurretConstants::kGearRatio;
   const double turretVelocityConversionFactor = 360.0 / TurretConstants::kGearRatio / 60.0;
 
-  const double kXOffset =  -0.18542;  // (m) 7.3 inches from center of robot (opposite intake)
-  const double kYOffset = 0.18542;  // (m) 7.3 inches from center of robot
+  const double kXOffset =  -0.181;  // (m) 7.3 inches from center of robot (opposite intake)
+  const double kYOffset = 0.18;  // (m) 7.3 inches from center of robot
   const double kZOffset = 0.0;
   const units::degree_t kAngleOffset(0.0);
   const units::volt_t kMaxVoltage = 6.0_V; 

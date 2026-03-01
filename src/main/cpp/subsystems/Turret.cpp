@@ -279,6 +279,8 @@ units::degrees_per_second_t Turret::GetVelocity()
 
 void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle)
 {
+    ballLaunchAngle -= units::degree_t{8.0};
+
     double ballLaunchAngleDegrees = double((ballLaunchAngle*180)/TurretConstants::kPI);
 
     double servoExtention = (-(2.94699*std::pow(10, -7)) * std::pow(ballLaunchAngleDegrees, 4) +
@@ -410,8 +412,10 @@ void Turret::Periodic()
         // Launch Speed
         if (allowShooting) {
             ChangeLaunchSpeed(m_BallisticLaunchSpeed);
+            // units::turns_per_second_t commandMotorSpeed = 
             frc::SmartDashboard::PutNumber("/Turret/Shooter/Set Speed MPS", m_BallisticLaunchSpeed.value());
-            if (m_turret_shooter.GetActualBallSpeed() >= m_BallisticLaunchSpeed)
+            units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed);
+            if (m_turret_shooter.GetActualMotorSpeed() >= commandedMotorSpeed)
             {
                 m_turret_shooter.RunSpindexerIndexer();
             }
@@ -625,6 +629,8 @@ void Turret::GetBallisticSolution(TurretConstants::BallisticSolutionType solutio
                                     bool &valid) 
 {
     double rel_vx, rel_vy, rel_vz;
+    frc::SmartDashboard::PutNumber("/Turret/Pose/Target Distance", target_distance.value());
+    
     switch (solution_type)
     {
         case TurretConstants::BallisticSolutionType::HUB:

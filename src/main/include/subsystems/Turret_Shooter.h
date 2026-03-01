@@ -39,7 +39,7 @@ namespace Turret_ShooterConstants {
 
   static const double spindexerSpeed = 0.48;
   static const double indexerSpeed = -0.75;
-  const double kPercentBoost = 0.85;
+  const double kPercentBoost = 0.0;
 }
 
 class Turret_Shooter : public frc2::SubsystemBase
@@ -52,6 +52,8 @@ public:
   void StopMotors();
   void SetSpeed(units::meters_per_second_t speed); // speed of the ball leaving the shooter
   units::meters_per_second_t GetActualBallSpeed();
+  units::turns_per_second_t GetActualMotorSpeed();
+  units::turns_per_second_t ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed);
 
   void RunSpindexerIndexer();
   void StopSpindexerIndexer();
@@ -75,11 +77,11 @@ private:
   double kD = 0.0;
   double kS = 0.6;
   double kA = 0.005;
-  double kV = 0.12;
+  double kV = 0.1;
 
   // determines how much faster the flywheel needs to spin
   // so that the exit velocity meets the specified speed 
-  double kFlyWheelVelocityGain = 1.0;
+  double kFlyWheelVelocityGain = 1.95;
 
   bool kEnableCurrentLimit = true;
   units::ampere_t kPeakCurrentLimit = units::ampere_t{53};

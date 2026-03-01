@@ -413,14 +413,14 @@ void SwerveDrive::UpdatePoseEstimate()
     for (auto &result : results2) {
         // auto multiTagResult = result.MultiTagResult();
         // auto singleTagResult = result.GetBestTarget();
-        auto estimatedRobotPose = pvPoseEstimation2.EstimateCoprocMultiTagPose(result);
-        if (!estimatedRobotPose){
-            estimatedRobotPose = pvPoseEstimation2.EstimateLowestAmbiguityPose(result);
+        auto estimatedRobotPose2 = pvPoseEstimation2.EstimateCoprocMultiTagPose(result);
+        if (!estimatedRobotPose2){
+            estimatedRobotPose2 = pvPoseEstimation2.EstimateLowestAmbiguityPose(result);
         }
 
-        if (estimatedRobotPose){
-            m_poseEstimator.AddVisionMeasurement(estimatedRobotPose->estimatedPose.ToPose2d(), 
-            estimatedRobotPose->timestamp);
+        if (estimatedRobotPose2){
+            m_poseEstimator.AddVisionMeasurement(estimatedRobotPose2->estimatedPose.ToPose2d(), 
+            estimatedRobotPose2->timestamp);
         }
 
         // if (multiTagResult.has_value()) {

@@ -73,8 +73,8 @@ namespace DriveConstants
     // const SDSModuleType kSDSModule = mk4i_l3;
     const SDSModuleType kSDSModule = mk4i_l2plus;
 
-    const auto kTrackwidthMeters = 0.4_m; // Add to shuffleboard
-    const auto kWheelbaseMeters = 0.4_m;  // Add to shuffleboard
+    const auto kTrackwidthMeters = 0.546_m; // Add to shuffleboard
+    const auto kWheelbaseMeters = 0.546_m;  // Add to shuffleboard
 
     const double kDefaultAxisDeadband = 0.15;
     const units::meters_per_second_t kMaxTranslationalVelocity{4}; // Add to shuffleboard

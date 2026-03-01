@@ -128,6 +128,16 @@ units::meters_per_second_t Turret_Shooter::GetActualBallSpeed()
     return ballSpeed;
 }
 
+units::turns_per_second_t Turret_Shooter::GetActualMotorSpeed()
+{
+    return m_leftMotor.GetVelocity().GetValue();
+}
+
+units::turns_per_second_t Turret_Shooter::ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed)
+{
+    return (kFlyWheelVelocityGain * ballSpeed * units::radian_t{1} * 4.0) / (kFlywheelDiameter * kGearRatio);
+}
+
 void Turret_Shooter::Periodic()
 {
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Left Motor Voltage", m_leftMotor.GetMotorVoltage().GetValue().value());
@@ -135,7 +145,7 @@ void Turret_Shooter::Periodic()
 
     // left and right motors are same speed
     units::turns_per_second_t motorSpeed = m_leftMotor.GetVelocity().GetValue();
-    units::meters_per_second_t ballSpeed = motorSpeed * (kFlywheelDiameter * kGearRatio) / (kFlyWheelVelocityGain * units::radian_t{1} * 4.0); 
+    units::meters_per_second_t ballSpeed = units::radians_per_second_t{motorSpeed} * (kFlywheelDiameter * kGearRatio) / (kFlyWheelVelocityGain * units::radian_t{1} * 4.0); 
 
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Actual Motor RPM", motorSpeed.value() * 60.0);
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Actual Ball Speed MPS", ballSpeed.value()); 
