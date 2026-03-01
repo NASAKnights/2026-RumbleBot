@@ -13,6 +13,8 @@
 #include <frc2/command/SubsystemBase.h>
 #include <numbers>
 #include <units/length.h>
+#include <units/time.h>
+#include <units/voltage.h>
 
 
 enum ResetState
@@ -68,8 +70,6 @@ class Climber : public frc2::SubsystemBase
     // ctre::phoenix6::hardware::TalonFX climberMotor2{ClimberConstants::ClimbMotorId2};
 
     frc::DigitalInput bottomLimit1{2};
-
-    ctre::phoenix6::controls::Follower climberFollower;
 
     wpi::log::DoubleLogEntry m_PositionLog;
     wpi::log::DoubleLogEntry m_PositionInchesLog;

@@ -3,8 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.ßöä
 #include "subsystems/Climber.h"
 
-Climber::Climber() : 
-    climberFollower(climberMotor1.GetDeviceID(), false)
+Climber::Climber()
 {
 
     // climberMotor2.SetControl(climberFollower);
@@ -15,11 +14,23 @@ Climber::Climber() :
     m_PositionInchesLog = wpi::log::DoubleLogEntry(log, "/Climber/PositionInches");
     m_StateLog = wpi::log::IntegerLogEntry(log, "/Climber/State");
     m_LimitSwitchLog = wpi::log::BooleanLogEntry(log, "/Climber/LimitSwitch");
+
+    ctre::phoenix6::configs::TalonFXConfiguration climbConfig;
+    ctre::phoenix6::configs::CurrentLimitsConfigs climbCurrentConfig;
+    climbCurrentConfig.SupplyCurrentLimitEnable = true;
+    climbCurrentConfig.SupplyCurrentLimit = units::ampere_t{80};
+    climbCurrentConfig.SupplyCurrentLowerLimit = units::ampere_t{35};
+    climbCurrentConfig.SupplyCurrentLowerTime = units::second_t{0.1};
+    climbConfig.CurrentLimits = climbCurrentConfig;
+
+    climberMotor1.SetNeutralMode(ctre::phoenix6::signals::NeutralModeValue::Brake);
+
+    
 }
 
 // This method will be called once per scheduler run
 void Climber::Periodic() {
-  bool atBottom = bottomLimit1.Get();
+  bool atBottom = !bottomLimit1.Get();
   if (atBottom) {
     climberMotor1.SetPosition(0_tr);
   }
@@ -44,7 +55,7 @@ void Climber::stopMotor() {
 }
 
 void Climber::Zero() {
-    if (!bottomLimit1.Get())
+    if (bottomLimit1.Get())
     {
         climberMotor1.Set(-0.1);
     }
@@ -63,7 +74,7 @@ units::length::inch_t Climber::GetPositionInches() {
 void Climber::extend() {
     // Going up (positive direction), but don't exceed 12 inches
     if (GetPositionInches() < ClimberConstants::MaxExtensionInches) {
-        climberMotor1.Set(0.5);
+        climberMotor1.Set(0.2);
     } else {
         climberMotor1.Set(0.0);
     }
@@ -71,25 +82,9 @@ void Climber::extend() {
 
 void Climber::retract() {
     // Going down, but don't pull past min retract inches
-    if (GetPositionInches() > ClimberConstants::MinRetractInches) {
-        climberMotor1.Set(-0.3);
+    if (bottomLimit1.Get() && GetPositionInches() > ClimberConstants::MinRetractInches) {
+        climberMotor1.Set(-0.2);
     } else {
         climberMotor1.Set(0.0);
     }
 }
-
-// void Climber::retractLimit_Pit(){
-    
-//     if (bottomLimit1.Get()) {
-//       climberMotor1.Set(0.1);
-//     }
-//     else {
-//       //climberMotor1.StopMotor();
-//       climberMotor1.Set(0);
-//       while(climberMotor1.SetPosition(units::angle::turn_t{0}) != ctre::phoenix::StatusCode::OK){};
-//     }
-// }
-
-// bool Climber::atBottomlimit() {
-//   return (!bottomLimit1.Get());
-// }

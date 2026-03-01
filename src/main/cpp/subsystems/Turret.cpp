@@ -279,7 +279,7 @@ units::degrees_per_second_t Turret::GetVelocity()
 
 void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle)
 {
-    ballLaunchAngle -= units::degree_t{8.0};
+    ballLaunchAngle -= units::degree_t{12.0};
 
     double ballLaunchAngleDegrees = double((ballLaunchAngle*180)/TurretConstants::kPI);
 

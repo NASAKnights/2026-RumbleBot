@@ -38,7 +38,7 @@ namespace Turret_ShooterConstants {
   static const int kSpindexerMotorId = 5;
   static const int kIndexerMotorId = 6;
 
-  static const double spindexerSpeed = 0.48;
+  static const double spindexerSpeed = 0.4;
   static const double indexerSpeed = -0.75;
   const double kPercentBoost = 0.0;
 }
@@ -84,10 +84,10 @@ private:
   // so that the exit velocity meets the specified speed 
   // Map of Distance (meters) to Multiplier Gain
   std::map<double, double> kFlyWheelGainMap = {
-      {1.0, 1.90},
+      {1.5, 1.60},
       {2.0, 1.95},
-      {3.0, 2.10},
-      {4.0, 2.25},
+      {3.0, 2.5}, //8 deg extra
+      {4.0, 2.35}, //10 deg extra
       {5.0, 2.40},
       {6.0, 2.55},
       {7.0, 2.65}
