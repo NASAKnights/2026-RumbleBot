@@ -277,9 +277,34 @@ units::degrees_per_second_t Turret::GetVelocity()
     return units::degrees_per_second_t{m_encoder.GetVelocity()};
 }
 
-void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle)
+void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::meter_t distance)
 {
-    ballLaunchAngle -= units::degree_t{12.0};
+    double hoodOffset = 0; // no offset
+    double distVal = distance.value();
+
+    if (!kHoodOffsetMap.empty()){
+        auto itHigh = kHoodOffsetMap.lower_bound(distVal);
+
+        if (itHigh == kHoodOffsetMap.begin()) {
+            // Distance is smaller than our first entry
+            hoodOffset = itHigh->second;
+        } else if (itHigh == kHoodOffsetMap.end()) {
+            // Distance is larger than our last entry
+            hoodOffset = std::prev(itHigh)->second;
+        } else {
+            // Interpolate between prev and itHigh
+            auto itLow = std::prev(itHigh);
+            double d1 = itLow->first;
+            double g1 = itLow->second;
+            double d2 = itHigh->first;
+            double g2 = itHigh->second;
+
+            double t = (distVal - d1) / (d2 - d1);
+            hoodOffset = g1 + t * (g2 - g1);
+        }
+    }
+
+    ballLaunchAngle -= units::degree_t{hoodOffset};
 
     double ballLaunchAngleDegrees = double((ballLaunchAngle*180)/TurretConstants::kPI);
 
@@ -399,13 +424,13 @@ void Turret::Periodic()
 
         // Hood/Launch Angle
         if(Flatten){
-            ChangeHoodAngle(TurretConstants::kHoodFlattenAngle);
+            ChangeHoodAngle(TurretConstants::kHoodFlattenAngle, m_BallisticDistance);
         }
         else if (allowShooting){
-            ChangeHoodAngle(m_BallisticLaunchAngle);
+            ChangeHoodAngle(m_BallisticLaunchAngle, m_BallisticDistance);
         }
         else {
-            ChangeHoodAngle(TurretConstants::kHoodFlattenAngle);
+            ChangeHoodAngle(TurretConstants::kHoodFlattenAngle, m_BallisticDistance);
         }
 
         bool override = frc::SmartDashboard::GetBoolean("/Turret/Hood/Angle Manual Override", false);

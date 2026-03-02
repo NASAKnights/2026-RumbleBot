@@ -334,7 +334,7 @@ void Robot::BindCommands()
         .OnTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_wrist.SetAngle(110.0); })));
     
     frc2::JoystickButton(&m_operatorController, 7)
-        .WhileTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_climber.Zero(); })))
+        .WhileTrue(frc2::CommandPtr(frc2::RunCommand([this] { m_climber.Zero(); })))
         .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_climber.stopMotor(); })));
 }
 

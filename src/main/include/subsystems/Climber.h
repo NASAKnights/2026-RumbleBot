@@ -37,7 +37,7 @@ namespace ClimberConstants
     // (Spool Diameter * PI) / Gear Reduction
     constexpr double InchesPerRotation = (SpoolDiameterInches * std::numbers::pi) / GearReduction;
     constexpr units::length::inch_t MinRetractInches{0.5};
-    constexpr units::length::inch_t MaxExtensionInches{12.0};
+    constexpr units::length::inch_t MaxExtensionInches{9.4};
 }
 
 class Climber : public frc2::SubsystemBase

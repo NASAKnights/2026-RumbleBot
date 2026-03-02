@@ -162,7 +162,7 @@ public:
     m_controller.Reset();
   }
 
-  void ChangeHoodAngle(units::angle::radian_t launchAngle);
+  void ChangeHoodAngle(units::angle::radian_t launchAngle, units::meter_t distance);
   void ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance);
   // void get_pigeon();
   units::degree_t GetMeasurement();
@@ -295,5 +295,15 @@ private:
   std::vector<double> TurretGoal = {0.0, 0.0, 0.0};
 
   bool allowShooting = false;
+
+  std::map<double, double> kHoodOffsetMap = {
+      {1.0, 0.},
+      {2.0, 0.},
+      {3.0, 8.}, //8 deg extra
+      {4.0, 10.}, //10 deg extra
+      {5.0, 13.},
+      {6.0, 16.},
+      {7.0, 19.}
+  };
 
 };
