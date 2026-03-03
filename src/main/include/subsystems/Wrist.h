@@ -35,7 +35,7 @@ namespace WristConstants
         DISABLED
     };
 
-    const double kAngleP = 0.05;
+    const double kAngleP = 0.15;
     const double kAngleI = 0.0;
     const double kAngleD = 0.0; // 0.0001
     const double kIZone = 1.0;
@@ -46,8 +46,8 @@ namespace WristConstants
     const int kAngleMotorId = 7;
 
     const auto kFFks = units::volt_t(0.43);                               // Volts static (motor)
-    const auto kFFkg = units::volt_t(0.29);                               // Volts
-    const auto kFFkV = units::unit_t<frc::ArmFeedforward::kv_unit>(3.0); // volts*s/rad
+    const auto kFFkg = units::volt_t(0.23);                               // Volts
+    const auto kFFkV = units::unit_t<frc::ArmFeedforward::kv_unit>(1.8); // volts*s/rad
     const auto kFFkA = units::unit_t<frc::ArmFeedforward::ka_unit>(0); // volts*s^2/rad
 
     const bool kWristEnableCurrentLimit = true;

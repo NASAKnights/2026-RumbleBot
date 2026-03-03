@@ -31,9 +31,9 @@ Climber::Climber()
 // This method will be called once per scheduler run
 void Climber::Periodic() {
   bool atBottom = !bottomLimit1.Get();
-  if (atBottom) {
-    climberMotor1.SetPosition(0_tr);
-  }
+//   if (atBottom) {
+//     climberMotor1.SetPosition(0_tr);
+//   }
 
   frc::SmartDashboard::PutBoolean("/Climber/AtBottom", atBottom);
   frc::SmartDashboard::PutNumber("/Climber/Position_Rotations", climberMotor1.GetPosition().GetValueAsDouble());

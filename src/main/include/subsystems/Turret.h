@@ -299,7 +299,7 @@ private:
   std::map<double, double> kHoodOffsetMap = {
       {1.0, 0.},
       {2.0, 0.},
-      {3.0, 8.}, //8 deg extra
+      {3.0, 4.}, //8 deg extra
       {4.0, 10.}, //10 deg extra
       {5.0, 13.},
       {6.0, 16.},

@@ -269,18 +269,9 @@ void Robot::BindCommands()
     //                                 { m_wrist.SetAngle(90);
     //                                 return; })));
                                 
+    
     frc2::JoystickButton(&m_driverController, 6)
-            .OnTrue(frc2::CommandPtr(
-                frc2::InstantCommand([this]
-                                    { m_wrist.SetAngle(3);
-                                    m_intake.Intake();
-                                    return; })))
-            .OnFalse(frc2::CommandPtr(
-            frc2::InstantCommand([this]
-                                 { return m_intake.StopIntake(); })));
-
-    frc2::JoystickButton(&m_driverController, 4)
-            .OnTrue(frc2::CommandPtr(
+    .OnTrue(frc2::CommandPtr(
                 frc2::InstantCommand([this]
                                     { m_turret.Flatten = true;
                                         m_wrist.SetAngle(3.0);
@@ -300,14 +291,14 @@ void Robot::BindCommands()
 
     // frc2::JoystickButton(&m_operatorController,1)
     //     .OnTrue(frc2::CommandPtr(
-    //         frc2::InstantCommand([this]
-    //                                     { double hoodAngle = 0.7;
-    //                                         return m_turret.ChangeHoodAngle(hoodAngle); }))) //0.004 is the smallest movement it can do
-    //     .OnFalse(frc2::CommandPtr(
-    //         frc2::InstantCommand([this]
-    //                                     { return m_turret.ChangeHoodAngle(0); })));
-
-    frc2::JoystickButton(&m_driverController, 2)
+        //         frc2::InstantCommand([this]
+        //                                     { double hoodAngle = 0.7;
+        //                                         return m_turret.ChangeHoodAngle(hoodAngle); }))) //0.004 is the smallest movement it can do
+        //     .OnFalse(frc2::CommandPtr(
+            //         frc2::InstantCommand([this]
+            //                                     { return m_turret.ChangeHoodAngle(0); })));
+            
+        frc2::JoystickButton(&m_operatorController, 2)
         .OnTrue(frc2::CommandPtr(frc2::InstantCommand(
             [this]
             {
@@ -315,23 +306,33 @@ void Robot::BindCommands()
                 return;
             })))
             .OnFalse(frc2::CommandPtr(frc2::InstantCommand(
-            [this]
-            {
-                m_turret.PauseShooting();
-                return;
-            })));
+                [this]
+        {
+            m_turret.PauseShooting();
+            return;
+        })));
 
-    frc2::POVButton(&m_operatorController, 0)
+        frc2::JoystickButton(&m_operatorController, 6)
+                .OnTrue(frc2::CommandPtr(
+                    frc2::InstantCommand([this]
+                                        { m_wrist.SetAngle(3);
+                                        m_intake.Intake();
+                                        return; })))
+                .OnFalse(frc2::CommandPtr(
+                frc2::InstantCommand([this]
+                                        { return m_intake.StopIntake(); })));
+        
+        frc2::POVButton(&m_operatorController, 0)
         .WhileTrue(Climb(&m_climber, true).ToPtr());
-    frc2::POVButton(&m_operatorController, 180)
+        frc2::POVButton(&m_operatorController, 180)
         .WhileTrue(Climb(&m_climber, false).ToPtr());
-
-    frc2::JoystickButton(&m_operatorController, 2)
+            
+    frc2::JoystickButton(&m_operatorController, 4)
         .WhileTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_intake.Outtake(); })))
         .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_intake.StopIntake(); })));
-
-    frc2::JoystickButton(&m_operatorController, 3)
-        .OnTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_wrist.SetAngle(110.0); })));
+        
+        frc2::JoystickButton(&m_operatorController, 3)
+        .OnTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_wrist.SetAngle(99.0); })));
     
     frc2::JoystickButton(&m_operatorController, 7)
         .WhileTrue(frc2::CommandPtr(frc2::RunCommand([this] { m_climber.Zero(); })))

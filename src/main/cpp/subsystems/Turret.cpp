@@ -307,6 +307,7 @@ void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::mete
     ballLaunchAngle -= units::degree_t{hoodOffset};
 
     double ballLaunchAngleDegrees = double((ballLaunchAngle*180)/TurretConstants::kPI);
+    
 
     double servoExtention = (-(2.94699*std::pow(10, -7)) * std::pow(ballLaunchAngleDegrees, 4) +
         (5.89093*std::pow(10, -5)) * std::pow(ballLaunchAngleDegrees, 3) -
@@ -317,8 +318,8 @@ void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::mete
     if (servoExtention > 0.8){
         servoExtention = 0.8;
     }
-    else if(servoExtention < 0.0){
-        servoExtention = 0.0;
+    else if(servoExtention < 0.05){
+        servoExtention = 0.05;
     }
     frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
     m_hood.Set(servoExtention);
@@ -582,18 +583,6 @@ void Turret::UpdateFieldVisuals()
 
 void Turret::UpdateTurretGoal(const frc::Pose2d &robotPose)
 {
-    // elif (Alliance = HubStatus)
-    // {
-    //     //able to shoot
-    //     //switch goal pose to hub
-    // } else {
-    //     //passing
-    //     if (robotPose IsIn bottom)
-    //     {
-    //         //switchgoal bot color
-    //     }   
-    // }
-
     frc::Pose2d turretPose = CalculateTurretPose(robotPose);
     units::length::meter_t TurretX = turretPose.X();
     units::length::meter_t TurretY = turretPose.Y();
@@ -631,6 +620,18 @@ void Turret::UpdateTurretGoal(const frc::Pose2d &robotPose)
         TurretGoal = TurretConstants::BottomRedCoords;
     }
     goalPublisher.Set(TurretGoal);
+
+        // elif (Alliance = HubStatus)
+    // {
+    //     //able to shoot
+    //     //switch goal pose to hub
+    // } else {
+    //     //passing
+    //     if (robotPose IsIn bottom)
+    //     {
+    //         //switchgoal bot color
+    //     }   
+    // }
     
 }
 
