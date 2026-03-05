@@ -62,6 +62,7 @@ class Climber : public frc2::SubsystemBase
     void stopMotor();
     // bool atBottomLimit();
     ResetState m_ClimberState;
+    bool atBot();
 
   private:
     // Components (e.g. motor controllers and sensors) should generally be

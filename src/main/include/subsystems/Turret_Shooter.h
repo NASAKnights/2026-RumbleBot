@@ -54,7 +54,7 @@ public:
   void SetSpeed(units::meters_per_second_t speed, units::meter_t distance); // speed of the ball leaving the shooter
   units::meters_per_second_t GetActualBallSpeed();
   units::turns_per_second_t GetActualMotorSpeed();
-  units::turns_per_second_t ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed);
+  units::turns_per_second_t ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed, units::meter_t distance);
 
   void RunSpindexerIndexer();
   void StopSpindexerIndexer();

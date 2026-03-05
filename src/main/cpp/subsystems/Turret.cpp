@@ -443,7 +443,7 @@ void Turret::Periodic()
             ChangeLaunchSpeed(m_BallisticLaunchSpeed, m_BallisticDistance);
             // units::turns_per_second_t commandMotorSpeed = 
             frc::SmartDashboard::PutNumber("/Turret/Shooter/Set Speed MPS", m_BallisticLaunchSpeed.value());
-            units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed);
+            units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed,m_BallisticDistance);
             if (m_turret_shooter.GetActualMotorSpeed() >= commandedMotorSpeed)
             {
                 m_turret_shooter.RunSpindexerIndexer();

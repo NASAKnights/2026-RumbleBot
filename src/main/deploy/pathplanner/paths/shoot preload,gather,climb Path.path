@@ -162,7 +162,7 @@
     "rotation": -89.42036071948054
   },
   "reversed": false,
-  "folder": null,
+  "folder": "OtherPaths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.5510832534938295

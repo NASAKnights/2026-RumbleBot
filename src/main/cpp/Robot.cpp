@@ -186,15 +186,15 @@ void Robot::CreateRobot()
     pathplanner::NamedCommands::registerCommand("Intake", Intake(&m_intake, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("FlattenMoonKnight", FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("Shoot", Shoot(&m_turret).ToPtr());
-    pathplanner::NamedCommands::registerCommand("Climb", Climb(&m_climber, true).ToPtr());
+    pathplanner::NamedCommands::registerCommand("ExtendClimb", Climb(&m_climber, true).ToPtr());
     pathplanner::NamedCommands::registerCommand("RetractClimb", Climb(&m_climber, false).ToPtr());
 
-    pathplanner::EventTrigger("Intake").WhileTrue(std::move(Intake(&m_intake, &m_wrist).ToPtr()));
-    pathplanner::EventTrigger("FlattenMoonKnight").WhileTrue(std::move(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr()));
-    pathplanner::EventTrigger("Shoot").WhileTrue(std::move(Shoot(&m_turret).ToPtr()));
+    // pathplanner::EventTrigger("Intake").WhileTrue(std::move(Intake(&m_intake, &m_wrist).ToPtr()));
+    // pathplanner::EventTrigger("FlattenMoonKnight").WhileTrue(std::move(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr()));
+    // pathplanner::EventTrigger("Shoot").WhileTrue(std::move(Shoot(&m_turret).ToPtr()));
 
-    pathplanner::EventTrigger("ExtendClimb").WhileTrue(std::move(Climb(&m_climber, true).ToPtr()));
-    pathplanner::EventTrigger("RetractClimb").WhileTrue(std::move(Climb(&m_climber, false).ToPtr()));
+    // pathplanner::EventTrigger("ExtendClimb").WhileTrue(std::move(Climb(&m_climber, true).ToPtr()));
+    // pathplanner::EventTrigger("RetractClimb").WhileTrue(std::move(Climb(&m_climber, false).ToPtr()));
 
     m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
         [this]
@@ -332,11 +332,25 @@ void Robot::BindCommands()
         .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_intake.StopIntake(); })));
         
         frc2::JoystickButton(&m_operatorController, 3)
-        .OnTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_wrist.SetAngle(99.0); })));
+        .OnTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_wrist.SetAngle(99.0);
+                                                                m_intake.Intake(); })))
+        .OnFalse(frc2::CommandPtr(
+                frc2::InstantCommand([this]
+                                        { return m_intake.StopIntake(); })));
     
     frc2::JoystickButton(&m_operatorController, 7)
         .WhileTrue(frc2::CommandPtr(frc2::RunCommand([this] { m_climber.Zero(); })))
         .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_climber.stopMotor(); })));
+
+    // frc2::Trigger operatorRightTrigger([&m_operatorController]
+    // {
+    //     if (m_operatorController.GetRawAxis(3) > 0.05) return true;
+    //     /* code */   
+    //     else return false;
+    // });
+
+
+    
 }
 
 void Robot::DisabledPeriodic()

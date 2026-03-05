@@ -173,7 +173,7 @@
     "rotation": -179.74431480719807
   },
   "reversed": false,
-  "folder": null,
+  "folder": "OtherPaths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

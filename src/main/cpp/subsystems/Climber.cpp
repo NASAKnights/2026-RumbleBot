@@ -88,3 +88,7 @@ void Climber::retract() {
         climberMotor1.Set(0.0);
     }
 }
+
+bool Climber::atBot() {
+    return !bottomLimit1.Get();
+}

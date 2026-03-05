@@ -162,10 +162,33 @@ units::turns_per_second_t Turret_Shooter::GetActualMotorSpeed()
     return m_leftMotor.GetVelocity().GetValue();
 }
 
-units::turns_per_second_t Turret_Shooter::ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed)
+units::turns_per_second_t Turret_Shooter::ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed, units::meter_t distance)
 {
     // Using first map entry as a safe status reference
     double baselineGain = kFlyWheelGainMap.empty() ? 1.95 : kFlyWheelGainMap.begin()->second;
+    double distVal = distance.value();
+    if (!kFlyWheelGainMap.empty()) {
+        auto itHigh = kFlyWheelGainMap.lower_bound(distVal);
+        
+        if (itHigh == kFlyWheelGainMap.begin()) {
+            // Distance is smaller than our first entry
+            baselineGain = itHigh->second;
+        } else if (itHigh == kFlyWheelGainMap.end()) {
+            // Distance is larger than our last entry
+            baselineGain = std::prev(itHigh)->second;
+        } else {
+            // Interpolate between prev and itHigh
+            auto itLow = std::prev(itHigh);
+            double d1 = itLow->first;
+            double g1 = itLow->second;
+            double d2 = itHigh->first;
+            double g2 = itHigh->second;
+
+            double t = (distVal - d1) / (d2 - d1);
+            baselineGain = g1 + t * (g2 - g1);
+        }
+    }
+
     return (baselineGain * ballSpeed * units::radian_t{1} * 4.0) / (kFlywheelDiameter * kGearRatio);
 }
 

@@ -14,6 +14,7 @@
 #include <frc/AnalogInput.h>
 #include "utils/POIGenerator.h"
 #include <photon/PhotonUtils.h>
+#include <memory>
 
 #include <ctre/phoenix6/CANBus.hpp>
 

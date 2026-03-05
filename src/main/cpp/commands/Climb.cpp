@@ -23,5 +23,13 @@ void Climb::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool Climb::IsFinished() {
+  // return false;
+  if (m_extend && m_climber->GetPositionInches() > ClimberConstants::MaxExtensionInches)
+  {
+    return true;
+  }
+  else if (!m_extend && (m_climber->atBot() || m_climber->GetPositionInches() < ClimberConstants::MinRetractInches)){
+    return true;
+  }
   return false;
 }
