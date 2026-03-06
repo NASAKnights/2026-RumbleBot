@@ -114,7 +114,7 @@ namespace TurretConstants
   // limit switch, such that 0 deg will point the turret directly away from the intake, 
   // orthogonal to the robot. 
   const units::angle::radian_t kminAngle = 34_deg;
-  const units::angle::radian_t kmaxAngle = 297_deg;
+  const units::angle::radian_t kmaxAngle = 290_deg;
   const units::angle::radian_t kmidPoint = (kmaxAngle - kminAngle)/2.0 + kminAngle;
 
 

@@ -38,8 +38,8 @@ namespace Turret_ShooterConstants {
   static const int kSpindexerMotorId = 5;
   static const int kIndexerMotorId = 6;
 
-  static const double spindexerSpeed = 0.25;
-  static const double indexerSpeed = -0.5;
+  static const double spindexerSpeed = 0.3;
+  static const double indexerSpeed = -0.85;
   const double kPercentBoost = 0.0;
 }
 
@@ -56,7 +56,7 @@ public:
   units::turns_per_second_t GetActualMotorSpeed();
   units::turns_per_second_t ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed, units::meter_t distance);
 
-  void RunSpindexerIndexer();
+  void RunSpindexerIndexer(units::meter_t distance);
   void StopSpindexerIndexer();
 
   void RunAll();

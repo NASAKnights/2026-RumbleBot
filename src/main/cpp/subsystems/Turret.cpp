@@ -446,7 +446,7 @@ void Turret::Periodic()
             units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed,m_BallisticDistance);
             if (m_turret_shooter.GetActualMotorSpeed() >= commandedMotorSpeed)
             {
-                m_turret_shooter.RunSpindexerIndexer();
+                m_turret_shooter.RunSpindexerIndexer(m_BallisticDistance);
             }
             
         }

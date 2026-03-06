@@ -108,10 +108,16 @@ void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed, units::meter
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Motor RPM", motorSpeed.value() * 60.0);
 }
 
-void Turret_Shooter::RunSpindexerIndexer() 
+void Turret_Shooter::RunSpindexerIndexer(units::meter_t distance) 
 {
-    m_indexerMotor.Set(Turret_ShooterConstants::indexerSpeed);
-    m_spindexerMotor.Set(Turret_ShooterConstants::spindexerSpeed);
+    if (distance < 4_m){
+        m_indexerMotor.Set(Turret_ShooterConstants::indexerSpeed);
+        m_spindexerMotor.Set(Turret_ShooterConstants::spindexerSpeed);
+    }
+    else {
+        m_indexerMotor.Set(0.25);
+        m_spindexerMotor.Set(-0.5);
+    }
 
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", true);
  }
