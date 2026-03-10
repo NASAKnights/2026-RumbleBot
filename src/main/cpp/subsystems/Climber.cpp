@@ -47,7 +47,9 @@ void Climber::Periodic() {
 }
 
 void Climber::moveMotor() {
-    climberMotor1.Set(0.1); // retracts when set to 0.1
+    // climberMotor1.Set(0.1); // retracts when set to 0.1
+    climberMotor1.Set(0.0); // retracts when set to 0.1
+
 }
 
 void Climber::stopMotor() {
@@ -57,7 +59,8 @@ void Climber::stopMotor() {
 void Climber::Zero() {
     if (bottomLimit1.Get())
     {
-        climberMotor1.Set(-0.1);
+        // climberMotor1.Set(-0.1);
+        climberMotor1.Set(0.0);
     }
     else 
     {
@@ -74,7 +77,8 @@ units::length::inch_t Climber::GetPositionInches() {
 void Climber::extend() {
     // Going up (positive direction), but don't exceed 12 inches
     if (GetPositionInches() < ClimberConstants::MaxExtensionInches) {
-        climberMotor1.Set(0.2);
+        // climberMotor1.Set(0.2);
+        climberMotor1.Set(0.0);
     } else {
         climberMotor1.Set(0.0);
     }
@@ -83,7 +87,8 @@ void Climber::extend() {
 void Climber::retract() {
     // Going down, but don't pull past min retract inches
     if (bottomLimit1.Get() && GetPositionInches() > ClimberConstants::MinRetractInches) {
-        climberMotor1.Set(-0.2);
+        // climberMotor1.Set(-0.2);
+        climberMotor1.Set(0.0);
     } else {
         climberMotor1.Set(0.0);
     }

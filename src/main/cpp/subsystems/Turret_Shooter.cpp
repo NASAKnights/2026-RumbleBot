@@ -115,8 +115,8 @@ void Turret_Shooter::RunSpindexerIndexer(units::meter_t distance)
         m_spindexerMotor.Set(Turret_ShooterConstants::spindexerSpeed);
     }
     else {
-        m_indexerMotor.Set(0.25);
-        m_spindexerMotor.Set(-0.5);
+        m_indexerMotor.Set(-0.25);
+        m_spindexerMotor.Set(0.5);
     }
 
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", true);
@@ -128,6 +128,18 @@ void Turret_Shooter::StopSpindexerIndexer()
     m_spindexerMotor.Set(0.0);
 
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
+}
+
+void Turret_Shooter::ChangeMapValue(units::meter_t distance, double newOffsetValue){
+    double distVal = distance.value();
+
+    if (kFlyWheelGainMap.empty()){
+        auto itHigh = kFlyWheelGainMap.lower_bound(distVal);
+        //TODO: Make kMaxHoodAngle and kMinHoodAngle
+        if(!itHigh->second + newOffsetValue > 3 || !itHigh->second + newOffsetValue < 0){
+            itHigh->second += newOffsetValue;
+        } 
+    }
 }
 
 void Turret_Shooter::StopMotors()
@@ -152,6 +164,14 @@ void Turret_Shooter::StopAll()
     SetSpeed(units::meters_per_second_t{0.0}, 0.0_m);
     m_indexerMotor.Set(0.0);
     m_spindexerMotor.Set(0.0);
+}
+
+std::map<double, double> Turret_Shooter::GetCurrentMapState() {
+    return kFlyWheelGainMap;
+}
+
+void Turret_Shooter::SetCurrentMapState(std::map<double, double> inputCurrentState) {
+    kFlyWheelGainMap = inputCurrentState;
 }
 
 units::meters_per_second_t Turret_Shooter::GetActualBallSpeed()

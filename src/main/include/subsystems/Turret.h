@@ -69,7 +69,7 @@ namespace TurretConstants
     GROUND
   };
 
-  const double kAngleP = 0.2;
+  const double kAngleP = 0.3;
   const double kAngleI = 0.00;
   const double kAngleD = 0.0; // 0.0001
   const double kIZone = 0.0;
@@ -113,7 +113,7 @@ namespace TurretConstants
   // value.  kminAngle should therefore be set based on the physical location of the
   // limit switch, such that 0 deg will point the turret directly away from the intake, 
   // orthogonal to the robot. 
-  const units::angle::radian_t kminAngle = 34_deg;
+  const units::angle::radian_t kminAngle = 35_deg; //Needs to increase to fix skew to the right
   const units::angle::radian_t kmaxAngle = 275_deg;
   const units::angle::radian_t kmidPoint = (kmaxAngle - kminAngle)/2.0 + kminAngle;
 
@@ -164,12 +164,19 @@ public:
 
   void ChangeHoodAngle(units::angle::radian_t launchAngle, units::meter_t distance);
   void ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance);
+
+  std::map<double, double> GetCurrentMapState();
+  void ChangeMapValue(units::meter_t distance, double newOffsetValue);
+
+  void SetCurrentMapState(std::map<double, double> inputCurrentState);
+
   // void get_pigeon();
   units::degree_t GetMeasurement();
   units::degrees_per_second_t GetVelocity();
   TurretConstants::TurretState GetState();
   bool isTracking = true;
   bool Flatten = false;
+  Turret_Shooter m_turret_shooter; //made public need to access in robot.cpp
   
   // units::time::second_t time_brake_released;
 
@@ -255,7 +262,6 @@ private:
 
   frc::Servo m_hood{7};
 
-  Turret_Shooter m_turret_shooter;
   
   frc::ArmFeedforward m_feedforward;
   wpi::log::DoubleLogEntry m_AngleLog;
@@ -298,9 +304,10 @@ private:
 
   std::map<double, double> kHoodOffsetMap = {
       {1.0, 0.},
-      {2.0, 0.},
-      {3.0, 4.}, //8 deg extra
-      {4.0, 10.}, //10 deg extra
+      {2.0, 4.},
+      {2.5, 7.},
+      {3.0, 10.}, //8 deg extra
+      {4.0, 12.}, //10 deg extra
       {5.0, 13.},
       {6.0, 16.},
       {7.0, 19.}

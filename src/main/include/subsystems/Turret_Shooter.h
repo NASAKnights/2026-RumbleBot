@@ -38,7 +38,7 @@ namespace Turret_ShooterConstants {
   static const int kSpindexerMotorId = 5;
   static const int kIndexerMotorId = 6;
 
-  static const double spindexerSpeed = 0.3;
+  static const double spindexerSpeed = 0.25;
   static const double indexerSpeed = -0.85;
   const double kPercentBoost = 0.0;
 }
@@ -58,6 +58,9 @@ public:
 
   void RunSpindexerIndexer(units::meter_t distance);
   void StopSpindexerIndexer();
+  void ChangeMapValue( units::meter_t distance, double newOffsetValue);
+  std::map<double, double> GetCurrentMapState();
+  void SetCurrentMapState(std::map<double, double> inputCurrentState); // Should only be used when saving!! Please do not write to the maps unless you know for certain this is what you want to do!
 
   void RunAll();
   void StopAll();
@@ -84,13 +87,14 @@ private:
   // so that the exit velocity meets the specified speed 
   // Map of Distance (meters) to Multiplier Gain
   std::map<double, double> kFlyWheelGainMap = {
-      {1.5, 1.0},
-      {2.0, 1.2},
-      {3.0, 1.4}, //8 deg extra
-      {4.0, 2.0}, //10 deg extra
-      {5.0, 2.0},
-      {6.0, 2.0},
-      {7.0, 2.0}
+      {1.5, 1.4},
+      {2.0, 1.75},
+      {2.5, 2.25}, // 
+      {3.0, 2.5}, // 
+      {4.0, 2.5}, // up
+      {5.0, 2.8},
+      {6.0, 3},
+      {7.0, 3.2}
   };
 
   bool kEnableCurrentLimit = true;

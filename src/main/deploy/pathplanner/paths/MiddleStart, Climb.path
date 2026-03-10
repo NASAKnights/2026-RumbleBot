@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 1.565334697558269,
-        "y": 4.225636098779135
+        "x": 1.52,
+        "y": 4.22
       },
       "prevControl": {
-        "x": 1.8153185295214365,
-        "y": 4.228479293638942
+        "x": 1.77,
+        "y": 4.22
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BlueTopClimb"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 2.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,

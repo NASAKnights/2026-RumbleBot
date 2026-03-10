@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "only climb  Path"
+            "pathName": "TopStart, Shoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Climb"
+            "name": "Shoot"
           }
         }
       ]

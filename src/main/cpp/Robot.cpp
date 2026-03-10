@@ -20,19 +20,20 @@ void Robot::RobotInit()
     m_EnergyLog = wpi::log::DoubleLogEntry(log, "/PDP/Energy");
     m_TemperatureLog = wpi::log::DoubleLogEntry(log, "/PDP/Temperature");
     m_BatteryLog = wpi::log::DoubleLogEntry(log, "Robot/Battery");
-
+    
     frc::SmartDashboard::PutString("POIName", "");
     frc::SmartDashboard::PutData("AddPOI", addPOICommand.get());
     frc::SmartDashboard::PutData("RemovePOI", removePOICommand.get());
     frc::SmartDashboard::PutData("Set", autoWheelOffsetsCommand.get());
     frc::SmartDashboard::PutNumber("hoodAngle", 1.0);
-
+    
     autoChooser = pathplanner::AutoBuilder::buildAutoChooser();
 
     frc::SmartDashboard::PutData("Auto Chooser", &autoChooser);
-
+    
     auto sdTable = networkTableInst.GetTable("SmartDashboard");
     modelPosePublisher = sdTable->GetStructArrayTopic<frc::Pose3d>("ModelPoses").Publish();
+    LoadCSVToMap(Robot::csvName);
 }
 
 // This function is called every 20 ms
@@ -65,10 +66,29 @@ void Robot::DisabledInit()
         m_swerveDrive.ResetPose(frc::Pose2d());
         m_swerveDrive.ResetDriveEncoders();
     }
+
+    std::ofstream file(csvName);
+
+    // The CSV is formated as such: distance, currentSpeed, currentAngle
+
+    if (!file.is_open()) {
+        // frc::err << "FAILED TO OPEN OR CREATE FILE, PANIK \n";
+        return;
+    }
+
+    std::map<double, double> turretMap = m_turret.GetCurrentMapState();
+    std::map<double, double> hoodMap = m_turret.m_turret_shooter.GetCurrentMapState();
+
+    for(int i = 0; i < turretMap.size(); i++){
+        file << turretMap[0] << "," << turretMap[1] << "," << hoodMap[2];
+    }
+
+    file.close();
 }
 
 void Robot::SetAutonomousCommand(std::string a)
 {
+        
 }
 
 void Robot::AutonomousInit()
@@ -297,8 +317,20 @@ void Robot::BindCommands()
         //     .OnFalse(frc2::CommandPtr(
             //         frc2::InstantCommand([this]
             //                                     { return m_turret.ChangeHoodAngle(0); })));
-            
-        frc2::JoystickButton(&m_operatorController, 2)
+        
+        frc2::JoystickButton(&m_operatorController, 1)
+                .OnTrue(frc2::CommandPtr(
+                    frc2::InstantCommand([this]
+                                        { m_wrist.SetAngle(45);
+                                        m_intake.Intake();
+                                        return; })))
+                .OnFalse(frc2::CommandPtr(
+                frc2::InstantCommand([this]
+                                        { m_wrist.SetAngle(3);
+                                            m_intake.StopIntake(); 
+                                        return;})));
+
+        frc2::JoystickButton(&m_operatorController, 5)
         .OnTrue(frc2::CommandPtr(frc2::InstantCommand(
             [this]
             {
@@ -322,10 +354,10 @@ void Robot::BindCommands()
                 frc2::InstantCommand([this]
                                         { return m_intake.StopIntake(); })));
         
-        frc2::POVButton(&m_operatorController, 0)
-        .WhileTrue(Climb(&m_climber, true).ToPtr());
-        frc2::POVButton(&m_operatorController, 180)
-        .WhileTrue(Climb(&m_climber, false).ToPtr());
+        // frc2::POVButton(&m_operatorController, 0)
+        // .WhileTrue(Climb(&m_climber, true).ToPtr());
+        // frc2::POVButton(&m_operatorController, 180)
+        // .WhileTrue(Climb(&m_climber, false).ToPtr());
             
     frc2::JoystickButton(&m_operatorController, 4)
         .WhileTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_intake.Outtake(); })))
@@ -337,10 +369,34 @@ void Robot::BindCommands()
         .OnFalse(frc2::CommandPtr(
                 frc2::InstantCommand([this]
                                         { return m_intake.StopIntake(); })));
-    
-    frc2::JoystickButton(&m_operatorController, 7)
-        .WhileTrue(frc2::CommandPtr(frc2::RunCommand([this] { m_climber.Zero(); })))
-        .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_climber.stopMotor(); })));
+    std::string targetDistAccess = "/Turret/Ballistics/Target Distance";
+    frc2::POVButton(&m_operatorController, 0)
+                    .OnTrue(
+                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                            m_turret.ChangeMapValue(units::meter_t{frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0.0)}, 1.);
+                        })));
+
+    frc2::POVButton(&m_operatorController, 180)
+                    .OnTrue(
+                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                            m_turret.ChangeMapValue(units::meter_t{frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0.0)}, -1.);
+                        }))
+                    )
+                    .OnTrue(
+                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                            m_turret.m_turret_shooter.ChangeMapValue(units::meter_t{frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 1.0)}, 0.1);
+                        }))
+                    );
+
+    frc2::POVButton(&m_operatorController, 270)
+                    .OnTrue(
+                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                            m_turret.m_turret_shooter.ChangeMapValue(units::meter_t{frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 1.0)}, -0.1);
+                        }))
+                    );
+    // frc2::JoystickButton(&m_operatorController, 7)
+    //     .WhileTrue(frc2::CommandPtr(frc2::RunCommand([this] { m_climber.Zero(); })))
+    //     .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_climber.stopMotor(); })));
 
     // frc2::Trigger operatorRightTrigger([&m_operatorController]
     // {
@@ -455,7 +511,57 @@ std::string Robot::CheckActiveHub()
 
 }
 
+void Robot::LoadCSVToMap(const std::string& filename) {
+    std::map<double, double> flyWheelSpeedMap, hoodAngleMap;
+    int nrows = 0;
+    std::ifstream file(filename);
+    std::string line;
 
+    
+    while (std::getline(file, line)) {
+        nrows++;
+        std::stringstream ss(line);
+        std::string distance, flywheelSpeed, hoodAngle;
+        
+        std::getline(ss, distance, ',');
+        std::getline(ss, flywheelSpeed, ',');
+        std::getline(ss, hoodAngle, ',');
+        
+        double key = std::stod(distance);
+        double flyWheelvalue = std::stod(flywheelSpeed);
+        double hoodValue = std::stod(hoodAngle);
+        
+        flyWheelSpeedMap.insert({key, flyWheelvalue});
+        hoodAngleMap.insert({key, hoodValue});
+    }
+        nrows++;
+        std::stringstream ss(line);
+        std::string distance, flywheelSpeed, hoodAngle;
+        
+    
+    if(nrows == 0) {
+        std::ofstream outFile(csvName);
+
+    // The CSV is formated as such: distance, currentSpeed, currentAngle
+
+        if (!outFile.is_open()) {
+            // frc::err << "FAILED TO OPEN OR CREATE FILE, PANIK \n";
+            return;
+        }
+
+        file.close();
+        outFile << " 1.5, 1.4,  0.0  \n 2.0, 1.75, 4.0 \n 2.5, 2.25, 7.0 \n 3.0, 2.5, 10.0 \n 4.0, 2.5, 12.0 \n 5.0, 2.8, 13.0 \n 6.0, 3, 16.0 \n 7.0, 3.2 19.0 \n";
+
+        outFile.close();
+
+        LoadCSVToMap(csvName);
+    }
+
+
+    m_turret.m_turret_shooter.SetCurrentMapState(hoodAngleMap);
+    m_turret.SetCurrentMapState(flyWheelSpeedMap);
+    file.close();
+}
 
 
 #ifndef RUNNING_FRC_TESTS
