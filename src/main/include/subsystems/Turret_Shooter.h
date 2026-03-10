@@ -58,7 +58,8 @@ public:
 
   void RunSpindexerIndexer(units::meter_t distance);
   void StopSpindexerIndexer();
-  void ChangeMapValue( units::meter_t distance, double newOffsetValue);
+  void ChangeMapValue(double newOffsetValue);
+  
   std::map<double, double> GetCurrentMapState();
   void SetCurrentMapState(std::map<double, double> inputCurrentState); // Should only be used when saving!! Please do not write to the maps unless you know for certain this is what you want to do!
 

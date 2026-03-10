@@ -130,10 +130,11 @@ void Turret_Shooter::StopSpindexerIndexer()
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
 }
 
-void Turret_Shooter::ChangeMapValue(units::meter_t distance, double newOffsetValue){
-    double distVal = distance.value();
+void Turret_Shooter::ChangeMapValue(double newOffsetValue){
+    frc::SmartDashboard::PutNumber("HELP/HELP", 10000000);
+    double distVal = frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0);
 
-    if (kFlyWheelGainMap.empty()){
+    if (!kFlyWheelGainMap.empty()){
         auto itHigh = kFlyWheelGainMap.lower_bound(distVal);
         //TODO: Make kMaxHoodAngle and kMinHoodAngle
         if(!itHigh->second + newOffsetValue > 3 || !itHigh->second + newOffsetValue < 0){

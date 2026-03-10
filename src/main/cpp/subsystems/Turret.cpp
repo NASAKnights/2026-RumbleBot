@@ -325,10 +325,11 @@ void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::mete
     m_hood.Set(servoExtention);
 }
 
-void Turret::ChangeMapValue( units::meter_t distance, double newOffsetValue){
-    double distVal = distance.value();
+void Turret::ChangeMapValue(double newOffsetValue){
+    frc::SmartDashboard::PutNumber("HELP/HELP", 1);
+    double distVal = frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0);
 
-    if (kHoodOffsetMap.empty()){
+    if (!kHoodOffsetMap.empty()){
         auto itHigh = kHoodOffsetMap.lower_bound(distVal);
         //TODO: Make kMaxHoodAngle and kMinHoodAngle
         if(!itHigh->second + newOffsetValue > 19 || !itHigh->second + newOffsetValue < 0){
@@ -557,12 +558,12 @@ void Turret::HoldPosition()
     }
 }
 
-std::map<double, double> Turret::GetCurrentMapState() {
-    return Turret::kHoodOffsetMap;
+std::map<double, double> Turret::GetCurrentMapState () {
+    return kHoodOffsetMap;
 }
 
 void Turret::SetCurrentMapState(std::map<double, double> inputCurrentState) {
-    Turret::kHoodOffsetMap = inputCurrentState;
+    kHoodOffsetMap = inputCurrentState;
 }
 
 void Turret::UpdateFieldVisuals()

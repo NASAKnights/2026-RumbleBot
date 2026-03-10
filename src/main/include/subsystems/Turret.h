@@ -166,7 +166,7 @@ public:
   void ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance);
 
   std::map<double, double> GetCurrentMapState();
-  void ChangeMapValue(units::meter_t distance, double newOffsetValue);
+  void ChangeMapValue(double newOffsetValue);
 
   void SetCurrentMapState(std::map<double, double> inputCurrentState);
 

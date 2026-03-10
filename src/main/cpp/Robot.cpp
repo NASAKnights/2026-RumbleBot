@@ -33,7 +33,6 @@ void Robot::RobotInit()
     
     auto sdTable = networkTableInst.GetTable("SmartDashboard");
     modelPosePublisher = sdTable->GetStructArrayTopic<frc::Pose3d>("ModelPoses").Publish();
-    LoadCSVToMap(Robot::csvName);
 }
 
 // This function is called every 20 ms
@@ -67,6 +66,8 @@ void Robot::DisabledInit()
         m_swerveDrive.ResetDriveEncoders();
     }
 
+    LoadCSVToMap(Robot::csvName);
+
     std::ofstream file(csvName);
 
     // The CSV is formated as such: distance, currentSpeed, currentAngle
@@ -79,10 +80,11 @@ void Robot::DisabledInit()
     std::map<double, double> turretMap = m_turret.GetCurrentMapState();
     std::map<double, double> hoodMap = m_turret.m_turret_shooter.GetCurrentMapState();
 
-    for(int i = 0; i < turretMap.size(); i++){
-        file << turretMap[0] << "," << turretMap[1] << "," << hoodMap[2];
+    for (const auto& [distance, speed] : turretMap)
+    {
+        double hood = hoodMap[distance];
+        file << distance << "," << speed << "," << hood << "\n";
     }
-
     file.close();
 }
 
@@ -369,29 +371,32 @@ void Robot::BindCommands()
         .OnFalse(frc2::CommandPtr(
                 frc2::InstantCommand([this]
                                         { return m_intake.StopIntake(); })));
-    std::string targetDistAccess = "/Turret/Ballistics/Target Distance";
+
     frc2::POVButton(&m_operatorController, 0)
                     .OnTrue(
                         frc2::CommandPtr(frc2::InstantCommand([this] {
-                            m_turret.ChangeMapValue(units::meter_t{frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0.0)}, 1.);
-                        })));
+                            m_turret.ChangeMapValue(1.0);
+                        }))
+                    );
 
     frc2::POVButton(&m_operatorController, 180)
                     .OnTrue(
                         frc2::CommandPtr(frc2::InstantCommand([this] {
-                            m_turret.ChangeMapValue(units::meter_t{frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0.0)}, -1.);
+                            return m_turret.ChangeMapValue(-1.0);
                         }))
-                    )
+                    );
+
+    frc2::POVButton(&m_operatorController, 90)
                     .OnTrue(
                         frc2::CommandPtr(frc2::InstantCommand([this] {
-                            m_turret.m_turret_shooter.ChangeMapValue(units::meter_t{frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 1.0)}, 0.1);
+                            return m_turret.m_turret_shooter.ChangeMapValue(0.1);
                         }))
                     );
 
     frc2::POVButton(&m_operatorController, 270)
                     .OnTrue(
                         frc2::CommandPtr(frc2::InstantCommand([this] {
-                            m_turret.m_turret_shooter.ChangeMapValue(units::meter_t{frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 1.0)}, -0.1);
+                            return m_turret.m_turret_shooter.ChangeMapValue( -0.1);
                         }))
                     );
     // frc2::JoystickButton(&m_operatorController, 7)
@@ -512,14 +517,30 @@ std::string Robot::CheckActiveHub()
 }
 
 void Robot::LoadCSVToMap(const std::string& filename) {
-    std::map<double, double> flyWheelSpeedMap, hoodAngleMap;
-    int nrows = 0;
+    if(!std::filesystem::exists(filename))
+    {
+        std::ofstream createFile(filename);
+
+        createFile <<
+        "1.5,1.4,0.0\n"
+        "2.0,1.75,4.0\n"
+        "2.5,2.25,7.0\n"
+        "3.0,2.5,10.0\n"
+        "4.0,2.5,12.0\n"
+        "5.0,2.8,13.0\n"
+        "6.0,3.0,16.0\n"
+        "7.0,3.2,19.0\n";
+
+        createFile.close();
+    }
+
     std::ifstream file(filename);
+
     std::string line;
 
+    std::map<double, double> hoodAngleMap, flyWheelSpeedMap;
     
     while (std::getline(file, line)) {
-        nrows++;
         std::stringstream ss(line);
         std::string distance, flywheelSpeed, hoodAngle;
         
@@ -534,30 +555,7 @@ void Robot::LoadCSVToMap(const std::string& filename) {
         flyWheelSpeedMap.insert({key, flyWheelvalue});
         hoodAngleMap.insert({key, hoodValue});
     }
-        nrows++;
-        std::stringstream ss(line);
-        std::string distance, flywheelSpeed, hoodAngle;
-        
     
-    if(nrows == 0) {
-        std::ofstream outFile(csvName);
-
-    // The CSV is formated as such: distance, currentSpeed, currentAngle
-
-        if (!outFile.is_open()) {
-            // frc::err << "FAILED TO OPEN OR CREATE FILE, PANIK \n";
-            return;
-        }
-
-        file.close();
-        outFile << " 1.5, 1.4,  0.0  \n 2.0, 1.75, 4.0 \n 2.5, 2.25, 7.0 \n 3.0, 2.5, 10.0 \n 4.0, 2.5, 12.0 \n 5.0, 2.8, 13.0 \n 6.0, 3, 16.0 \n 7.0, 3.2 19.0 \n";
-
-        outFile.close();
-
-        LoadCSVToMap(csvName);
-    }
-
-
     m_turret.m_turret_shooter.SetCurrentMapState(hoodAngleMap);
     m_turret.SetCurrentMapState(flyWheelSpeedMap);
     file.close();
