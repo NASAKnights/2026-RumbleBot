@@ -326,7 +326,6 @@ void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::mete
 }
 
 void Turret::ChangeMapValue(double newOffsetValue){
-    frc::SmartDashboard::PutNumber("HELP/HELP", 1);
     double distVal = frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0);
 
     if (!kHoodOffsetMap.empty()){

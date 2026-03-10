@@ -66,26 +66,23 @@ void Robot::DisabledInit()
         m_swerveDrive.ResetDriveEncoders();
     }
 
-    LoadCSVToMap(Robot::csvName);
+    auto turretMap = m_turret.GetCurrentMapState();
+    auto hoodMap = m_turret.m_turret_shooter.GetCurrentMapState();
 
-    std::ofstream file(csvName);
+    if(!firstBoot){
+        std::ofstream writeFile(csvName);
 
-    // The CSV is formated as such: distance, currentSpeed, currentAngle
-
-    if (!file.is_open()) {
-        // frc::err << "FAILED TO OPEN OR CREATE FILE, PANIK \n";
-        return;
+        for (const auto& [distance, speed] : turretMap)
+        {
+            double hood = hoodMap[distance];
+            writeFile << distance << "," << speed << "," << hood << "\n";
+        }
+        writeFile.close();
     }
-
-    std::map<double, double> turretMap = m_turret.GetCurrentMapState();
-    std::map<double, double> hoodMap = m_turret.m_turret_shooter.GetCurrentMapState();
-
-    for (const auto& [distance, speed] : turretMap)
-    {
-        double hood = hoodMap[distance];
-        file << distance << "," << speed << "," << hood << "\n";
+    else {
+        LoadCSVToMap(csvName);
     }
-    file.close();
+    firstBoot = false;
 }
 
 void Robot::SetAutonomousCommand(std::string a)
@@ -533,7 +530,7 @@ void Robot::LoadCSVToMap(const std::string& filename) {
 
         createFile.close();
     }
-
+    
     std::ifstream file(filename);
 
     std::string line;

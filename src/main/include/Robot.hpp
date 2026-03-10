@@ -140,7 +140,7 @@ private:
 
     frc2::CommandPtr autoWheelOffsetsCommand = AutoWheelOffsets(&m_swerveDrive).ToPtr().IgnoringDisable(true);
 
-
+    bool firstBoot = true;
     
     // Robot Container methods
     void CreateRobot();
