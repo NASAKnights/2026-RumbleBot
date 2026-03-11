@@ -41,6 +41,9 @@ namespace Turret_ShooterConstants {
   static const double spindexerSpeed = 0.25;
   static const double indexerSpeed = -0.85;
   const double kPercentBoost = 0.0;
+
+  const double kMinLaunchRPS = 2000;
+
 }
 
 class Turret_Shooter : public frc2::SubsystemBase
@@ -55,10 +58,12 @@ public:
   units::meters_per_second_t GetActualBallSpeed();
   units::turns_per_second_t GetActualMotorSpeed();
   units::turns_per_second_t ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed, units::meter_t distance);
+  units::turns_per_second_t GetMotorSpeedFromMap(units::meter_t distance);
+  void SetMotorSpeed(units::turns_per_second_t speed);
 
   void RunSpindexerIndexer(units::meter_t distance);
   void StopSpindexerIndexer();
-  void ChangeMapValue(double newOffsetValue);
+  void ChangeSpeedMapValue(double newOffsetValue);
   
   std::map<double, double> GetCurrentMapState();
   void SetCurrentMapState(std::map<double, double> inputCurrentState); // Should only be used when saving!! Please do not write to the maps unless you know for certain this is what you want to do!
@@ -97,6 +102,18 @@ private:
       {6.0, 3},
       {7.0, 3.2}
   };
+
+  std::map<double, double> kFlywheelSpeedMap = {
+      {1.5, 10},
+      {2.0, 50},
+      {2.5, 70}, // 
+      {3.0, 100}, // 
+      {4.0, 110}, // up
+      {5.0, 120},
+      {6.0, 120},
+      {7.0, 120} // units turns per second
+  };
+
 
   bool kEnableCurrentLimit = true;
   units::ampere_t kPeakCurrentLimit = units::ampere_t{53};

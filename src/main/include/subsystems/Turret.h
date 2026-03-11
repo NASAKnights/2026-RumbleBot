@@ -163,10 +163,12 @@ public:
   }
 
   void ChangeHoodAngle(units::angle::radian_t launchAngle, units::meter_t distance);
+  void ChangeHoodAngle(units::meter_t distance);
+  void SetHood(double extension);
   void ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance);
 
   std::map<double, double> GetCurrentMapState();
-  void ChangeMapValue(double newOffsetValue);
+  void ChangeHoodMapValue(double newValue);
 
   void SetCurrentMapState(std::map<double, double> inputCurrentState);
 
@@ -311,6 +313,17 @@ private:
       {5.0, 13.},
       {6.0, 16.},
       {7.0, 19.}
+  };
+
+  std::map<double, double> kHoodAngleMap = {
+      {1.0, 70.},
+      {2.0, 65},
+      {2.5, 60},
+      {3.0, 55.}, //8 deg extra
+      {4.0, 50.}, //10 deg extra
+      {5.0, 45.},
+      {6.0, 40.},
+      {7.0, 35.}
   };
 
 };

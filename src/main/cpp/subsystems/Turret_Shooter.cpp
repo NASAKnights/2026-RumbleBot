@@ -66,6 +66,13 @@ Turret_Shooter::Turret_Shooter()
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
 }
 
+void Turret_Shooter::SetMotorSpeed(units::turns_per_second_t motorSpeed) {
+    auto motorRequest = ctre::phoenix6::controls::VelocityVoltage{motorSpeed};
+    ctre::phoenix::StatusCode leftStatus = m_leftMotor.SetControl(motorRequest.WithVelocity(motorSpeed).WithSlot(0));
+    ctre::phoenix::StatusCode rightStatus = m_rightMotor.SetControl(motorRequest.WithVelocity(motorSpeed).WithSlot(0));
+    frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Motor RPS", motorSpeed.value());
+}
+
 void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed, units::meter_t distance) {
     double distVal = distance.value();
     double kFlyWheelVelocityGain = 1.95; // Default fallback
@@ -97,7 +104,7 @@ void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed, units::meter
     units::turns_per_second_t motorSpeed = (kFlyWheelVelocityGain * ballSpeed * units::radian_t{1} * 4.0) / (kFlywheelDiameter * kGearRatio);
 
     //Spin motor 10% faster than needed to account for loss of speed when shooting rapidly
-    motorSpeed += motorSpeed * Turret_ShooterConstants::kPercentBoost;
+    // motorSpeed += motorSpeed * Turret_ShooterConstants::kPercentBoost;
     
     auto motorRequest = ctre::phoenix6::controls::VelocityVoltage{motorSpeed};
     ctre::phoenix::StatusCode leftStatus = m_leftMotor.SetControl(motorRequest.WithVelocity(motorSpeed).WithSlot(0));
@@ -130,14 +137,14 @@ void Turret_Shooter::StopSpindexerIndexer()
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
 }
 
-void Turret_Shooter::ChangeMapValue(double newOffsetValue){
+void Turret_Shooter::ChangeSpeedMapValue(double newValue){
     double distVal = frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0);
 
-    if (!kFlyWheelGainMap.empty()){
-        auto itHigh = kFlyWheelGainMap.lower_bound(distVal);
+    if (!kFlywheelSpeedMap.empty()){
+        auto itHigh = kFlywheelSpeedMap.lower_bound(distVal);
         //TODO: Make kMaxShooterGain and kMinShooterGain
-        if(!itHigh->second + newOffsetValue > 3 || !itHigh->second + newOffsetValue < 0){
-            itHigh->second += newOffsetValue;
+        if(!(itHigh->second + newValue > 125) || !(itHigh->second + newValue < 10)){
+            itHigh->second += newValue;
         } 
     }
 }
@@ -145,9 +152,10 @@ void Turret_Shooter::ChangeMapValue(double newOffsetValue){
 void Turret_Shooter::StopMotors()
 {
     auto motorRequest = ctre::phoenix6::controls::VelocityVoltage{0_tps};
+    auto motorVoltageRequest = ctre::phoenix6::controls::VoltageOut{0_V};
     auto motorSpeed = units::radians_per_second_t{0.0};
-    m_leftMotor.SetControl(motorRequest.WithVelocity(motorSpeed));
-    m_rightMotor.SetControl(motorRequest.WithVelocity(motorSpeed));
+    m_leftMotor.SetControl(motorVoltageRequest.WithOutput(0_V));
+    m_rightMotor.SetControl(motorVoltageRequest.WithOutput(0_V));
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Ball Speed MPS", 0.0);
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Commanded Motor RPM", 0.0);
 }
@@ -216,6 +224,36 @@ units::turns_per_second_t Turret_Shooter::ConvertBallSpeed2Motor(units::meters_p
     }
 
     return (baselineGain * ballSpeed * units::radian_t{1} * 4.0) / (kFlywheelDiameter * kGearRatio);
+}
+
+units::turns_per_second_t Turret_Shooter::GetMotorSpeedFromMap(units::meter_t distance)
+{
+    // Using first map entry as a safe status reference
+
+    double motorSpeed = kFlywheelSpeedMap.empty() ? Turret_ShooterConstants::kMinLaunchRPS : kFlywheelSpeedMap.begin()->second;
+    double distVal = distance.value();
+    if (!kFlywheelSpeedMap.empty()) {
+        auto itHigh = kFlywheelSpeedMap.lower_bound(distVal);
+        
+        if (itHigh == kFlywheelSpeedMap.begin()) {
+            // Distance is smaller than our first entry
+            motorSpeed = itHigh->second;
+        } else if (itHigh == kFlywheelSpeedMap.end()) {
+            // Distance is larger than our last entry
+            motorSpeed = std::prev(itHigh)->second;
+        } else {
+            // Interpolate between prev and itHigh
+            auto itLow = std::prev(itHigh);
+            double d1 = itLow->first;
+            double g1 = itLow->second;
+            double d2 = itHigh->first;
+            double g2 = itHigh->second;
+
+            double t = (distVal - d1) / (d2 - d1);
+            motorSpeed = g1 + t * (g2 - g1);
+        }
+    }
+    return units::turns_per_second_t{motorSpeed};
 }
 
 void Turret_Shooter::Periodic()

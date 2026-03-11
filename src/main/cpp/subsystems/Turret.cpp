@@ -277,6 +277,59 @@ units::degrees_per_second_t Turret::GetVelocity()
     return units::degrees_per_second_t{m_encoder.GetVelocity()};
 }
 
+void Turret::SetHood(double extension){
+    m_hood.Set(extension);
+}
+
+void Turret::ChangeHoodAngle(units::meter_t distance)
+{
+    double hoodAngle = 0; // no offset
+    double distVal = distance.value();
+
+    if (!kHoodAngleMap.empty()){
+        auto itHigh = kHoodAngleMap.lower_bound(distVal);
+
+        if (itHigh == kHoodAngleMap.begin()) {
+            // Distance is smaller than our first entry
+            hoodAngle = itHigh->second;
+        } else if (itHigh == kHoodAngleMap.end()) {
+            // Distance is larger than our last entry
+            hoodAngle = std::prev(itHigh)->second;
+        } else {
+            // Interpolate between prev and itHigh
+            auto itLow = std::prev(itHigh);
+            double d1 = itLow->first;
+            double g1 = itLow->second;
+            double d2 = itHigh->first;
+            double g2 = itHigh->second;
+
+            double t = (distVal - d1) / (d2 - d1);
+            hoodAngle = g1 + t * (g2 - g1);
+        }
+    }
+
+    // ballLaunchAngle -= units::degree_t{hoodOffset};
+
+    double ballLaunchAngleDegrees = double((hoodAngle*180)/TurretConstants::kPI);
+    
+    double servoExtention = (-(2.94699*std::pow(10, -7)) * std::pow(ballLaunchAngleDegrees, 4) +
+        (5.89093*std::pow(10, -5)) * std::pow(ballLaunchAngleDegrees, 3) -
+        (4.41946*std::pow(10, -3)) * std::pow(ballLaunchAngleDegrees, 2) + 
+        (0.124056) * ballLaunchAngleDegrees - 0.227319);
+
+    frc::SmartDashboard::PutNumber("/Turret/Hood/Servo Extension", servoExtention);
+    if (servoExtention > 0.8){
+        servoExtention = 0.8;
+    }
+    else if(servoExtention < 0.05){
+        servoExtention = 0.05;
+    }
+    frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
+    m_hood.Set(servoExtention);
+}
+
+
+
 void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::meter_t distance)
 {
     double hoodOffset = 0; // no offset
@@ -325,18 +378,25 @@ void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::mete
     m_hood.Set(servoExtention);
 }
 
-void Turret::ChangeMapValue(double newOffsetValue){
+void Turret::ChangeHoodMapValue(double newOffsetValue){
     double distVal = frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0);
 
-    if (!kHoodOffsetMap.empty()){
-        auto itHigh = kHoodOffsetMap.lower_bound(distVal);
+    // if (!kHoodOffsetMap.empty()){
+    //     auto itHigh = kHoodOffsetMap.lower_bound(distVal);
+    //     //TODO: Make kMaxHoodAngle and kMinHoodAngle
+    //     if(!itHigh->second + newOffsetValue > 19 || !itHigh->second + newOffsetValue < 0){
+    //         itHigh->second += newOffsetValue;
+    //     } 
+    // }
+
+    if (!kHoodAngleMap.empty()){
+        auto itHigh = kHoodAngleMap.lower_bound(distVal);
         //TODO: Make kMaxHoodAngle and kMinHoodAngle
-        if(!itHigh->second + newOffsetValue > 19 || !itHigh->second + newOffsetValue < 0){
+        if(!itHigh->second + newOffsetValue > 67 || !itHigh->second + newOffsetValue < 34){
             itHigh->second += newOffsetValue;
         } 
     }
 }
-
 
 void Turret::ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance) 
 {
@@ -438,13 +498,13 @@ void Turret::Periodic()
 
         // Hood/Launch Angle
         if(Flatten){
-            ChangeHoodAngle(TurretConstants::kHoodFlattenAngle, m_BallisticDistance);
+            SetHood(0.05);
         }
         else if (allowShooting){
-            ChangeHoodAngle(m_BallisticLaunchAngle, m_BallisticDistance);
+            ChangeHoodAngle(m_BallisticDistance);
         }
         else {
-            ChangeHoodAngle(TurretConstants::kHoodFlattenAngle, m_BallisticDistance);
+            SetHood(0.05);
         }
 
         bool override = frc::SmartDashboard::GetBoolean("/Turret/Hood/Angle Manual Override", false);
@@ -453,10 +513,12 @@ void Turret::Periodic()
         }
         // Launch Speed
         if (allowShooting) {
-            ChangeLaunchSpeed(m_BallisticLaunchSpeed, m_BallisticDistance);
+            // ChangeLaunchSpeed(m_BallisticLaunchSpeed, m_BallisticDistance);
             // units::turns_per_second_t commandMotorSpeed = 
             frc::SmartDashboard::PutNumber("/Turret/Shooter/Set Speed MPS", m_BallisticLaunchSpeed.value());
-            units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed,m_BallisticDistance);
+            // units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed,m_BallisticDistance);
+            units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.GetMotorSpeedFromMap(m_BallisticDistance);
+            m_turret_shooter.SetMotorSpeed(commandedMotorSpeed);
             if (m_turret_shooter.GetActualMotorSpeed() >= commandedMotorSpeed)
             {
                 m_turret_shooter.RunSpindexerIndexer(m_BallisticDistance);
@@ -464,7 +526,8 @@ void Turret::Periodic()
             
         }
         else if (!allowShooting){
-            ChangeLaunchSpeed(units::meters_per_second_t{0.0}, 0.0_m);
+            // ChangeLaunchSpeed(units::meters_per_second_t{0.0}, 0.0_m);
+            m_turret_shooter.SetMotorSpeed(units::turns_per_second_t{0.0});
             m_turret_shooter.StopSpindexerIndexer();
         }
         break;
