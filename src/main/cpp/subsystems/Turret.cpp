@@ -9,6 +9,18 @@
 #include <networktables/NetworkTableInstance.h>
 #include <algorithm>
 
+namespace {
+units::degree_t GetTurretAngleCorrection(units::degree_t turretAngle, units::degree_t amplitude) {
+    // Peak correction at 180 deg, zero at 90/270 deg.
+    return amplitude * std::sin(units::radian_t{turretAngle - 90_deg}.value());
+}
+
+units::turns_per_second_t GetShooterSpeedCorrection(units::degree_t turretAngle, units::turns_per_second_t amplitude) {
+    // +peak at 90 deg (topspin), -peak at 270 deg (backspin).
+    return amplitude * std::sin(units::radian_t{turretAngle}.value());
+}
+}
+
 // using State = frc::TrapezoidProfile<units::degrees>::State;
 using degrees_per_second_squared_t =
     units::unit_t<units::compound_unit<units::angular_velocity::degrees_per_second,
@@ -52,6 +64,16 @@ Turret::Turret() : m_controller(
 
     frc::SmartDashboard::PutBoolean("/Turret/Hood/Angle Manual Override", false);
     frc::SmartDashboard::PutNumber("/Turret/Hood/Angle Manual Set", 0.0);
+    frc::SmartDashboard::SetDefaultNumber("/Turret/Comp/TurretAngleAmpDeg", 4.0);
+    frc::SmartDashboard::SetDefaultNumber("/Turret/Comp/ShooterSpeedAmpRPS", 0.0);
+    frc::SmartDashboard::SetPersistent("/Turret/Comp/TurretAngleAmpDeg");
+    frc::SmartDashboard::SetPersistent("/Turret/Comp/ShooterSpeedAmpRPS");
+    frc::SmartDashboard::PutNumber(
+        "/Turret/Comp/TurretAngleAmpDeg",
+        frc::SmartDashboard::GetNumber("/Turret/Comp/TurretAngleAmpDeg", 4.0));
+    frc::SmartDashboard::PutNumber(
+        "/Turret/Comp/ShooterSpeedAmpRPS",
+        frc::SmartDashboard::GetNumber("/Turret/Comp/ShooterSpeedAmpRPS", 0.0));
     networkTableInst = nt::NetworkTableInstance::GetDefault();
     auto poseTable = networkTableInst.GetTable("ROS2Bridge");
     baseLinkSubscriber = poseTable->GetDoubleArrayTopic(robotPoseLink).Subscribe({}, {.periodic = 0.02, .sendAll = true});
@@ -405,6 +427,12 @@ void Turret::ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t 
 
 void Turret::Periodic()
 {
+    frc::SmartDashboard::PutNumber(
+        "/Turret/Comp/TurretAngleAmpDeg",
+        frc::SmartDashboard::GetNumber("/Turret/Comp/TurretAngleAmpDeg", 4.0));
+    frc::SmartDashboard::PutNumber(
+        "/Turret/Comp/ShooterSpeedAmpRPS",
+        frc::SmartDashboard::GetNumber("/Turret/Comp/ShooterSpeedAmpRPS", 0.0));
 
     printLog();
     UpdateFieldVisuals();
@@ -437,13 +465,18 @@ void Turret::Periodic()
 
         // Tracking Angle
         auto [angle, velocity] = findTrackingAngle();
+        const units::degree_t angleCompAmp{frc::SmartDashboard::GetNumber("/Turret/Comp/TurretAngleAmpDeg", 4.0)};
+        const units::degree_t angleComp = GetTurretAngleCorrection(angle, angleCompAmp);
+        const units::degree_t correctedAngle = angle + angleComp;
         frc::SmartDashboard::PutNumber("/Turret/Aim/Measurement Value", GetMeasurement().value());
-        SetAngle(angle, velocity);
+        SetAngle(correctedAngle, velocity);
         fb = m_controller.Calculate(GetMeasurement().value());
-        ff = m_feedforward.Calculate(angle, velocity);
+        ff = m_feedforward.Calculate(correctedAngle, velocity);
         v = units::volt_t{fb} + ff;
         frc::SmartDashboard::PutNumber("/Turret/Aim/Velocity", velocity.value());
         frc::SmartDashboard::PutNumber("/Turret/Aim/Angle", angle.value());
+        frc::SmartDashboard::PutNumber("/Turret/Comp/TurretAngleCorrDeg", angleComp.value());
+        frc::SmartDashboard::PutNumber("/Turret/Comp/TurretAngleCorrectedDeg", correctedAngle.value());
         frc::SmartDashboard::PutNumber("/Turret/Aim/Feedforward", ff.value());
         
         if(GetMeasurement() < TurretConstants::kminAngle && v.value() < 0) {
@@ -518,6 +551,11 @@ void Turret::Periodic()
             frc::SmartDashboard::PutNumber("/Turret/Shooter/Set Speed MPS", m_BallisticLaunchSpeed.value());
             // units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed,m_BallisticDistance);
             units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.GetMotorSpeedFromMap(m_BallisticDistance);
+            const units::turns_per_second_t speedCompAmp{frc::SmartDashboard::GetNumber("/Turret/Comp/ShooterSpeedAmpRPS", 0.0)};
+            const units::turns_per_second_t speedComp = GetShooterSpeedCorrection(m_goal, speedCompAmp);
+            commandedMotorSpeed += speedComp;
+            frc::SmartDashboard::PutNumber("/Turret/Comp/ShooterSpeedCorrRPS", speedComp.value());
+            frc::SmartDashboard::PutNumber("/Turret/Comp/ShooterSpeedCorrectedRPS", commandedMotorSpeed.value());
             m_turret_shooter.SetMotorSpeed(commandedMotorSpeed);
             if (m_turret_shooter.GetActualMotorSpeed() >= commandedMotorSpeed)
             {

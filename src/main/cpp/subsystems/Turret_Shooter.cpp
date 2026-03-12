@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "subsystems/Turret_Shooter.h"
+#include <algorithm>
 
 Turret_Shooter::Turret_Shooter()
 {
@@ -62,8 +63,24 @@ Turret_Shooter::Turret_Shooter()
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Left Motor Voltage", 0.0);
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Right Motor Voltage", 0.0);
 
+    rev::spark::SparkFlexConfig indexerConfig{};
+    indexerConfig.closedLoop.Pid(Turret_ShooterConstants::kIndexerP, Turret_ShooterConstants::kIndexerI, Turret_ShooterConstants::kIndexerD);
+    indexerConfig.closedLoop.feedForward.kV(Turret_ShooterConstants::kIndexerkV);
+    m_indexerMotor.Configure(indexerConfig, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
+
+    ctre::phoenix6::configs::TalonFXConfiguration spindexerConfig{};
+    spindexerConfig.Slot0.kP = Turret_ShooterConstants::kSpindexerP;
+    spindexerConfig.Slot0.kI = Turret_ShooterConstants::kSpindexerI;
+    spindexerConfig.Slot0.kD = Turret_ShooterConstants::kSpindexerD;
+    spindexerConfig.Slot0.kS = Turret_ShooterConstants::kSpindexerS;
+    spindexerConfig.Slot0.kV = Turret_ShooterConstants::kSpindexerV;
+    m_spindexerMotor.GetConfigurator().Apply(spindexerConfig);
     
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
+
+    if constexpr (frc::RobotBase::IsSimulation()) {
+        m_simTimer.Start();
+    }
 }
 
 void Turret_Shooter::SetMotorSpeed(units::turns_per_second_t motorSpeed) {
@@ -117,14 +134,11 @@ void Turret_Shooter::SetSpeed(units::meters_per_second_t ballSpeed, units::meter
 
 void Turret_Shooter::RunSpindexerIndexer(units::meter_t distance) 
 {
-    if (distance < 4_m){
-        m_indexerMotor.Set(Turret_ShooterConstants::indexerSpeed);
-        m_spindexerMotor.Set(Turret_ShooterConstants::spindexerSpeed);
-    }
-    else {
-        m_indexerMotor.Set(-0.25);
-        m_spindexerMotor.Set(0.5);
-    }
+        m_indexerPID.SetSetpoint(Turret_ShooterConstants::kIndexerShootVelocityRPM, rev::spark::SparkBase::ControlType::kVelocity);
+        auto spindexerRequest = ctre::phoenix6::controls::VelocityVoltage{Turret_ShooterConstants::kSpindexerShootVelocity}.WithSlot(0);
+        m_spindexerMotor.SetControl(spindexerRequest);
+        m_spindexerTargetVelocity = Turret_ShooterConstants::kSpindexerShootVelocity;
+        m_indexerTargetVelocityRPM = Turret_ShooterConstants::kIndexerShootVelocityRPM;
 
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", true);
  }
@@ -132,7 +146,10 @@ void Turret_Shooter::RunSpindexerIndexer(units::meter_t distance)
 void Turret_Shooter::StopSpindexerIndexer()
 {
     m_indexerMotor.Set(0.0);
-    m_spindexerMotor.Set(0.0);
+    auto spindexerRequest = ctre::phoenix6::controls::VoltageOut{0_V};
+    m_spindexerMotor.SetControl(spindexerRequest);
+    m_spindexerTargetVelocity = 0_tps;
+    m_indexerTargetVelocityRPM = 0.0;
 
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
 }
@@ -163,15 +180,21 @@ void Turret_Shooter::StopMotors()
 void Turret_Shooter::RunAll()
 {
     SetSpeed(units::meters_per_second_t{18.0}, 2.0_m);
-    m_indexerMotor.Set(-0.5);
-    m_spindexerMotor.Set(0.5);
+    m_indexerPID.SetSetpoint(Turret_ShooterConstants::kIndexerShootVelocityRPM, rev::spark::SparkBase::ControlType::kVelocity);
+    auto spindexerRequest = ctre::phoenix6::controls::VelocityVoltage{Turret_ShooterConstants::kSpindexerShootVelocity}.WithSlot(0);
+    m_spindexerMotor.SetControl(spindexerRequest);
+    m_spindexerTargetVelocity = Turret_ShooterConstants::kSpindexerShootVelocity;
+    m_indexerTargetVelocityRPM = Turret_ShooterConstants::kIndexerShootVelocityRPM;
 }
 
 void Turret_Shooter::StopAll()
 {
     SetSpeed(units::meters_per_second_t{0.0}, 0.0_m);
     m_indexerMotor.Set(0.0);
-    m_spindexerMotor.Set(0.0);
+    auto spindexerRequest = ctre::phoenix6::controls::VoltageOut{0_V};
+    m_spindexerMotor.SetControl(spindexerRequest);
+    m_spindexerTargetVelocity = 0_tps;
+    m_indexerTargetVelocityRPM = 0.0;
 }
 
 std::map<double, double> Turret_Shooter::GetCurrentMapState() {
@@ -270,8 +293,46 @@ void Turret_Shooter::Periodic()
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Actual Motor RPM", motorSpeed.value() * 60.0);
     frc::SmartDashboard::PutNumber("/Turret/Shooter/Actual Ball Speed MPS", ballSpeed.value()); 
 
+    frc::SmartDashboard::PutNumber("/Turret/Spindexer/Actual Motor RPS", m_spindexerMotor.GetVelocity().GetValue().value());
+    frc::SmartDashboard::PutNumber("/Turret/Spindexer/Commanded Motor RPS", Turret_ShooterConstants::kSpindexerShootVelocity.value());
+    frc::SmartDashboard::PutNumber("/Turret/Indexer/Actual Motor RPM", m_indexerMotor.GetEncoder().GetVelocity());
+    frc::SmartDashboard::PutNumber("/Turret/Indexer/Commanded Motor RPM", Turret_ShooterConstants::kIndexerShootVelocityRPM);
+
     bool override = frc::SmartDashboard::GetBoolean("/Turret/Shooter/Ball Speed Manual Override", false);
     if (override) {
         SetSpeed(units::meters_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Shooter/Ball Speed Manual Set MPS", 0.0)}, 1.5_m);
     }
+
+    if constexpr (frc::RobotBase::IsSimulation()) {
+        SimulationPeriodic();
+    }
+}
+
+void Turret_Shooter::SimulationPeriodic()
+{
+    units::second_t dt = m_simTimer.Get();
+    m_simTimer.Reset();
+
+    if (dt <= 0_s) {
+        return;
+    }
+
+    const double alpha = std::clamp(dt.value() * 8.0, 0.0, 1.0);
+
+    m_spindexerSimVelocity += (m_spindexerTargetVelocity - m_spindexerSimVelocity) * alpha;
+    m_spindexerSimPosition += m_spindexerSimVelocity * dt;
+
+    auto& spindexerSim = m_spindexerMotor.GetSimState();
+    spindexerSim.SetSupplyVoltage(12_V);
+    spindexerSim.SetRotorVelocity(m_spindexerSimVelocity);
+    spindexerSim.SetRawRotorPosition(m_spindexerSimPosition);
+
+    m_indexerSimVelocityRPM += (m_indexerTargetVelocityRPM - m_indexerSimVelocityRPM) * alpha;
+    m_indexerSimPosition += (m_indexerSimVelocityRPM / 60.0) * dt.value();
+
+    m_indexerSparkSim.SetBusVoltage(12.0);
+    m_indexerSparkSim.SetVelocity(m_indexerSimVelocityRPM);
+    m_indexerSparkSim.SetPosition(m_indexerSimPosition);
+    m_indexerEncoderSim.SetVelocity(m_indexerSimVelocityRPM);
+    m_indexerEncoderSim.SetPosition(m_indexerSimPosition);
 }
