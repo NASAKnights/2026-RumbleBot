@@ -3,32 +3,53 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5131024122502774,
+        "x": 2.591109123434704,
         "y": 3.9570232293978913
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.263103561491853,
-        "y": 3.956265192810995
+        "x": 2.753363148479427,
+        "y": 5.190153819737784
+      },
+      "isLocked": false,
+      "linkedName": "MiddleShoot"
+    },
+    {
+      "anchor": {
+        "x": 4.148747763864042,
+        "y": 5.470948121645796
+      },
+      "prevControl": {
+        "x": 3.220731200583975,
+        "y": 5.3972960134489645
+      },
+      "nextControl": {
+        "x": 5.170948121645796,
+        "y": 5.552075134168158
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.591109123434704,
-        "y": 3.9570232293978913
+        "x": 7.523631484794276,
+        "y": 4.335169946332737
       },
       "prevControl": {
-        "x": 2.8465606264512875,
-        "y": 3.9588524674322194
+        "x": 6.176923076923077,
+        "y": 5.195116279069769
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "MiddleShoot"
+      "linkedName": "MiddleNeutralIntake"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6149732620320859,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -42,7 +63,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,

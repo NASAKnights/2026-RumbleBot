@@ -3,13 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5131024122502774,
-        "y": 3.9570232293978913
+        "x": 7.523631484794276,
+        "y": 4.335169946332737
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.263103561491853,
-        "y": 3.956265192810995
+        "x": 5.933542039355992,
+        "y": 5.195116279069768
+      },
+      "isLocked": false,
+      "linkedName": "MiddleNeutralIntake"
+    },
+    {
+      "anchor": {
+        "x": 4.294776386404293,
+        "y": 5.438497316636852
+      },
+      "prevControl": {
+        "x": 5.34942754919499,
+        "y": 5.42227191413238
+      },
+      "nextControl": {
+        "x": 3.7901527452446118,
+        "y": 5.446260757270077
       },
       "isLocked": false,
       "linkedName": null
@@ -20,15 +36,20 @@
         "y": 3.9570232293978913
       },
       "prevControl": {
-        "x": 2.8465606264512875,
-        "y": 3.9588524674322194
+        "x": 3.094096601073345,
+        "y": 4.967960644007155
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "MiddleShoot"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.49732620320855586,
+      "rotationDegrees": 180.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -48,7 +69,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }
