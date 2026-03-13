@@ -21,13 +21,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "StartLeft, Collect Neutral"
+                        "pathName": "StartRight, Collect Neutral"
                       }
                     },
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "StartNeutralLeft, DriveToTrench"
+                        "pathName": "StartNeutralRight, DriveToTrench"
                       }
                     },
                     {
@@ -64,13 +64,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "StartLeft, Collect Neutral2nd"
+                        "pathName": "StartRight, Collect Neutral2nd"
                       }
                     },
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "StartNeutralLeft, DriveToTrench2nd"
+                        "pathName": "StartNeutralRight, DriveToTrench2nd"
                       }
                     },
                     {

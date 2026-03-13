@@ -846,12 +846,12 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
 
     // Get the robot's linear and angular velocity from the swervedrive.
     // The linear velocities are oriented relative to the robot, not the field.
-    // auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vx", 0.0)};
-    // auto robotVy = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vy", 0.0)};
-    // auto robotOmega = units::radians_per_second_t{frc::SmartDashboard::GetNumber("drive/omega", 0.0)};
-    auto robotVx = units::meters_per_second_t{0.0};
-    auto robotVy = units::meters_per_second_t{0.0};
-    auto robotOmega = 0.0_rad_per_s;
+    auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vx", 0.0)};
+    auto robotVy = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vy", 0.0)};
+    auto robotOmega = units::radians_per_second_t{frc::SmartDashboard::GetNumber("drive/omega", 0.0)};
+    // auto robotVx = units::meters_per_second_t{0.0};
+    // auto robotVy = units::meters_per_second_t{0.0};
+    // auto robotOmega = 0.0_rad_per_s;
 
     // Reorient robotVx, robotVy to the world reference frame (field)
     units::meters_per_second_t robotWorldVx = robotVx * std::cos(robotAngle.value()) - 
@@ -927,7 +927,8 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
     }
 
     // Compute desired yaw in field frame
-    units::radian_t turret_yaw = angleToGoal + sol_lead_angle;
+    // units::radian_t turret_yaw = angleToGoal + sol_lead_angle;
+    units::radian_t turret_yaw = angleToGoal;
 
     // turret angle is initialized during homing to align with robot frame x-direction
     // subtract the robot angle to get the desired turret angle
