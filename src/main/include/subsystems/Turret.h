@@ -317,13 +317,21 @@ private:
 
   std::map<double, double> kHoodAngleMap = {
       {1.0, 70.},
+      {1.5, 68.},
       {2.0, 65},
       {2.5, 60},
-      {3.0, 55.}, //8 deg extra
-      {4.0, 50.}, //10 deg extra
-      {5.0, 45.},
+      {3.0, 58.},
+      {3.5, 55}, //8 deg extra
+      {4.0, 51.75},
+      {4.5, 49.5}, //10 deg extra
+      {5.0, 47.},
+      {5.5, 43.},
       {6.0, 40.},
+      {6.5, 38.},
       {7.0, 35.}
   };
+
+  std::vector<std::pair<double, double>> kHoodAngleVector;
+  // std::map<double, double> kHoodAngleMap;
 
 };

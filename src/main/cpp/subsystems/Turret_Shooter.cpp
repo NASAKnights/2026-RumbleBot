@@ -154,14 +154,14 @@ void Turret_Shooter::StopSpindexerIndexer()
     frc::SmartDashboard::PutBoolean("/Turret/Spindexer Indexer/Running", false);
 }
 
-void Turret_Shooter::ChangeSpeedMapValue(double newValue){
+void Turret_Shooter::ChangeSpeedMapValue(double deltaValue){
     double distVal = frc::SmartDashboard::GetNumber("/Turret/Ballistics/Target Distance", 0);
 
     if (!kFlywheelSpeedMap.empty()){
         auto itHigh = kFlywheelSpeedMap.lower_bound(distVal);
         //TODO: Make kMaxShooterGain and kMinShooterGain
-        if(!(itHigh->second + newValue > 125) || !(itHigh->second + newValue < 10)){
-            itHigh->second += newValue;
+        if(!(itHigh->second + deltaValue > 125) || !(itHigh->second + deltaValue < 10)){
+            itHigh->second += deltaValue;
         } 
     }
 }
@@ -198,7 +198,7 @@ void Turret_Shooter::StopAll()
 }
 
 std::map<double, double> Turret_Shooter::GetCurrentMapState() {
-    return kFlyWheelGainMap;
+    return kFlywheelSpeedMap;
 }
 
 void Turret_Shooter::SetCurrentMapState(std::map<double, double> inputCurrentState) {

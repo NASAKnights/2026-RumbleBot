@@ -117,6 +117,7 @@ private:
   // declared private and exposed only through public methods.
   // studica::AHRS m_gyro{frc::SPI::Port::kMXP};
   bool m_usingPigeon = true;
+  units::meters_per_second_t m_currentMaxSpeed = 4.0_mps;
   // studica::AHRS navx{studica::AHRS::NavXComType::kMXP_SPI};
 
   ctre::phoenix6::CANBus m_canBus;

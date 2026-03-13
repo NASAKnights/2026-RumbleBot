@@ -13,13 +13,15 @@ Intake::Intake(TurretIntake *_turretIntake, Wrist *_wrist) : m_turretIntake{_tur
 }
 
 // Called when the command is initially scheduled.
-void Intake::Initialize() {}
+void Intake::Initialize() 
+{
+  m_wrist->SetAngle(3.0);
+}
 
 // Called repeatedly when this Command is scheduled to run
 void Intake::Execute() 
 {
   m_turretIntake->Intake();
-  m_wrist->SetAngle(3.0);
 }
 
 // Called once the command ends or is interrupted.

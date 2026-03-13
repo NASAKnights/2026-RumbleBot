@@ -69,6 +69,7 @@ void Robot::DisabledInit()
     auto turretMap = m_turret.GetCurrentMapState();
     auto hoodMap = m_turret.m_turret_shooter.GetCurrentMapState();
 
+    frc::SmartDashboard::PutBoolean("HELP/", firstBoot);
     if(!firstBoot){
         std::ofstream writeFile(csvName);
 
@@ -204,9 +205,12 @@ void Robot::CreateRobot()
 
     pathplanner::NamedCommands::registerCommand("Intake", Intake(&m_intake, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("FlattenMoonKnight", FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());
-    pathplanner::NamedCommands::registerCommand("Shoot", Shoot(&m_turret).ToPtr());
+    pathplanner::NamedCommands::registerCommand("Shoot", Shoot(&m_turret, true).ToPtr());
+    pathplanner::NamedCommands::registerCommand("NoShoot", Shoot(&m_turret, false).ToPtr());
     pathplanner::NamedCommands::registerCommand("ExtendClimb", Climb(&m_climber, true).ToPtr());
     pathplanner::NamedCommands::registerCommand("RetractClimb", Climb(&m_climber, false).ToPtr());
+
+    // pathplanner::NamedCommands::registerCommand("StopShoot", );
 
     // pathplanner::EventTrigger("Intake").WhileTrue(std::move(Intake(&m_intake, &m_wrist).ToPtr()));
     // pathplanner::EventTrigger("FlattenMoonKnight").WhileTrue(std::move(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr()));
@@ -292,13 +296,13 @@ void Robot::BindCommands()
     frc2::JoystickButton(&m_driverController, 6)
     .OnTrue(frc2::CommandPtr(
                 frc2::InstantCommand([this]
-                                    { m_turret.Flatten = true;
-                                        m_wrist.SetAngle(3.0);
-                                    return; })))
+                                    {m_swerveDrive.SetSlow();
+                                        return; })))
             .OnFalse(frc2::CommandPtr(
                 frc2::InstantCommand([this]
-                                    { m_turret.Flatten = false;
+                                    { m_swerveDrive.SetFast();
                                     return; })));
+    
 
     // frc2::JoystickButton(&m_driverController, 3)
     //     .OnTrue(scoreClosest.get())
@@ -369,33 +373,34 @@ void Robot::BindCommands()
                 frc2::InstantCommand([this]
                                         { return m_intake.StopIntake(); })));
 
-    frc2::POVButton(&m_operatorController, 0)
-                    .OnTrue(
-                        frc2::CommandPtr(frc2::InstantCommand([this] {
-                            m_turret.ChangeHoodMapValue(1.0);
-                        }))
-                    );
+    // frc2::POVButton(&m_operatorController, 0)
+    //                 .OnTrue(
+    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
+    //                         m_turret.ChangeHoodMapValue(1.0);
+    //                     }))
+    //                 );
 
-    frc2::POVButton(&m_operatorController, 180)
-                    .OnTrue(
-                        frc2::CommandPtr(frc2::InstantCommand([this] {
-                            return m_turret.ChangeHoodMapValue(-1.0);
-                        }))
-                    );
+    // frc2::POVButton(&m_operatorController, 180)
+    //                 .OnTrue(
+    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
+    //                         return m_turret.ChangeHoodMapValue(-1.0);
+    //                     }))
+    //                 );
 
-    frc2::POVButton(&m_operatorController, 90)
-                    .OnTrue(
-                        frc2::CommandPtr(frc2::InstantCommand([this] {
-                            return m_turret.m_turret_shooter.ChangeSpeedMapValue(5);
-                        }))
-                    );
+    // frc2::POVButton(&m_operatorController, 90)
+    //                 .OnTrue(
+    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
+    //                         return m_turret.m_turret_shooter.ChangeSpeedMapValue(5);
+    //                     }))
+    //                 );
 
-    frc2::POVButton(&m_operatorController, 270)
-                    .OnTrue(
-                        frc2::CommandPtr(frc2::InstantCommand([this] {
-                            return m_turret.m_turret_shooter.ChangeSpeedMapValue(-5);
-                        }))
-                    );
+    // frc2::POVButton(&m_operatorController, 270)
+    //                 .OnTrue(
+    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
+    //                         return m_turret.m_turret_shooter.ChangeSpeedMapValue(-5);
+    //                     }))
+    //                 );
+                    
     // frc2::JoystickButton(&m_operatorController, 7)
     //     .WhileTrue(frc2::CommandPtr(frc2::RunCommand([this] { m_climber.Zero(); })))
     //     .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_climber.stopMotor(); })));
@@ -519,14 +524,19 @@ void Robot::LoadCSVToMap(const std::string& filename) {
         std::ofstream createFile(filename);
 
         createFile <<
-        "1.5,1.4,0.0\n"
-        "2.0,1.75,4.0\n"
-        "2.5,2.25,7.0\n"
-        "3.0,2.5,10.0\n"
-        "4.0,2.5,12.0\n"
-        "5.0,2.8,13.0\n"
-        "6.0,3.0,16.0\n"
-        "7.0,3.2,19.0\n";
+        "1.0,5,70\n"
+        "1.5,10,68\n"
+        "2.0,50,65\n"
+        "2.5,70,60\n"
+        "3.0,100,55\n"
+        "3.5,105,53\n"
+        "4.0,110,50\n"
+        "4.5,115,48\n"
+        "5.0,120,45\n"
+        "5.5,120,43\n"
+        "6.0,120,40\n"
+        "6.5,120,38\n"
+        "7.0,120,35\n";
 
         createFile.close();
     }
@@ -537,25 +547,25 @@ void Robot::LoadCSVToMap(const std::string& filename) {
 
     std::map<double, double> hoodAngleMap, flyWheelSpeedMap;
     
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string distance, flywheelSpeed, hoodAngle;
+    // while (std::getline(file, line)) {
+    //     std::stringstream ss(line);
+    //     std::string distance, flywheelSpeed, hoodAngle;
         
-        std::getline(ss, distance, ',');
-        std::getline(ss, flywheelSpeed, ',');
-        std::getline(ss, hoodAngle, ',');
+    //     std::getline(ss, distance, ',');
+    //     std::getline(ss, flywheelSpeed, ',');
+    //     std::getline(ss, hoodAngle, ',');
         
-        double key = std::stod(distance);
-        double flyWheelvalue = std::stod(flywheelSpeed);
-        double hoodValue = std::stod(hoodAngle);
+    //     double key = std::stod(distance);
+    //     double flyWheelvalue = std::stod(flywheelSpeed);
+    //     double hoodValue = std::stod(hoodAngle);
         
-        flyWheelSpeedMap.insert({key, flyWheelvalue});
-        hoodAngleMap.insert({key, hoodValue});
-    }
+    //     flyWheelSpeedMap.insert({key, flyWheelvalue});
+    //     hoodAngleMap.insert({key, hoodValue});
+    // }
     
-    m_turret.m_turret_shooter.SetCurrentMapState(hoodAngleMap);
-    m_turret.SetCurrentMapState(flyWheelSpeedMap);
-    file.close();
+    // m_turret.m_turret_shooter.SetCurrentMapState(hoodAngleMap);
+    // m_turret.SetCurrentMapState(flyWheelSpeedMap);
+    // file.close();
 }
 
 

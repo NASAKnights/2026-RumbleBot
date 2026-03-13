@@ -108,7 +108,7 @@ private:
 
     std::string targetKey = "POI/Calibration POIs";
     std::string prevAuto = "";
-    std::string csvName = "data.csv";
+    std::string csvName = "/home/lvuser/data.csv";
 
     frc::PowerDistribution m_pdh =
         frc::PowerDistribution{1, frc::PowerDistribution::ModuleType::kRev};

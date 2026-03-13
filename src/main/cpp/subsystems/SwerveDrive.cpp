@@ -247,7 +247,7 @@ void SwerveDrive::Drive(frc::ChassisSpeeds speeds)
         auto states = kSwerveKinematics.ToSwerveModuleStates(speeds);
 
         kSwerveKinematics.DesaturateWheelSpeeds(
-            &states, speeds, units::meters_per_second_t{ModuleConstants::kMaxSpeed},
+            &states, speeds, units::meters_per_second_t{m_currentMaxSpeed},
             DriveConstants::kMaxTranslationalVelocity, DriveConstants::kMaxRotationalVelocity);
 
         for (int i = 0; i < 4; i++)
@@ -283,7 +283,7 @@ void SwerveDrive::Strafe(frc::ChassisSpeeds s_speeds, double desiredAngle)
     auto states = kSwerveKinematics.ToSwerveModuleStates(s_speeds);
 
     kSwerveKinematics.DesaturateWheelSpeeds(
-        &states, s_speeds, units::meters_per_second_t{ModuleConstants::kMaxSpeed},
+        &states, s_speeds, units::meters_per_second_t{m_currentMaxSpeed},
         DriveConstants::kMaxTranslationalVelocity, units::radians_per_second_t{0.5});
 
     for (int i = 0; i < 4; i++)
@@ -397,12 +397,16 @@ void SwerveDrive::UpdatePoseEstimate()
     //     frc::LoadAprilTagLayoutField(frc::AprilTagField::k2025ReefscapeAndyMark)
     // };
     auto results1 = jetsonCamera1.GetAllUnreadResults();
+    m_poseEstimator.SetVisionMeasurementStdDevs({1.0, 1.0, 1.0});
     for (auto &result : results1){
-         auto estimatedRobotPose = pvPoseEstimation1.EstimateCoprocMultiTagPose(result);
+        if(result.GetBestTarget().GetPoseAmbiguity() > 0.2)
+        {
+            continue;
+        }
+        auto estimatedRobotPose = pvPoseEstimation1.EstimateCoprocMultiTagPose(result);
         if (!estimatedRobotPose){
             estimatedRobotPose = pvPoseEstimation1.EstimateLowestAmbiguityPose(result);
         }
-
         if (estimatedRobotPose){
             m_poseEstimator.AddVisionMeasurement(estimatedRobotPose->estimatedPose.ToPose2d(), 
             estimatedRobotPose->timestamp);
@@ -413,6 +417,10 @@ void SwerveDrive::UpdatePoseEstimate()
     for (auto &result : results2) {
         // auto multiTagResult = result.MultiTagResult();
         // auto singleTagResult = result.GetBestTarget();
+        if(result.GetBestTarget().GetPoseAmbiguity() > 0.2)
+        {
+            continue;
+        }
         auto estimatedRobotPose2 = pvPoseEstimation2.EstimateCoprocMultiTagPose(result);
         if (!estimatedRobotPose2){
             estimatedRobotPose2 = pvPoseEstimation2.EstimateLowestAmbiguityPose(result);
@@ -423,18 +431,6 @@ void SwerveDrive::UpdatePoseEstimate()
             estimatedRobotPose2->timestamp);
         }
 
-        // if (multiTagResult.has_value()) {
-        //     frc::Transform3d fieldToCamera = multiTagResult->estimatedPose.best;
-        //     posePublisher.Set(fieldToCamera);
-            
-        //     frc::SmartDashboard::PutNumber("Camera2TagX",fieldToCamera.X().value());
-        // }
-        // else if (result.HasTargets()) {
-        //     frc::Transform3d fieldToCamera = singleTagResult.GetBestCameraToTarget();
-        //     posePublisher.Set(fieldToCamera);
-
-        //     frc::SmartDashboard::PutNumber("Camera2TagX",fieldToCamera.X().value());
-        // }
     }
     
 
@@ -451,56 +447,56 @@ void SwerveDrive::UpdatePoseEstimate()
     // wpi::SmallVector<std::pair</*TODO: what is needed here?*/> corners = target.GetCorners();
 
 
-    auto result1 = baseLink1Subscribe.GetAtomic();
-    auto result2 = baseLink2Subscribe.GetAtomic();
-    auto resultStdDev = visionStdDevSub.GetAtomic();
+    // auto result1 = baseLink1Subscribe.GetAtomic();
+    // auto result2 = baseLink2Subscribe.GetAtomic();
+    // auto resultStdDev = visionStdDevSub.GetAtomic();
     frc::SmartDashboard::PutBoolean("Vision", false);
 
-    if (resultStdDev.value.size() > 0)
-    {
-        m_poseEstimator.SetVisionMeasurementStdDevs({resultStdDev.value[0], resultStdDev.value[1], resultStdDev.value[2]});
-    }
-    else
-    {
-        m_poseEstimator.SetVisionMeasurementStdDevs({1.0, 1.0, 1.0});
-    }
+    // if (resultStdDev.value.size() > 0)
+    // {
+    //     m_poseEstimator.SetVisionMeasurementStdDevs({resultStdDev.value[0], resultStdDev.value[1], resultStdDev.value[2]});
+    // }
+    // else
+    // {
+    //     m_poseEstimator.SetVisionMeasurementStdDevs({1.0, 1.0, 1.0});
+    // }
 
-    if (result1.value.size() > 0)
-    {
-        frc::SmartDashboard::PutBoolean("Vision", true);
+    // if (result1.value.size() > 0)
+    // {
+    //     frc::SmartDashboard::PutBoolean("Vision", true);
 
-        auto compressedResults = result1.value;
-        rotation_q = frc::Quaternion(compressedResults.at(6), compressedResults.at(3),
-                                     compressedResults.at(4), compressedResults.at(5));
+    //     auto compressedResults = result1.value;
+    //     rotation_q = frc::Quaternion(compressedResults.at(6), compressedResults.at(3),
+    //                                  compressedResults.at(4), compressedResults.at(5));
 
-        auto posTranslation = frc::Translation3d(units::meter_t{compressedResults.at(0)},
-                                                 units::meter_t{compressedResults.at(1)},
-                                                 units::meter_t{compressedResults.at(2)});
-        frc::Pose3d cameraPose = frc::Pose3d(posTranslation, frc::Rotation3d(rotation_q));
-        if (poseFilter1.IsPoseValid(cameraPose, compressedResults.at(7)))
-        {
-            frc::Pose2d visionMeasurement2d = cameraPose.ToPose2d();
-            m_poseEstimator.AddVisionMeasurement(visionMeasurement2d,
-                                                 units::second_t{compressedResults.at(7)});
-        }
-    }
-    if (result2.value.size() > 0)
-    {
-        auto compressedResults = result2.value;
-        rotation_q = frc::Quaternion(compressedResults.at(6), compressedResults.at(3),
-                                     compressedResults.at(4), compressedResults.at(5));
+    //     auto posTranslation = frc::Translation3d(units::meter_t{compressedResults.at(0)},
+    //                                              units::meter_t{compressedResults.at(1)},
+    //                                              units::meter_t{compressedResults.at(2)});
+    //     frc::Pose3d cameraPose = frc::Pose3d(posTranslation, frc::Rotation3d(rotation_q));
+    //     if (poseFilter1.IsPoseValid(cameraPose, compressedResults.at(7)))
+    //     {
+    //         frc::Pose2d visionMeasurement2d = cameraPose.ToPose2d();
+    //         m_poseEstimator.AddVisionMeasurement(visionMeasurement2d,
+    //                                              units::second_t{compressedResults.at(7)});
+    //     }
+    // }
+    // if (result2.value.size() > 0)
+    // {
+    //     auto compressedResults = result2.value;
+    //     rotation_q = frc::Quaternion(compressedResults.at(6), compressedResults.at(3),
+    //                                  compressedResults.at(4), compressedResults.at(5));
 
-        auto posTranslation = frc::Translation3d(units::meter_t{compressedResults.at(0)},
-                                                 units::meter_t{compressedResults.at(1)},
-                                                 units::meter_t{compressedResults.at(2)});
-        frc::Pose3d cameraPose = frc::Pose3d(posTranslation, frc::Rotation3d(rotation_q));
-        if (poseFilter2.IsPoseValid(cameraPose, compressedResults.at(7)))
-        {
-            frc::Pose2d visionMeasurement2d = cameraPose.ToPose2d();
-            m_poseEstimator.AddVisionMeasurement(visionMeasurement2d,
-                                                 units::second_t{compressedResults.at(7)});
-        }
-    }
+    //     auto posTranslation = frc::Translation3d(units::meter_t{compressedResults.at(0)},
+    //                                              units::meter_t{compressedResults.at(1)},
+    //                                              units::meter_t{compressedResults.at(2)});
+    //     frc::Pose3d cameraPose = frc::Pose3d(posTranslation, frc::Rotation3d(rotation_q));
+    //     if (poseFilter2.IsPoseValid(cameraPose, compressedResults.at(7)))
+    //     {
+    //         frc::Pose2d visionMeasurement2d = cameraPose.ToPose2d();
+    //         m_poseEstimator.AddVisionMeasurement(visionMeasurement2d,
+    //                                              units::second_t{compressedResults.at(7)});
+    //     }
+    // }
 }
 
 void SwerveDrive::PublishOdometry(frc::Pose2d odometryPose)
@@ -616,6 +612,13 @@ bool SwerveDrive::atSetpoint()
         return true;
     }
     return false;
+}
+
+void SwerveDrive::SetFast(){
+    m_currentMaxSpeed = ModuleConstants::kMaxSpeed;
+}
+void SwerveDrive::SetSlow(){
+    m_currentMaxSpeed = 0.5_mps;
 }
 
 void SwerveDrive::TurnVisionOff()

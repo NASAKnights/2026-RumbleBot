@@ -21,7 +21,7 @@ class Shoot
   /* You should consider using the more terse Command factories API instead
    * https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands
    */
-  Shoot(Turret *turret);
+  Shoot(Turret *turret, bool Shoot);
 
   void Initialize() override;
 
@@ -32,4 +32,5 @@ class Shoot
   bool IsFinished() override;
   
   Turret *m_turret;
+  bool isShoot = false;
 };

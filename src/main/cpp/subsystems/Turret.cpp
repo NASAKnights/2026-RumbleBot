@@ -122,7 +122,7 @@ void Turret::AllowShooting()
 void Turret::PauseShooting()
 {
     allowShooting = false;
-    frc::SmartDashboard::PutBoolean("/Turret/Shooter/AllowShooting", false);
+    frc::SmartDashboard::PutBoolean("/Turret/Shooter/Allow Shooting", false);
 }
 
 units::degree_t Turret::GetMeasurement()
@@ -307,7 +307,9 @@ void Turret::ChangeHoodAngle(units::meter_t distance)
 {
     double hoodAngle = 0; // no offset
     double distVal = distance.value();
-
+    // for (std::pair<double, double> value: kHoodAngleMap){
+    //     kHoodAngleVector.push_back(value);
+    // }
     if (!kHoodAngleMap.empty()){
         auto itHigh = kHoodAngleMap.lower_bound(distVal);
 
@@ -332,7 +334,7 @@ void Turret::ChangeHoodAngle(units::meter_t distance)
 
     // ballLaunchAngle -= units::degree_t{hoodOffset};
 
-    double ballLaunchAngleDegrees = double((hoodAngle*180)/TurretConstants::kPI);
+    double ballLaunchAngleDegrees = hoodAngle;
     
     double servoExtention = (-(2.94699*std::pow(10, -7)) * std::pow(ballLaunchAngleDegrees, 4) +
         (5.89093*std::pow(10, -5)) * std::pow(ballLaunchAngleDegrees, 3) -
@@ -565,7 +567,7 @@ void Turret::Periodic()
         }
         else if (!allowShooting){
             // ChangeLaunchSpeed(units::meters_per_second_t{0.0}, 0.0_m);
-            m_turret_shooter.SetMotorSpeed(units::turns_per_second_t{0.0});
+            m_turret_shooter.TurnOffMotors();
             m_turret_shooter.StopSpindexerIndexer();
         }
         break;
@@ -659,7 +661,7 @@ void Turret::HoldPosition()
 }
 
 std::map<double, double> Turret::GetCurrentMapState () {
-    return kHoodOffsetMap;
+    return kHoodAngleMap;
 }
 
 void Turret::SetCurrentMapState(std::map<double, double> inputCurrentState) {
@@ -844,9 +846,12 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
 
     // Get the robot's linear and angular velocity from the swervedrive.
     // The linear velocities are oriented relative to the robot, not the field.
-    auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Pose/Drive/Velocity X", 0.0)};
-    auto robotVy = units::meters_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Pose/Drive/Velocity Y", 0.0)};
-    auto robotOmega = units::radians_per_second_t{frc::SmartDashboard::GetNumber("/Turret/Pose/Drive/Omega", 0.0)};
+    // auto robotVx = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vx", 0.0)};
+    // auto robotVy = units::meters_per_second_t{frc::SmartDashboard::GetNumber("drive/vy", 0.0)};
+    // auto robotOmega = units::radians_per_second_t{frc::SmartDashboard::GetNumber("drive/omega", 0.0)};
+    auto robotVx = units::meters_per_second_t{0.0};
+    auto robotVy = units::meters_per_second_t{0.0};
+    auto robotOmega = 0.0_rad_per_s;
 
     // Reorient robotVx, robotVy to the world reference frame (field)
     units::meters_per_second_t robotWorldVx = robotVx * std::cos(robotAngle.value()) - 

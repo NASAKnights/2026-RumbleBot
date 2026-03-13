@@ -44,8 +44,8 @@ namespace Turret_ShooterConstants {
   static const int kSpindexerMotorId = 5;
   static const int kIndexerMotorId = 6;
 
-  static const double spindexerSpeed = 0.25;
-  static const double indexerSpeed = -0.85;
+  static const double spindexerSpeed = 0.2;
+  static const double indexerSpeed = -0.95;
   const double kPercentBoost = 0.0;
 
   const double kMinLaunchRPS = 2000;
@@ -63,7 +63,7 @@ namespace Turret_ShooterConstants {
 
   // Spindexer operates on a 5:1 gearbox. 
   // Native RPS is measured at the motor.
-  static constexpr units::turns_per_second_t kSpindexerShootVelocity = 75_tps;
+  static constexpr units::turns_per_second_t kSpindexerShootVelocity = -37_tps;
   static constexpr double kIndexerShootVelocityRPM = -5000;
 }
 
@@ -86,6 +86,12 @@ public:
   void RunSpindexerIndexer(units::meter_t distance);
   void StopSpindexerIndexer();
   void ChangeSpeedMapValue(double newOffsetValue);
+  void TurnOffMotors()
+  {
+    auto request = ctre::phoenix6::controls::VoltageOut{0.0_V};
+    m_leftMotor.SetControl(request);
+    m_rightMotor.SetControl(request);
+  };
   
   std::map<double, double> GetCurrentMapState();
   void SetCurrentMapState(std::map<double, double> inputCurrentState); // Should only be used when saving!! Please do not write to the maps unless you know for certain this is what you want to do!
@@ -127,15 +133,23 @@ private:
   };
 
   std::map<double, double> kFlywheelSpeedMap = {
-      {1.5, 10},
-      {2.0, 50},
-      {2.5, 70}, // 
-      {3.0, 100}, // 
-      {4.0, 110}, // up
-      {5.0, 120},
-      {6.0, 120},
-      {7.0, 120} // units turns per second
+      {1.0, 30.},
+      {1.5, 40.},
+      {2.0, 45.},
+      {2.5, 45.},
+      {3.0, 50.},
+      {3.5, 55.}, //8 deg extra
+      {4.0, 64.75},
+      {4.5, 65.}, //10 deg extra
+      {5.0, 70.},
+      {5.5, 75.},
+      {6.0, 80.},
+      {6.5, 85.},
+      {7.0, 120.}
   };
+  // std::map<double, double> kFlywheelSpeedMap;
+
+  
 
 
   bool kEnableCurrentLimit = true;
