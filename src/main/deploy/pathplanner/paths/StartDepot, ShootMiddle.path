@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.9685688729874773,
-        "y": 5.973935599284436
+        "x": 0.5368120491120982,
+        "y": 5.996019440205328
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2503756708407865,
-        "y": 6.00638640429338
+        "x": 1.8186188469654077,
+        "y": 6.0284702452142716
       },
       "isLocked": false,
       "linkedName": "DepotIntake"
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 1.5,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,

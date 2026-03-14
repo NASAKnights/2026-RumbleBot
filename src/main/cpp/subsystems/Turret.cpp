@@ -489,7 +489,19 @@ void Turret::Periodic()
         const units::degree_t correctedAngle = angle + angleComp;
         frc::SmartDashboard::PutNumber("/Turret/Aim/Measurement Value", GetMeasurement().value());
         if (presetShooting){
-            SetAngle(units::angle::degree_t{manualShootingPreset1()[2]}, velocity);
+            if (presetType == "middle") 
+                {
+                    SetAngle(units::angle::degree_t{manualShootingPresetMid()[2]}, velocity);
+                }
+                else if (presetType == "left")
+                {
+                    SetAngle(units::angle::degree_t{manualShootingPresetLeft()[2]}, velocity);
+                }
+                else if (presetType == "right"){
+                    SetAngle(units::angle::degree_t{manualShootingPresetRight()[2]}, velocity);
+
+                }
+            // SetAngle(units::angle::degree_t{manualShootingPreset1()[2]}, velocity);
         }
         else{
 
@@ -560,7 +572,18 @@ void Turret::Periodic()
         }
         else if (allowShooting){
             if(presetShooting){
-                ChangeHoodAngle(manualShootingPreset1()[1]);
+                if (presetType == "middle") 
+                {
+                    ChangeHoodAngle(manualShootingPresetMid()[1]);
+                }
+                else if (presetType == "left")
+                {
+                    ChangeHoodAngle(manualShootingPresetLeft()[1]);
+                }
+                else if (presetType == "right"){
+                    ChangeHoodAngle(manualShootingPresetRight()[1]);
+
+                }
             }
             else{
                 ChangeHoodAngle(m_BallisticDistance);
@@ -582,7 +605,19 @@ void Turret::Periodic()
             // units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed,m_BallisticDistance);
             units::turns_per_second_t commandedMotorSpeed = 0_tps;
             if(presetShooting){
-                commandedMotorSpeed = units::turns_per_second_t{manualShootingPreset1()[0]};
+                if (presetType == "middle") 
+                {
+                    commandedMotorSpeed = units::turns_per_second_t{manualShootingPresetMid()[0]};
+                }
+                else if (presetType == "left")
+                {
+                    commandedMotorSpeed = units::turns_per_second_t{manualShootingPresetLeft()[0]};
+                }
+                else if (presetType == "right")
+                {
+                    commandedMotorSpeed = units::turns_per_second_t{manualShootingPresetRight()[0]};
+                }
+                // commandedMotorSpeed = units::turns_per_second_t{manualShootingPreset1()[0]};
             }
             else{
                 commandedMotorSpeed = m_turret_shooter.GetMotorSpeedFromMap(m_BallisticDistance);
@@ -699,17 +734,27 @@ std::map<double, double> Turret::GetCurrentMapState () {
     return kHoodAngleMap;
 }
 
-std::vector<double> Turret::manualShootingPreset1(){
+std::vector<double> Turret::manualShootingPresetMid(){
     return std::vector<double> {46.5, 62.5, 180.0};
 }
 
-void Turret::PresetShooting(bool temp){
+std::vector<double> Turret::manualShootingPresetLeft(){
+    return std::vector<double> {55.0, 55.0, 272.0};
+}
+
+std::vector<double> Turret::manualShootingPresetRight(){
+    return std::vector<double> {57.0, 52.0, 90.0};
+}
+
+
+void Turret::PresetShooting(bool temp, std::string preset){
     if(temp){
         presetShooting = true;
     }
     else{
         presetShooting = false;
     }
+    presetType = preset; // Sets which preset we use
 }
 void Turret::SetCurrentMapState(std::map<double, double> inputCurrentState) {
     kHoodOffsetMap = inputCurrentState;

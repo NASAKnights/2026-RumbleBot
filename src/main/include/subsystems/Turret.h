@@ -150,7 +150,7 @@ public:
   void UseOutput();
   void SimulationPeriodic();
   void AllowShooting();
-  void PresetShooting(bool temp);
+  void PresetShooting(bool temp, std::string preset);
   void PauseShooting();
   void Enable();
   void Disable();
@@ -173,7 +173,9 @@ public:
   void ChangeHoodMapValue(double newValue);
 
   void SetCurrentMapState(std::map<double, double> inputCurrentState);
-  std::vector<double> manualShootingPreset1();
+  std::vector<double> manualShootingPresetMid();
+  std::vector<double> manualShootingPresetLeft();
+  std::vector<double> manualShootingPresetRight();
 
   // void get_pigeon();
   units::degree_t GetMeasurement();
@@ -307,6 +309,8 @@ private:
 
   bool allowShooting = false;
   bool presetShooting = false;
+
+  std::string presetType = "middle";
 
   std::map<double, double> kHoodOffsetMap = {
       {1.0, 0.},
