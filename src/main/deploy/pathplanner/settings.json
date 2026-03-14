@@ -3,8 +3,9 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "New Folder",
-    "OtherPaths"
+    "LeftStart, ShootingNeutralIntaking",
+    "OtherPaths",
+    "RightStart, ShootingNeutralIntaking"
   ],
   "autoFolders": [],
   "defaultMaxVel": 1.0,

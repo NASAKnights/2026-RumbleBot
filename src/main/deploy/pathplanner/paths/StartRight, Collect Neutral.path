@@ -70,7 +70,7 @@
     "rotation": 89.55826374371486
   },
   "reversed": false,
-  "folder": null,
+  "folder": "RightStart, ShootingNeutralIntaking",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

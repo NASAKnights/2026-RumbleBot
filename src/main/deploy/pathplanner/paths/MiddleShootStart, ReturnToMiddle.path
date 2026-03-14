@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.542908963998336,
-        "y": 4.225636098779135
+        "x": 2.591109123434704,
+        "y": 3.9570232293978913
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.2208933548311447,
-        "y": 4.217125148598763
+        "x": 2.841109123434704,
+        "y": 3.9570232293978913
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "MiddleShoot"
     },
     {
       "anchor": {
-        "x": 1.52,
-        "y": 4.22
+        "x": 3.5131024122502774,
+        "y": 3.9570232293978913
       },
       "prevControl": {
-        "x": 1.77,
-        "y": 4.22
+        "x": 3.2631024122502774,
+        "y": 3.9570232293978913
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "BlueTopClimb"
+      "linkedName": "MiddleStart"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 2.0,
+    "maxVelocity": 1.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "OtherPaths",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": 180.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
