@@ -352,7 +352,24 @@ void Turret::ChangeHoodAngle(units::meter_t distance)
     m_hood.Set(servoExtention);
 }
 
+void Turret::ChangeHoodAngle(double ballLaunchAngleDegrees)
+{
+    
+    double servoExtention = (-(2.94699*std::pow(10, -7)) * std::pow(ballLaunchAngleDegrees, 4) +
+        (5.89093*std::pow(10, -5)) * std::pow(ballLaunchAngleDegrees, 3) -
+        (4.41946*std::pow(10, -3)) * std::pow(ballLaunchAngleDegrees, 2) + 
+        (0.124056) * ballLaunchAngleDegrees - 0.227319);
 
+    frc::SmartDashboard::PutNumber("/Turret/Hood/Servo Extension", servoExtention);
+    if (servoExtention > 0.8){
+        servoExtention = 0.8;
+    }
+    else if(servoExtention < 0.05){
+        servoExtention = 0.05;
+    }
+    frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
+    m_hood.Set(servoExtention);
+}
 
 void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::meter_t distance)
 {
@@ -471,7 +488,13 @@ void Turret::Periodic()
         const units::degree_t angleComp = GetTurretAngleCorrection(angle, angleCompAmp);
         const units::degree_t correctedAngle = angle + angleComp;
         frc::SmartDashboard::PutNumber("/Turret/Aim/Measurement Value", GetMeasurement().value());
-        SetAngle(correctedAngle, velocity);
+        if (presetShooting){
+            SetAngle(units::angle::degree_t{manualShootingPreset1()[2]}, velocity);
+        }
+        else{
+
+            SetAngle(correctedAngle, velocity);
+        }
         fb = m_controller.Calculate(GetMeasurement().value());
         ff = m_feedforward.Calculate(correctedAngle, velocity);
         v = units::volt_t{fb} + ff;
@@ -536,7 +559,12 @@ void Turret::Periodic()
             SetHood(0.05);
         }
         else if (allowShooting){
-            ChangeHoodAngle(m_BallisticDistance);
+            if(presetShooting){
+                ChangeHoodAngle(manualShootingPreset1()[1]);
+            }
+            else{
+                ChangeHoodAngle(m_BallisticDistance);
+            }
         }
         else {
             SetHood(0.05);
@@ -552,7 +580,14 @@ void Turret::Periodic()
             // units::turns_per_second_t commandMotorSpeed = 
             frc::SmartDashboard::PutNumber("/Turret/Shooter/Set Speed MPS", m_BallisticLaunchSpeed.value());
             // units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.ConvertBallSpeed2Motor(m_BallisticLaunchSpeed,m_BallisticDistance);
-            units::turns_per_second_t commandedMotorSpeed = m_turret_shooter.GetMotorSpeedFromMap(m_BallisticDistance);
+            units::turns_per_second_t commandedMotorSpeed = 0_tps;
+            if(presetShooting){
+                commandedMotorSpeed = units::turns_per_second_t{manualShootingPreset1()[0]};
+            }
+            else{
+                commandedMotorSpeed = m_turret_shooter.GetMotorSpeedFromMap(m_BallisticDistance);
+
+            }
             const units::turns_per_second_t speedCompAmp{frc::SmartDashboard::GetNumber("/Turret/Comp/ShooterSpeedAmpRPS", 0.0)};
             const units::turns_per_second_t speedComp = GetShooterSpeedCorrection(m_goal, speedCompAmp);
             commandedMotorSpeed += speedComp;
@@ -664,6 +699,18 @@ std::map<double, double> Turret::GetCurrentMapState () {
     return kHoodAngleMap;
 }
 
+std::vector<double> Turret::manualShootingPreset1(){
+    return std::vector<double> {46.5, 62.5, 180.0};
+}
+
+void Turret::PresetShooting(bool temp){
+    if(temp){
+        presetShooting = true;
+    }
+    else{
+        presetShooting = false;
+    }
+}
 void Turret::SetCurrentMapState(std::map<double, double> inputCurrentState) {
     kHoodOffsetMap = inputCurrentState;
 }
@@ -927,6 +974,7 @@ void Turret::CalculateTargetingSolution(const frc::Pose2d &robotPose, units::sec
     }
 
     // Compute desired yaw in field frame
+    sol_lead_angle = std::clamp(sol_lead_angle,-0.35_rad, 0.35_rad);
     // units::radian_t turret_yaw = angleToGoal + sol_lead_angle;
     units::radian_t turret_yaw = angleToGoal;
 

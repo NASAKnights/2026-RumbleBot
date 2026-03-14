@@ -150,6 +150,7 @@ public:
   void UseOutput();
   void SimulationPeriodic();
   void AllowShooting();
+  void PresetShooting(bool temp);
   void PauseShooting();
   void Enable();
   void Disable();
@@ -164,6 +165,7 @@ public:
 
   void ChangeHoodAngle(units::angle::radian_t launchAngle, units::meter_t distance);
   void ChangeHoodAngle(units::meter_t distance);
+  void ChangeHoodAngle(double ballLaunchAngleDegrees);
   void SetHood(double extension);
   void ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance);
 
@@ -171,6 +173,7 @@ public:
   void ChangeHoodMapValue(double newValue);
 
   void SetCurrentMapState(std::map<double, double> inputCurrentState);
+  std::vector<double> manualShootingPreset1();
 
   // void get_pigeon();
   units::degree_t GetMeasurement();
@@ -303,6 +306,7 @@ private:
   std::vector<double> TurretGoal = {0.0, 0.0, 0.0};
 
   bool allowShooting = false;
+  bool presetShooting = false;
 
   std::map<double, double> kHoodOffsetMap = {
       {1.0, 0.},

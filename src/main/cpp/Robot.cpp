@@ -373,12 +373,17 @@ void Robot::BindCommands()
                 frc2::InstantCommand([this]
                                         { return m_intake.StopIntake(); })));
 
-    // frc2::POVButton(&m_operatorController, 0)
-    //                 .OnTrue(
-    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
-    //                         m_turret.ChangeHoodMapValue(1.0);
-    //                     }))
-    //                 );
+    frc2::POVButton(&m_operatorController, 180)
+                    .OnTrue(
+                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                            m_turret.PresetShooting(true);
+                        }))
+                    )
+                    .OnFalse(
+                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                            m_turret.PresetShooting(false);
+                        })));
+                
 
     // frc2::POVButton(&m_operatorController, 180)
     //                 .OnTrue(
