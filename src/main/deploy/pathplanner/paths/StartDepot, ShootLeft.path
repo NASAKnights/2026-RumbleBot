@@ -3,51 +3,35 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.591109123434704,
-        "y": 3.9570232293978913
+        "x": 0.5368120491120982,
+        "y": 5.996019440205328
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5087931203825398,
-        "y": 5.192500867092119
+        "x": 1.5368120491120982,
+        "y": 5.996019440205328
       },
       "isLocked": false,
-      "linkedName": "MiddleShoot"
+      "linkedName": "DepotIntake"
     },
     {
       "anchor": {
-        "x": 4.148747763864042,
-        "y": 5.470948121645796
+        "x": 2.447183944922309,
+        "y": 5.5685431551748055
       },
       "prevControl": {
-        "x": 3.289776666943286,
-        "y": 5.5548088193487475
-      },
-      "nextControl": {
-        "x": 5.376444445407881,
-        "y": 5.351089024347947
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.523631484794276,
-        "y": 4.335169946332737
-      },
-      "prevControl": {
-        "x": 6.267495187638735,
-        "y": 4.808397440344063
+        "x": 2.04275071968646,
+        "y": 6.087877098362931
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "MiddleNeutralIntake"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.6149732620320859,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 180.0
     }
   ],
   "constraintZones": [],
@@ -63,7 +47,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 134.36344345162018
   },
   "reversed": false,
   "folder": null,

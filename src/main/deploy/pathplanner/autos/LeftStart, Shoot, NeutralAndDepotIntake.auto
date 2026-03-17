@@ -41,6 +41,12 @@
                             }
                           },
                           {
+                            "type": "named",
+                            "data": {
+                              "name": "HalfRaiseIntake"
+                            }
+                          },
+                          {
                             "type": "wait",
                             "data": {
                               "waitTime": 3.0
@@ -58,13 +64,26 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "StartDepot, ShootMiddle"
+                        "pathName": "StartDepot, ShootLeft"
                       }
                     },
                     {
-                      "type": "named",
+                      "type": "parallel",
                       "data": {
-                        "name": "Shoot"
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "Shoot"
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "HalfRaiseIntake"
+                            }
+                          }
+                        ]
                       }
                     }
                   ]
