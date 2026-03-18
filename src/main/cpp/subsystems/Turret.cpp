@@ -345,8 +345,8 @@ void Turret::ChangeHoodAngle(units::meter_t distance)
     if (servoExtention > 0.8){
         servoExtention = 0.8;
     }
-    else if(servoExtention < 0.05){
-        servoExtention = 0.05;
+    else if(servoExtention < 0.08){
+        servoExtention = 0.08;
     }
     frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
     m_hood.Set(servoExtention);

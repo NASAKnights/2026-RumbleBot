@@ -20,28 +20,28 @@
         "y": 0.6571862860710325
       },
       "prevControl": {
-        "x": 5.703728680943243,
-        "y": 0.5322346008354689
+        "x": 5.702063794827275,
+        "y": 0.5574000909907441
       },
       "nextControl": {
-        "x": 7.650728065627817,
-        "y": 0.6755370742961095
+        "x": 7.963244181811875,
+        "y": 0.690177970657603
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.841894552927302,
-        "y": 2.5
+        "x": 7.819716590940622,
+        "y": 2.9946805632630413
       },
       "prevControl": {
-        "x": 7.760418068465594,
-        "y": 2.074649044464485
+        "x": 7.738240106478914,
+        "y": 2.5693296077275263
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RightNeutral2nd"
     }
   ],
   "rotationTargets": [
@@ -58,7 +58,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.5,
+    "maxVelocity": 2.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -67,7 +67,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 89.55826374371487
+    "rotation": 92.29032524358075
   },
   "reversed": false,
   "folder": "RightStart, ShootingNeutralIntaking",
