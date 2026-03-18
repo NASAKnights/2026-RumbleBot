@@ -40,6 +40,7 @@ void Robot::RobotPeriodic()
 {
     frc2::CommandScheduler::GetInstance().Run();
     this->UpdateDashboard();
+    m_POVloop.Poll();
     
     m_VoltageLog.Append(m_pdh.GetVoltage());
     m_CurrentLog.Append(m_pdh.GetTotalCurrent());
@@ -205,11 +206,11 @@ void Robot::CreateRobot()
 
     pathplanner::NamedCommands::registerCommand("Intake", Intake(&m_intake, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("FlattenMoonKnight", FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());
-    pathplanner::NamedCommands::registerCommand("HalfRaisedIntake", HalfRaiseIntake(&m_intake, &m_wrist, 45.0).ToPtr());
+    pathplanner::NamedCommands::registerCommand("HalfRaiseIntake", HalfRaiseIntake(&m_intake, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("Shoot", Shoot(&m_turret, true).ToPtr());
     pathplanner::NamedCommands::registerCommand("NoShoot", Shoot(&m_turret, false).ToPtr());
-    pathplanner::NamedCommands::registerCommand("ExtendClimb", Climb(&m_climber, true).ToPtr());
-    pathplanner::NamedCommands::registerCommand("RetractClimb", Climb(&m_climber, false).ToPtr());
+    // pathplanner::NamedCommands::registerCommand("ExtendClimb", Climb(&m_climber, true).ToPtr());
+    // pathplanner::NamedCommands::registerCommand("RetractClimb", Climb(&m_climber, false).ToPtr());
 
     // pathplanner::NamedCommands::registerCommand("StopShoot", );
 
@@ -304,6 +305,7 @@ void Robot::BindCommands()
                                     { m_swerveDrive.SetFast();
                                     return; })));
     
+    
 
     // frc2::JoystickButton(&m_driverController, 3)
     //     .OnTrue(scoreClosest.get())
@@ -331,7 +333,7 @@ void Robot::BindCommands()
                 .OnFalse(frc2::CommandPtr(
                 frc2::InstantCommand([this]
                                         { m_wrist.SetAngle(3);
-                                            m_intake.StopIntake(); 
+                                        m_intake.StopIntake(); 
                                         return;})));
 
         frc2::JoystickButton(&m_operatorController, 5)
@@ -351,7 +353,7 @@ void Robot::BindCommands()
         frc2::JoystickButton(&m_operatorController, 6)
                 .OnTrue(frc2::CommandPtr(
                     frc2::InstantCommand([this]
-                                        { m_wrist.SetAngle(3);
+                                        { m_wrist.SetAngle(3.);
                                         m_intake.Intake();
                                         return; })))
                 .OnFalse(frc2::CommandPtr(
@@ -367,22 +369,41 @@ void Robot::BindCommands()
         .WhileTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_intake.Outtake(); })))
         .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_intake.StopIntake(); })));
         
-        frc2::JoystickButton(&m_operatorController, 3)
-        .OnTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_wrist.SetAngle(101.0);
-                                                                m_intake.Intake(); })))
-        .OnFalse(frc2::CommandPtr(
-                frc2::InstantCommand([this]
-                                        { return m_intake.StopIntake(); })));
+    frc2::JoystickButton(&m_operatorController, 3)
+    .OnTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_wrist.SetAngle(101.0);
+                                                            m_intake.Intake(); })))
+    .OnFalse(frc2::CommandPtr(
+            frc2::InstantCommand([this]
+                                    { return m_intake.StopIntake(); })));
 
-    frc2::POVButton(&m_operatorController, 180)
-                    .OnTrue(
-                        frc2::CommandPtr(frc2::InstantCommand([this] {
-                            m_turret.PresetShooting(true,"middle");
-                        })))
-                    .OnFalse(
-                        frc2::CommandPtr(frc2::InstantCommand([this] {
-                            m_turret.PresetShooting(false,"middle");
-                        })));
+    // frc2::POVButton(&m_operatorController, 180)
+    //                 .OnTrue(
+    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
+    //                         m_turret.PresetShooting(true,"middle");
+    //                     })))
+    //                 .OnFalse(
+    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
+    //                         m_turret.PresetShooting(false,"middle");
+    //                     })));
+    
+    
+    frc::BooleanEvent downPOVBE = frc::BooleanEvent(
+        &m_POVloop,
+        [&controller = m_operatorController]{
+            return (controller.GetPOV()>=135) && (controller.GetPOV()<=225);
+        }
+    ).Debounce(0.2_s);
+
+    frc2::Trigger POVDownTrig = downPOVBE.CastTo<frc2::Trigger>();
+    POVDownTrig.OnTrue(
+                    frc2::CommandPtr(frc2::InstantCommand([this] {
+                        m_turret.PresetShooting(true,"middle");
+                    })))
+                .OnFalse(
+                    frc2::CommandPtr(frc2::InstantCommand([this] {
+                        m_turret.PresetShooting(false,"middle");
+                    })));
+
 
     frc2::POVButton(&m_operatorController, 90)
                     .OnTrue(

@@ -53,7 +53,7 @@
       "command": null
     },
     {
-      "name": "ExtendClimb",
+      "name": "",
       "waypointRelativePos": 0.28,
       "endWaypointRelativePos": 0.94,
       "command": null

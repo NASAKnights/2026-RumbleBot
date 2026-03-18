@@ -4,19 +4,19 @@
 
 #include "commands/HalfRaiseIntake.h"
 
-HalfRaiseIntake::HalfRaiseIntake(TurretIntake *_turretIntake, Wrist *_wrist, double _angle) : 
+HalfRaiseIntake::HalfRaiseIntake(TurretIntake *_turretIntake, Wrist *_wrist) : 
 m_turretIntake{_turretIntake}, m_wrist{_wrist}
 {
   // Use addRequirements() here to declare subsystem dependencies.
   AddRequirements(m_turretIntake);
   AddRequirements(m_wrist);
-  m_angle = _angle;
+  // m_angle = _angle;
 }
 
 // Called when the command is initially scheduled.
 void HalfRaiseIntake::Initialize() 
 {
-  m_wrist->SetAngle(m_angle);
+  m_wrist->SetAngle(45.0);
 }
 
 // Called repeatedly when this Command is scheduled to run

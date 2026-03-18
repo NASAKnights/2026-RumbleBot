@@ -22,7 +22,7 @@ class HalfRaiseIntake
   /* You should consider using the more terse Command factories API instead
    * https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands
    */
-  HalfRaiseIntake(TurretIntake *m_turretIntake, Wrist *m_wrist, double _angle);
+  HalfRaiseIntake(TurretIntake *m_turretIntake, Wrist *m_wrist);
 
   void Initialize() override;
 
@@ -34,5 +34,5 @@ class HalfRaiseIntake
 
   TurretIntake *m_turretIntake;
   Wrist *m_wrist;
-  double m_angle;
+  double m_angle = 3.0;
 };

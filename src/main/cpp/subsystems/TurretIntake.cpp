@@ -8,7 +8,8 @@ TurretIntake::TurretIntake()
 {
     rev::spark::SparkMaxConfig config;
     config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kCoast);
-    config.SmartCurrentLimit(30,0, 200000);
+    config.SmartCurrentLimit(30);
+    m_intakeMotor.Configure(config, rev::spark::SparkMax::ResetMode::kResetSafeParameters, rev::spark::SparkMax::PersistMode::kPersistParameters);
 }
 
 // This method will be called once per scheduler run

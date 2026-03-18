@@ -25,6 +25,7 @@
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/button/JoystickButton.h>
 #include <frc2/command/button/POVButton.h>
+#include <frc2/command/button/Trigger.h>
 
 #include <pathplanner/lib/auto/AutoBuilder.h>
 #include <pathplanner/lib/auto/NamedCommands.h>
@@ -154,4 +155,5 @@ private:
     // std::function<void(std::string)> SetAutonomousCommand(std::string a);
     // void SetTAutonomousCommand(std::string a);
     void UpdateDashboard();
+    frc::EventLoop m_POVloop{};
 };
