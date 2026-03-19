@@ -16,7 +16,7 @@ m_turretIntake{_turretIntake}, m_wrist{_wrist}
 // Called when the command is initially scheduled.
 void HalfRaiseIntake::Initialize() 
 {
-  m_wrist->SetAngle(45.0);
+  m_wrist->SetAngle(50.0);
 }
 
 // Called repeatedly when this Command is scheduled to run
