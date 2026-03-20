@@ -72,6 +72,7 @@ SwerveModule::SwerveModule(int driveMotorID, int steerMotorID,
   driveCurrentLimitConfig.SupplyCurrentLimit = units::ampere_t{kDrivePeakCurrentLimit};
   driveCurrentLimitConfig.SupplyCurrentLowerLimit = units::ampere_t{kDriveContinuousCurrentLimit};
   driveCurrentLimitConfig.SupplyCurrentLowerTime = units::second_t{kDrivePeakCurrentDuration};
+  
   steerCurrentLimitConfig.SupplyCurrentLimitEnable = kSteerEnableCurrentLimit;
   steerCurrentLimitConfig.SupplyCurrentLimit = units::ampere_t{kSteerPeakCurrentLimit};
   steerCurrentLimitConfig.SupplyCurrentLowerLimit = units::ampere_t{kSteerContinuousCurrentLimit};

@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartLeftTrench, NeutralIntake, LeftShoot"
+                  "pathName": "StartRight, NeutralIntake, RightShoot"
                 }
               },
               {
@@ -42,7 +42,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 3.0
+                  "waitTime": 3.5
                 }
               }
             ]
@@ -61,7 +61,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartLeftAfterNeutral, IntakeDepot"
+                  "pathName": "RightShoot, NeutralIntake, RightShoot"
                 }
               },
               {
@@ -71,12 +71,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "StartDepot, ShootLeft"
           }
         },
         {

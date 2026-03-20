@@ -5,13 +5,44 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "MiddleStart, Shoot"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "HalfRaiseIntake"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.5
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "race",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartLeftTrench, NeutralIntake, LeftShoot"
+                  "pathName": "StartMiddleShoot, IntakeUpperNeutral, MiddleShoot"
                 }
               },
               {
@@ -42,16 +73,10 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 3.0
+                  "waitTime": 3.5
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "NoShoot"
           }
         },
         {
@@ -61,7 +86,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartLeftAfterNeutral, IntakeDepot"
+                  "pathName": "MiddleShootStart, DepotIntake"
                 }
               },
               {
@@ -74,9 +99,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "StartDepot, ShootLeft"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "StartDepot, ShootMiddle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake"
+                }
+              }
+            ]
           }
         },
         {

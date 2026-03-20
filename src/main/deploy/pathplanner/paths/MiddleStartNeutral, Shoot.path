@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.523631484794276,
-        "y": 4.335169946332737
+        "x": 7.802375312153163,
+        "y": 4.4613359288290795
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.933542039355992,
-        "y": 5.195116279069768
+        "x": 6.21228586671488,
+        "y": 5.32128226156611
       },
       "isLocked": false,
       "linkedName": "MiddleNeutralIntake"
@@ -66,7 +66,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "MiddlePaths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

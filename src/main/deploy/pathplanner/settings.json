@@ -4,6 +4,7 @@
   "holonomicMode": true,
   "pathFolders": [
     "LeftStart, ShootingNeutralIntaking",
+    "MiddlePaths",
     "OtherPaths",
     "RightStart, ShootingNeutralIntaking"
   ],

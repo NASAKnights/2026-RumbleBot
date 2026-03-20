@@ -52,13 +52,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "StartMiddleAZ, IntakeNeutral"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "MiddleStartNeutral, Shoot"
+                        "pathName": "StartMiddleShoot, IntakeUpperNeutral, MiddleShoot"
                       }
                     },
                     {
