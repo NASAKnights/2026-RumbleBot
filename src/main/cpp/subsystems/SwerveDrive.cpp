@@ -499,6 +499,18 @@ void SwerveDrive::UpdatePoseEstimate()
     // }
 }
 
+void SwerveDrive::MakeX(bool make_x){
+    std::vector<units::angle::degree_t> angles = {45.0_deg, 90.0_deg, 135.0_deg, 180.0_deg};
+    
+    if(make_x){
+        for(int i = 0; i < 4; i++){
+            frc::SwerveModuleState state = frc::SwerveModuleState{0.0_mps, frc::Rotation2d(angles[i])};
+            modules[i].SetDesiredState(state);
+        }
+    }
+}
+
+
 void SwerveDrive::PublishOdometry(frc::Pose2d odometryPose)
 {
     int64_t time_us = nt::Now();
@@ -633,6 +645,12 @@ void SwerveDrive::TurnVisionOn()
 
 void SwerveDrive::PeriodicShuffleboard()
 {
+    SwerveStatepublisher.Set(std::vector{
+        modules[0].GetCurrentState(),
+        modules[1].GetCurrentState(),
+        modules[2].GetCurrentState(),
+        modules[3].GetCurrentState()
+    });
     // auto VariableName = frc::SmartDashboard::GetString("SmartDashboard/Swerve/kFrontLeftOffset", "kFrontLeftOffset");
     // frc::SmartDashboard::PutString("SmartDashboard/Swerve/kFrontLeftOffset", VariableName);
     // frc::SmartDashboard::GetNumber("SmartDashboard/Swerve/WidthMeters", 0);

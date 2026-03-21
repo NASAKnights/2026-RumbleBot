@@ -391,6 +391,24 @@ void Robot::BindCommands()
         .OnFalse(frc2::CommandPtr(
                 frc2::InstantCommand([this]
                                         { return m_intake.StopIntake(); })));
+
+        
+        frc::BooleanEvent downPOVDriverBE = frc::BooleanEvent(
+            &m_POVloop,
+            [&controller = m_driverController]{
+                return (controller.GetPOV()>=135) && (controller.GetPOV()<=225);
+            }
+        ).Debounce(0.2_s);
+
+        frc2::Trigger POVDownTrigBR = downPOVDriverBE.CastTo<frc2::Trigger>();
+        POVDownTrigBR.WhileTrue(
+                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                            m_swerveDrive.MakeX(true);
+                        })))
+                    .OnFalse(
+                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                            m_swerveDrive.MakeX(false);
+                        })));
         
         // frc2::POVButton(&m_operatorController, 0)
         // .WhileTrue(Climb(&m_climber, true).ToPtr());

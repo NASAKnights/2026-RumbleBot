@@ -112,6 +112,8 @@ public:
   void WeightedDriving(bool approach, double leftXAxis, double leftYAxis, double rightXAxis, std::string poiKey);
   void ToggleFieldRelative();
 
+  void MakeX(bool make_x);
+
 private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
@@ -180,6 +182,9 @@ private:
 
   nt::DoubleArrayPublisher baseLinkPublisher;
   nt::DoubleArrayPublisher timePublisher;
+
+  nt::StructArrayPublisher<frc::SwerveModuleState> SwerveStatepublisher = nt::NetworkTableInstance::GetDefault().GetStructArrayTopic<frc::SwerveModuleState>("/SwerveStates").Publish();
+
 
   /* Simulation */
   frc::Timer m_simTimer;
