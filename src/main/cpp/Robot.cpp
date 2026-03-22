@@ -402,7 +402,7 @@ void Robot::BindCommands()
 
         frc2::Trigger POVDownTrigBR = downPOVDriverBE.CastTo<frc2::Trigger>();
         POVDownTrigBR.WhileTrue(
-                        frc2::CommandPtr(frc2::InstantCommand([this] {
+                        frc2::CommandPtr(frc2::RunCommand([this] {
                             m_swerveDrive.MakeX(true);
                         })))
                     .OnFalse(
