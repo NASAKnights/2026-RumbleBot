@@ -335,6 +335,7 @@ void Turret::ChangeHoodAngle(units::meter_t distance)
     // ballLaunchAngle -= units::degree_t{hoodOffset};
 
     double ballLaunchAngleDegrees = hoodAngle;
+    frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
     
     double servoExtention = (-(2.94699*std::pow(10, -7)) * std::pow(ballLaunchAngleDegrees, 4) +
         (5.89093*std::pow(10, -5)) * std::pow(ballLaunchAngleDegrees, 3) -
@@ -348,10 +349,16 @@ void Turret::ChangeHoodAngle(units::meter_t distance)
     else if(servoExtention < 0.08){
         servoExtention = 0.08;
     }
-    frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
     m_hood.Set(servoExtention);
 }
 
+double Turret::GetHoodAngle(){
+    if constexpr (frc::RobotBase::IsSimulation())
+    {
+        return frc::SmartDashboard::GetNumber("/Turret/Hood/Launch Angle", 0.0);
+    }
+
+}
 void Turret::ChangeHoodAngle(double ballLaunchAngleDegrees)
 {
     
@@ -569,6 +576,9 @@ void Turret::Periodic()
         // Hood/Launch Angle
         if(Flatten){
             SetHood(0.05);
+            frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", 92.44086);
+
+
         }
         else if (allowShooting){
             if(presetShooting){
@@ -591,6 +601,7 @@ void Turret::Periodic()
         }
         else {
             SetHood(0.05);
+            frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", 92.44086);
         }
 
         bool override = frc::SmartDashboard::GetBoolean("/Turret/Hood/Angle Manual Override", false);

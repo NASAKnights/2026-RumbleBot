@@ -96,9 +96,23 @@ namespace TurretConstants
       units::moment_of_inertia::kilogram_square_meter_t(0.06742); // I = MR^2
   const units::length::meter_t kTurretRadius = units::length::meter_t(0.3048);
   const units::mass::kilogram_t kTurretMass = units::mass::kilogram_t(2.26796);
-
+  
   const bool kGravity = false;
   const units::angle::radian_t kTurretStartAngle = units::angle::radian_t(0.0);
+
+  //HOOD VALUES
+  const frc::DCMotor kHoodSimMotor = frc::DCMotor::KrakenX60(1);
+  const double kHoodGearRatio = 1; // gear ratio for motor to arm
+  const units::moment_of_inertia::kilogram_square_meter_t kHoodmoi =
+      units::moment_of_inertia::kilogram_square_meter_t(0.08428); // I = MR^2
+  const units::length::meter_t kHoodRadius = units::length::meter_t(0.3048);
+  const units::mass::kilogram_t kHoodMass = units::mass::kilogram_t(0.907185);
+  const units::angle::radian_t kHoodStartAngle = units::angle::radian_t(0.0);
+  const units::angle::radian_t kHoodMinAngle = 35_deg; //Needs to increase to fix skew to the right
+  const units::angle::radian_t kHoodMaxAngle = 70_deg;
+  const double kHoodXOffset = 0.0;
+  const double kHoodYOffset = 0.0;
+
 
   const double turretPositionConversionFactor  = 360.0 / TurretConstants::kGearRatio;
   const double turretVelocityConversionFactor = 360.0 / TurretConstants::kGearRatio / 60.0;
@@ -167,6 +181,7 @@ public:
   void ChangeHoodAngle(units::meter_t distance);
   void ChangeHoodAngle(double ballLaunchAngleDegrees);
   void SetHood(double extension);
+  double GetHoodAngle();
   void ChangeLaunchSpeed(units::meters_per_second_t speed, units::meter_t distance);
 
   std::map<double, double> GetCurrentMapState();
@@ -284,6 +299,7 @@ private:
   frc::Timer m_simTimer;
 
   frc::sim::SingleJointedArmSim m_TurretSim;
+  // frc::sim::SingleJointedArmSim m_HoodSim;
 
   frc::PIDController m_controller;
   units::degrees_per_second_t m_velocityGoal{0.0};

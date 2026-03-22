@@ -48,12 +48,45 @@ void Robot::RobotPeriodic()
     m_EnergyLog.Append(m_pdh.GetTotalEnergy());
     m_TemperatureLog.Append(m_pdh.GetTemperature());
     m_BatteryLog.Append(batteryShunt.GetVoltage());
-
+    testingRotation += units::angle::radian_t{(1*3.14159)/180};
     frc::Pose2d pose = frc::Pose2d(units::length::meter_t{0.0}, units::length::meter_t{0.0}, frc::Rotation2d{});
-    frc::Pose3d TurretPose3D = frc::Pose3d(pose.X(), pose.Y(), 0.0_m, frc::Rotation3d(0.0_rad, 0.0_rad, 0.0_rad));
-    frc::Pose3d ShooterPose3D = frc::Pose3d(pose.X(), pose.Y(), 0.0_m, frc::Rotation3d(0.0_rad, 0.0_rad, units::radian_t{m_turret.GetMeasurement()}));
+
+    frc::Pose3d IntakePose3D = frc::Pose3d(pose.X(),
+                                        pose.Y(),
+                                        0.0_m,
+                                        frc::Rotation3d(units::angle::radian_t{(m_wrist.GetMeasurement()*3.14159)/180}, 0.0_rad, 0.0_rad));
+
+    frc::Pose3d SpindexerPose3D = frc::Pose3d(pose.X(),
+                                        pose.Y(),
+                                        0.0_m,
+                                        frc::Rotation3d(0.0_rad, 0.0_rad, 0.0_rad));
+
+    frc::Pose3d ShooterPose3D = frc::Pose3d(pose.X()-0.18_m,
+                                        pose.Y()+0.18_m,
+                                        0.45_m,
+                                        frc::Rotation3d(0.0_rad, 0.0_rad, units::radian_t{m_turret.GetMeasurement()}));
+
+    // frc::Pose3d ShooterPose3D = frc::Pose3d(pose.X()-0.18_m,
+    //                                     pose.Y()+0.18_m,
+    //                                     0.45_m,
+    //                                     frc::Rotation3d(0.0_rad, 0.0_rad, 0.0_rad));
+
+    frc::Pose3d HoodPose3D = frc::Pose3d(ShooterPose3D.X() + units::meter_t{TurretConstants::kHoodXOffset *(std::cos(double(m_turret.GetMeasurement() - 90_deg)))},
+                                        ShooterPose3D.Y() + units::meter_t{TurretConstants::kHoodYOffset *(std::sin(double(m_turret.GetMeasurement() - 90_deg)))},
+                                        0.545_m,
+                                        frc::Rotation3d(0.0_rad, units::radian_t{((90 - m_turret.GetHoodAngle())*3.14159)/180} , units::radian_t{m_turret.GetMeasurement()}));
+
+    // frc::Pose3d HoodPose3D = frc::Pose3d(ShooterPose3D.X() + units::meter_t{TurretConstants::kHoodXOffset *(std::cos(0.0))},
+    //                                     ShooterPose3D.Y() + units::meter_t{TurretConstants::kHoodYOffset *(std::sin(0.0))},
+    //                                     0.545_m,
+    //                                     frc::Rotation3d(0.0_rad, units::radian_t{((90 - m_turret.GetHoodAngle())*3.14159)/180} , 0.0_rad));
+
     std::vector<frc::Pose3d> modelPoses = {
-        ShooterPose3D};
+        ShooterPose3D,
+        HoodPose3D,
+        IntakePose3D,
+        SpindexerPose3D
+    };
     modelPosePublisher.Set(modelPoses, 0);
 }
 

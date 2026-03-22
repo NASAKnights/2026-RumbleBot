@@ -107,6 +107,7 @@ private:
     nt::StructPublisher<frc::Pose3d> climb3dPOS;
     nt::StructArrayPublisher<frc::Pose3d> modelPosePublisher;
     nt::NetworkTableInstance networkTableInst;
+    units::angle::radian_t testingRotation = 0.0_rad;
 
     std::string targetKey = "POI/Calibration POIs";
     std::string prevAuto = "";

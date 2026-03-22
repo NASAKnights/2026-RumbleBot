@@ -60,9 +60,11 @@ void Wrist::SimulationPeriodic()
 
 units::degree_t Wrist::GetMeasurement()
 { // original get measurement function
+    frc::SmartDashboard::PutNumber("/Wrist/intakeWristAngle", m_encoder.GetPosition());
     if constexpr (frc::RobotBase::IsSimulation())
     {
         return m_WristSim.GetAngle();
+        frc::SmartDashboard::PutNumber("/Wrist/SIMintakeWristAngle", double(m_WristSim.GetAngle()*180.0_rad/3.14159));
     }
 
     return units::degree_t{m_encoder.GetPosition()};
