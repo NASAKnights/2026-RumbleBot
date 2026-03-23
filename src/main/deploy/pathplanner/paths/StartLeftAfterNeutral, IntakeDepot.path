@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.1799217882907884,
-        "y": 5.4270603409406215
+        "x": 2.3382602663706997,
+        "y": 5.430048860640954
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.180340593784684,
-        "y": 5.976200835876804
+        "x": 1.9578138439927866,
+        "y": 5.815921805632631
       },
       "isLocked": false,
       "linkedName": "TopShootMain"
@@ -67,7 +67,7 @@
   "folder": "MiddlePaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 52.7839850143979
+    "rotation": 155.93192091908233
   },
   "useDefaultConstraints": true
 }

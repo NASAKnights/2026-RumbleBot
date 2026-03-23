@@ -357,7 +357,7 @@ double Turret::GetHoodAngle(){
     {
         return frc::SmartDashboard::GetNumber("/Turret/Hood/Launch Angle", 0.0);
     }
-
+    return 0.0;
 }
 void Turret::ChangeHoodAngle(double ballLaunchAngleDegrees)
 {

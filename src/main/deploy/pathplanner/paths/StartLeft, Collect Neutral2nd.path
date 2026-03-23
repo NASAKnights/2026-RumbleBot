@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.1799217882907884,
-        "y": 5.4270603409406215
+        "x": 2.3382602663706997,
+        "y": 5.430048860640954
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.30761610363485,
-        "y": 5.3860468403163155
+        "x": 3.4659545817147617,
+        "y": 5.389035360016648
       },
       "isLocked": false,
       "linkedName": "TopShootMain"
@@ -69,7 +69,7 @@
   "folder": "LeftStart, ShootingNeutralIntaking",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 52.7839850143979
+    "rotation": 155.93192091908233
   },
   "useDefaultConstraints": true
 }

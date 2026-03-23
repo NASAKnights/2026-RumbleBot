@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 3.1799217882907884,
-        "y": 5.4270603409406215
+        "x": 2.3382602663706997,
+        "y": 5.430048860640954
       },
       "prevControl": {
-        "x": 4.214342830882353,
-        "y": 5.5613077916897895
+        "x": 3.3726813089622647,
+        "y": 5.564296311390122
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 52.7839850143979
+    "rotation": 155.93192091908233
   },
   "reversed": false,
   "folder": "LeftStart, ShootingNeutralIntaking",
