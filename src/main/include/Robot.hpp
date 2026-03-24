@@ -39,7 +39,7 @@
 #include "subsystems/Wrist.h"
 #include "subsystems/Turret.h"
 #include "subsystems/TurretIntake.h"
-#include "subsystems/Climber.h"
+// #include "subsystems/Climber.h"
 #include "subsystems/LEDController.h"
 
 #include "commands/AutoWheelOffsets.h"
@@ -95,7 +95,7 @@ private:
     SwerveDrive m_swerveDrive{NKCANBus};
     // SwerveDrive m_swerveDrive{RioCANBus};
     Wrist m_wrist;
-    Climber m_climber;
+    // Climber m_climber;
     Turret m_turret;
     TurretIntake m_intake;
 

@@ -605,6 +605,11 @@ void SwerveDrive::ToggleFieldRelative()
     m_fieldRelative = !m_fieldRelative;
 }
 
+void SwerveDrive::InvertHeading()
+{
+    m_pigeon.SetYaw(180_deg);
+}
+
 bool SwerveDrive::atSetpoint()
 {
     if (pos_Error < 0.05)

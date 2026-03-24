@@ -132,6 +132,8 @@ void Robot::AutonomousInit()
     auto m_autonomousCommand = autoChooser.GetSelected();
     m_swerveDrive.ResetPose(autoStartPose);
 
+    m_swerveDrive.InvertHeading();
+
     if (m_autonomousCommand)
     {
         m_autonomousCommand->Schedule();
@@ -293,9 +295,9 @@ void Robot::CreateRobot()
     AddPeriodic([this]
                 { m_turret.Periodic(); },
                 5_ms, 1_ms);
-    AddPeriodic([this]
-                { m_climber.Periodic(); },
-                20_ms, 2_ms);
+    // AddPeriodic([this]
+    //             { m_climber.Periodic(); },
+    //             20_ms, 2_ms);
 
     // Configure the button bindings
     BindCommands();
