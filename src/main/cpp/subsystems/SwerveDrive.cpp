@@ -500,7 +500,7 @@ void SwerveDrive::UpdatePoseEstimate()
 }
 
 void SwerveDrive::MakeX(bool make_x){
-    std::vector<units::angle::degree_t> angles = {45.0_deg, 90.0_deg, 135.0_deg, 180.0_deg};
+    std::vector<units::angle::degree_t> angles = {45.0_deg, 135.0_deg, 300.0_deg, 210.0_deg};
     
     if(make_x){
         for(int i = 0; i < 4; i++){
