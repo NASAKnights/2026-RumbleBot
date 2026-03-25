@@ -1,15 +1,18 @@
 {
-  "robotWidth": 0.9,
-  "robotLength": 0.9,
+  "robotWidth": 0.838,
+  "robotLength": 0.838,
   "holonomicMode": true,
   "pathFolders": [
     "LeftStart, ShootingNeutralIntaking",
     "MiddlePaths",
+    "UltraRight",
     "OtherPaths",
-    "RightStart, ShootingNeutralIntaking"
+    "RightStart, ShootingNeutralIntaking",
+    "UltraLeft"
   ],
   "autoFolders": [
-    "Basics"
+    "Basics",
+    "Ultras"
   ],
   "defaultMaxVel": 2.0,
   "defaultMaxAccel": 3.0,

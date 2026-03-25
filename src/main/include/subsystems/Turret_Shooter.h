@@ -145,7 +145,7 @@ private:
       {5.5, 75.},
       {6.0, 80.},
       {6.5, 85.},
-      {7.0, 120.}
+      {7.0, 90.}
   };
   // std::map<double, double> kFlywheelSpeedMap;
 

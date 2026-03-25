@@ -295,15 +295,15 @@ void Robot::BindCommands()
     //                                 return; })));
                                 
     
-    // frc2::JoystickButton(&m_driverController, 6)
-    // .OnTrue(frc2::CommandPtr(
-    //             frc2::InstantCommand([this]
-    //                                 {m_swerveDrive.SetSlow();
-    //                                     return; })))
-    //         .OnFalse(frc2::CommandPtr(
-    //             frc2::InstantCommand([this]
-    //                                 { m_swerveDrive.SetFast();
-    //                                 return; })));
+    frc2::JoystickButton(&m_operatorController, 5)
+    .OnTrue(frc2::CommandPtr(
+                frc2::InstantCommand([this]
+                                    {m_swerveDrive.SetSlow();
+                                        return; })))
+            .OnFalse(frc2::CommandPtr(
+                frc2::InstantCommand([this]
+                                    { m_swerveDrive.SetFast();
+                                    return; })));
     
     
 
