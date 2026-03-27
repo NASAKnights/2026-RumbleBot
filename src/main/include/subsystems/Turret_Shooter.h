@@ -6,7 +6,14 @@
 
 #include <frc2/command/SubsystemBase.h>
 #include <rev/SparkFlex.h>
+#include <rev/config/SparkFlexConfig.h>
 #include <rev/SparkMax.h>
+// #include <ctre/phoenix6/TalonFX.hpp>
+#include <frc/motorcontrol/PWMMotorController.h>
+#include <ctre/phoenix6/TalonFXS.hpp>
+#include <ctre/phoenix6/TalonFX.hpp>
+#include <ctre/phoenix6/controls/Follower.hpp>
+#include <ctre/phoenix6/sim/TalonFXSimState.hpp>
 #include <units/angle.h>
 #include <units/velocity.h>
 #include <units/acceleration.h>
@@ -14,55 +21,151 @@
 #include <units/angular_acceleration.h>
 #include <units/voltage.h>
 #include <units/moment_of_inertia.h>
+#include <map>
+
+#include <frc/DriverStation.h>
 
 #include <rev/SparkBase.h>
 #include <frc2/command/PIDCommand.h>
 #include <frc2/command/PIDSubsystem.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/controller/SimpleMotorFeedforward.h>
+#include <frc/system/plant/DCMotor.h>
+#include <frc/Timer.h>
+#include <frc/RobotBase.h>
+#include <rev/SparkSim.h>
+
+
+namespace Turret_ShooterConstants {
+
+  static const int kMotorIdLeft = 4;
+  static const int kMotorIdRight = 3;
+
+  static const int kSpindexerMotorId = 5;
+  static const int kIndexerMotorId = 6;
+
+  static const double spindexerSpeed = 0.2;
+  static const double indexerSpeed = -0.95;
+  const double kPercentBoost = 0.0;
+
+  const double kMinLaunchRPS = 2000;
+
+  static constexpr double kSpindexerP = 0.5;
+  static constexpr double kSpindexerI = 0.0;
+  static constexpr double kSpindexerD = 0.0;
+  static constexpr double kSpindexerS = 0.1;
+  static constexpr double kSpindexerV = 1.3;
+
+  static constexpr double kIndexerP = 0.002;
+  static constexpr double kIndexerI = 0.0;
+  static constexpr double kIndexerD = 0.0;
+  static constexpr double kIndexerkV = 0.003;
+
+  // Spindexer operates on a 5:1 gearbox. 
+  // Native RPS is measured at the motor.
+  static constexpr units::turns_per_second_t kSpindexerShootVelocity = -20_tps;
+  static constexpr double kIndexerShootVelocityRPM = -2000;
+}
 
 class Turret_Shooter : public frc2::SubsystemBase
 {
 public:
   Turret_Shooter();
 
-  /**
-   * Will be called periodically whenever the CommandScheduler runs.
-   */
   void Periodic() override;
+  void SimulationPeriodic() override;
 
   void StopMotors();
-  void SetSpeed();
-  void NewSetSpeed();
-  double max_speed = 5000; // need to change to actual value we want
-  double min_speed = -5000;
+  void SetSpeed(units::meters_per_second_t speed, units::meter_t distance); // speed of the ball leaving the shooter
+  units::meters_per_second_t GetActualBallSpeed();
+  units::turns_per_second_t GetActualMotorSpeed();
+  units::turns_per_second_t ConvertBallSpeed2Motor(units::meters_per_second_t ballSpeed, units::meter_t distance);
+  units::turns_per_second_t GetMotorSpeedFromMap(units::meter_t distance);
+  void SetMotorSpeed(units::turns_per_second_t speed);
+
+  void RunSpindexerIndexer(units::meter_t distance);
+  void StopSpindexerIndexer();
+  void ChangeSpeedMapValue(double newOffsetValue);
+  void TurnOffMotors()
+  {
+    auto request = ctre::phoenix6::controls::VoltageOut{0.0_V};
+    m_leftMotor.SetControl(request);
+    m_rightMotor.SetControl(request);
+  };
+  
+  std::map<double, double> GetCurrentMapState();
+  void SetCurrentMapState(std::map<double, double> inputCurrentState); // Should only be used when saving!! Please do not write to the maps unless you know for certain this is what you want to do!
+
+  void RunAll();
+  void StopAll();
 
 private:
-  // Components (e.g. motor controllers and sensors) should generally be
-  // declared private and exposed only through public methods.
+  ctre::phoenix6::hardware::TalonFXS m_leftMotor{Turret_ShooterConstants::kMotorIdLeft};
+  ctre::phoenix6::hardware::TalonFXS m_rightMotor{Turret_ShooterConstants::kMotorIdRight};
 
-  rev::spark::SparkFlex m_mainShooterMotor{13, rev::spark::SparkLowLevel::MotorType::kBrushless};
-  rev::spark::SparkFlex m_followerShooterMotor{14, rev::spark::SparkLowLevel::MotorType::kBrushless};
-  rev::spark::SparkMax m_backMotor{15, rev::spark::SparkLowLevel::MotorType::kBrushless};
+  ctre::phoenix6::hardware::TalonFX m_spindexerMotor{Turret_ShooterConstants::kSpindexerMotorId};
+  rev::spark::SparkFlex m_indexerMotor{Turret_ShooterConstants::kIndexerMotorId, rev::spark::SparkFlex::MotorType::kBrushless};
+  rev::spark::SparkClosedLoopController m_indexerPID{m_indexerMotor.GetClosedLoopController()};
 
-  rev::spark::SparkBaseConfig followerShooterMotorConfig;
-  rev::spark::SparkBaseConfig mainShooterMotorConfig;
-  rev::spark::SparkBaseConfig backShooterMotorConfig;
+  static constexpr units::inch_t kFlywheelDiameter = units::inch_t{2.625};
+  static constexpr int kGearRatio = 2;
+  static constexpr units::inch_t kBallDiameter = units::inch_t{5.91};
 
-  rev::spark::SparkClosedLoopController mainMotorController = m_mainShooterMotor.GetClosedLoopController();
-  rev::spark::SparkClosedLoopController backMotorController = m_backMotor.GetClosedLoopController();
-
-  // static constexpr auto kFFks = 0.05_V;                                                // Volts static (motor)
-  // static constexpr auto kFFkV = 0.25_V / 1.0_rpm;                                      // volts*s/meters //1.01 // 2.23
-  // static constexpr auto kFFkA = 0.38_V / units::revolutions_per_minute_squared_t{1.0}; // volts*s^2/meters //0.1
-  // frc::SimpleMotorFeedforward<units::turn_t> m_feedforward;
-
-  double shooterSpeed = 0.0;
-  double newShooterSpeed = 0.0;
-
-  double kP = 0.005;
+  double kP = 0.08;
   double kI = 0.0;
   double kD = 0.0;
-  double kMinOutput = -1.0;
-  double kMaxOutput = 1.0;
+  double kS = 0.6;
+  double kA = 0.005;
+  double kV = 0.1;
+
+  // determines how much faster the flywheel needs to spin
+  // so that the exit velocity meets the specified speed 
+  // Map of Distance (meters) to Multiplier Gain
+  std::map<double, double> kFlyWheelGainMap = {
+      {1.5, 1.4},
+      {2.0, 1.75},
+      {2.5, 2.25}, // 
+      {3.0, 2.5}, // 
+      {4.0, 2.5}, // up
+      {5.0, 2.8},
+      {6.0, 3},
+      {7.0, 3.2}
+  };
+
+  std::map<double, double> kFlywheelSpeedMap = {
+      {1.0, 30.},
+      {1.5, 40.},
+      {2.0, 45.},
+      {2.5, 45.5},
+      {3.0, 50.},
+      {3.5, 55.}, //8 deg extra
+      {4.0, 64.75},
+      {4.5, 65.}, //10 deg extra
+      {5.0, 70.},
+      {5.5, 75.},
+      {6.0, 80.},
+      {6.5, 85.},
+      {7.0, 90.}
+  };
+  // std::map<double, double> kFlywheelSpeedMap;
+
+  
+
+
+  bool kEnableCurrentLimit = true;
+  units::ampere_t kPeakCurrentLimit = units::ampere_t{53};
+  units::ampere_t kContinousCurrentLimit = units::ampere_t{40};
+  units::second_t kPeakCurrentDuration = units::second_t{0.1};
+
+  frc::Timer m_simTimer;
+  units::turn_t m_spindexerSimPosition{0_tr};
+  units::turns_per_second_t m_spindexerSimVelocity{0_tps};
+  units::turns_per_second_t m_spindexerTargetVelocity{0_tps};
+
+  frc::DCMotor m_indexerSimMotor = frc::DCMotor::NEO(1);
+  rev::spark::SparkSim m_indexerSparkSim{&m_indexerMotor, &m_indexerSimMotor};
+  rev::spark::SparkRelativeEncoderSim m_indexerEncoderSim{m_indexerSparkSim.GetRelativeEncoderSim()};
+  double m_indexerSimPosition{0.0};
+  double m_indexerSimVelocityRPM{0.0};
+  double m_indexerTargetVelocityRPM{0.0};
 };

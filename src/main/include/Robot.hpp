@@ -3,6 +3,7 @@
 #pragma once
 
 #include <optional>
+#include <fstream>
 
 #include "frc/DataLogManager.h"
 #include "wpi/DataLog.h"
@@ -13,6 +14,8 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/AnalogInput.h>
 #include "utils/POIGenerator.h"
+#include <photon/PhotonUtils.h>
+#include <memory>
 
 #include <ctre/phoenix6/CANBus.hpp>
 
@@ -22,26 +25,29 @@
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/button/JoystickButton.h>
 #include <frc2/command/button/POVButton.h>
+#include <frc2/command/button/Trigger.h>
 
 #include <pathplanner/lib/auto/AutoBuilder.h>
 #include <pathplanner/lib/auto/NamedCommands.h>
 #include <pathplanner/lib/commands/PathPlannerAuto.h>
 #include <pathplanner/lib/auto/AutoBuilder.h>
 
-#include "subsystems/SwerveDrive.hpp"
-#include "subsystems/Elevator.h"
-#include "subsystems/Wrist.h"
-
 #include <units/angular_velocity.h>
 #include <units/velocity.h>
 
-#include "subsystems/Elevator.h"
+#include "subsystems/SwerveDrive.hpp"
 #include "subsystems/Wrist.h"
-
+#include "subsystems/Turret.h"
+#include "subsystems/TurretIntake.h"
+// #include "subsystems/Climber.h"
 #include "subsystems/LEDController.h"
-#include "subsystems/Climber.h"
 
 #include "commands/AutoWheelOffsets.h"
+#include "commands/Climb.h"
+#include "commands/FlattenMoonKnight.h"
+#include "commands/HalfRaiseIntake.h"
+#include "commands/Intake.h"
+#include "commands/Shoot.h"
 
 #include <cmath>
 
@@ -67,6 +73,9 @@ public:
     void SimulationInit() override;
     void SimulationPeriodic() override;
 
+    std::string CheckActiveHub();
+    void LoadCSVToMap(const std::string& filename);
+
 private:
     // Have it empty by default so that if testing teleop it
     // doesn't have undefined behavior and potentially crash.
@@ -82,11 +91,13 @@ private:
     frc::AnalogInput batteryShunt{0};
 
     ctre::phoenix6::CANBus NKCANBus{"NKCANivore"};
-    ctre::phoenix6::CANBus RioCANBus{"rio"};
+    // ctre::phoenix6::CANBus RioCANBus{"rio"};
     SwerveDrive m_swerveDrive{NKCANBus};
-    // Wrist m_wrist;
-    // Elevator m_elevator;
+    // SwerveDrive m_swerveDrive{RioCANBus};
+    Wrist m_wrist;
     // Climber m_climber;
+    Turret m_turret;
+    TurretIntake m_intake;
 
     std::string_view baseLink = "base_link";
     nt::StructPublisher<frc::Pose3d> stageOne3dPOS;
@@ -96,9 +107,11 @@ private:
     nt::StructPublisher<frc::Pose3d> climb3dPOS;
     nt::StructArrayPublisher<frc::Pose3d> modelPosePublisher;
     nt::NetworkTableInstance networkTableInst;
+    units::angle::radian_t testingRotation = 0.0_rad;
 
     std::string targetKey = "POI/Calibration POIs";
     std::string prevAuto = "";
+    std::string csvName = "/home/lvuser/data.csv";
 
     frc::PowerDistribution m_pdh =
         frc::PowerDistribution{1, frc::PowerDistribution::ModuleType::kRev};
@@ -130,6 +143,8 @@ private:
 
     frc2::CommandPtr autoWheelOffsetsCommand = AutoWheelOffsets(&m_swerveDrive).ToPtr().IgnoringDisable(true);
 
+    bool firstBoot = true;
+    
     // Robot Container methods
     void CreateRobot();
     void BindCommands();
@@ -141,4 +156,5 @@ private:
     // std::function<void(std::string)> SetAutonomousCommand(std::string a);
     // void SetTAutonomousCommand(std::string a);
     void UpdateDashboard();
+    frc::EventLoop m_POVloop{};
 };

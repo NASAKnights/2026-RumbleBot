@@ -10,6 +10,8 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/ProfiledPIDSubsystem.h>
 #include <rev/SparkMax.h>
+#include <rev/AbsoluteEncoder.h>
+#include <rev/SparkAbsoluteEncoder.h>
 #include <units/angle.h>
 #include <units/time.h>
 #include <units/acceleration.h>
@@ -33,20 +35,20 @@ namespace WristConstants
         DISABLED
     };
 
-    const double kAngleP = 0.3;
+    const double kAngleP = 0.15;
     const double kAngleI = 0.0;
     const double kAngleD = 0.0; // 0.0001
     const double kIZone = 1.0;
-    const auto kArmVelLimit = units::degrees_per_second_t(360.0);
+    const auto kArmVelLimit = units::degrees_per_second_t(250.0);
     const auto kArmAccelLimit = units::angular_acceleration::degrees_per_second_squared_t(1000); // Mech limit 27 rad/s^2(1500 degree_second_squared)
     const units::degree_t kTolerancePos = 1_deg;
     const units::degrees_per_second_t kToleranceVel = 0.5_deg_per_s;
-    const int kAngleMotorId = 2;
+    const int kAngleMotorId = 7;
 
-    const auto kFFks = units::volt_t(0.23);                               // Volts static (motor)
-    const auto kFFkg = units::volt_t(0.28);                               // Volts
-    const auto kFFkV = units::unit_t<frc::ArmFeedforward::kv_unit>(0.79); // volts*s/rad
-    const auto kFFkA = units::unit_t<frc::ArmFeedforward::ka_unit>(0.01); // volts*s^2/rad
+    const auto kFFks = units::volt_t(0.43);                               // Volts static (motor)
+    const auto kFFkg = units::volt_t(0.23);                               // Volts
+    const auto kFFkV = units::unit_t<frc::ArmFeedforward::kv_unit>(1.8); // volts*s/rad
+    const auto kFFkA = units::unit_t<frc::ArmFeedforward::ka_unit>(0); // volts*s^2/rad
 
     const bool kWristEnableCurrentLimit = true;
     const int kWristContinuousCurrentLimit = 35;
@@ -54,16 +56,20 @@ namespace WristConstants
     const double kWristPeakCurrentDuration = 0.1;
 
     const std::array<double, 1> kSimNoise = {0.0087};
-    const frc::DCMotor kSimMotor = frc::DCMotor::NEO550(1);
+    const frc::DCMotor kSimMotor = frc::DCMotor::NEO(1);
 
-    const double kGearRatio = 81.0; // gear ratio for motor to arm
+    // const double kGearRatio = 81.0; // gear ratio for motor to arm
+    const double kGearRatio = 1.0; //using absolute encoder -> 
     const units::moment_of_inertia::kilogram_square_meter_t kmoi =
         units::moment_of_inertia::kilogram_square_meter_t(0.00902);
     const units::length::meter_t kWristLength = units::length::meter_t(0.1778);
-    const units::angle::radian_t kminAngle = -30_deg;
-    const units::angle::radian_t kmaxAngle = 95_deg;
+    // const units::angle::radian_t kminAngle = -30_deg;
+    // const units::angle::radian_t kmaxAngle = 95_deg;
+    const units::angle::radian_t kminAngle = 5_deg; // min max after applying offset
+    const units::angle::radian_t kmaxAngle = 114_deg;
     const bool kGravity = true;
     const units::angle::radian_t kWristStartAngle = units::angle::radian_t(0.0);
+    const double kAbsoluteOffset = 0.05; // offset in rotations  
 
 } // namespace ArmConstants
 
@@ -103,7 +109,8 @@ private:
     wpi::log::DoubleLogEntry m_MotorCurrentLog;
     wpi::log::DoubleLogEntry m_MotorVoltageLog;
     frc::Timer *m_timer;
-    rev::spark::SparkRelativeEncoder m_encoder;
+    // rev::spark::SparkRelativeEncoder m_encoder;
+    rev::spark::SparkAbsoluteEncoder m_encoder;
     float Wrist_Angle;
 
     bool speed;

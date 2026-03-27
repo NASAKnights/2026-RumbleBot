@@ -4,11 +4,10 @@
 
 #include <array>
 
-// #include <studica/AHRS.h>
 #include <ctre/phoenix6/Pigeon2.hpp>
 #include <ctre/phoenix6/sim/Pigeon2SimState.hpp>
 #include <ctre/phoenix6/StatusSignal.hpp>
-#include <ctre/phoenix6/CANBus.hpp>
+#include <studica/AHRS.h>
 #include <frc/RobotBase.h>
 #include <frc/SPI.h>
 #include <frc/controller/PIDController.h>
@@ -18,6 +17,8 @@
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Translation2d.h>
 #include <frc/geometry/Translation3d.h>
+#include <frc/geometry/Rotation2d.h>
+#include <frc/geometry/Rotation3d.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
 #include <frc/kinematics/SwerveDriveOdometry.h>
@@ -48,6 +49,9 @@
 // #include <pathplanner/lib/util/ReplanningConfig.h>
 #include <pathplanner/lib/config/RobotConfig.h>
 #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
+
+#include <photon/PhotonCamera.h>
+#include <photon/PhotonPoseEstimator.h>
 
 #include <units/angle.h>
 #include <units/time.h>
@@ -105,16 +109,23 @@ public:
   void PeriodicShuffleboard();
   void ShuffleboardInit();
   void SetOffsets();
-  void WeightedDriving(bool approach, double leftXAxis, double leftYAxis, double rightXAxis, std::string poiKey); // DEPRECATED
+  void WeightedDriving(bool approach, double leftXAxis, double leftYAxis, double rightXAxis, std::string poiKey);
+  void ToggleFieldRelative();
+  void InvertHeading();
+
+  void MakeX(bool make_x);
 
 private:
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
+  // studica::AHRS m_gyro{frc::SPI::Port::kMXP};
+  bool m_usingPigeon = true;
+  units::meters_per_second_t m_currentMaxSpeed = 4.0_mps;
   // studica::AHRS navx{studica::AHRS::NavXComType::kMXP_SPI};
 
   ctre::phoenix6::CANBus m_canBus;
   // ctre::phoenix6::hardware::Pigeon2 m_pigeon{2};
-  // ctre::phoenix6::hardware::Pigeon2 m_pigeon{2, canBus}
+  // ctre::phoenix6::hardware::Pigeon2 m_pigeon{2, "NKCANivore"};
   ctre::phoenix6::hardware::Pigeon2 m_pigeon;
 
   std::array<SwerveModule, 4> modules;
@@ -140,6 +151,17 @@ private:
 
   nt::NetworkTableInstance networkTableInst;
 
+  frc::AprilTagFieldLayout kTagLayout{
+    frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::kDefaultField)};
+  
+  photon::PhotonCamera jetsonCamera1{"Arducam_B0495_camera1"};
+  photon::PhotonCamera jetsonCamera2{"Arducam_B0495_camera2"};
+  photon::PhotonPoseEstimator pvPoseEstimation1{kTagLayout, frc::Transform3d{}};
+  photon::PhotonPoseEstimator pvPoseEstimation2{kTagLayout, frc::Transform3d{}};
+
+  frc::Transform3d robot2Camera1{frc::Translation3d{-0.260_m, 0.320_m, 0.351_m}, frc::Rotation3d{180_deg, -15_deg, 90_deg}};
+  frc::Transform3d robot2Camera2{frc::Translation3d{-0.320_m, 0.260_m, 0.351_m}, frc::Rotation3d{180_deg, -15_deg, 180_deg}};
+
   std::string_view baseLink1 = "base_link_1";
   std::string_view baseLink2 = "base_link_2";
   std::string_view baseLink = "base_link";
@@ -151,6 +173,7 @@ private:
   nt::DoubleArraySubscriber baseLink1Subscribe;
   nt::DoubleArraySubscriber baseLink2Subscribe;
   nt::DoubleArraySubscriber visionStdDevSub;
+  nt::StructPublisher<frc::Transform3d> posePublisher;
   PoseFilter poseFilter1 = PoseFilter(5, 0.2, 0.2);
   PoseFilter poseFilter2 = PoseFilter(5, 0.2, 0.2);
   frc::Quaternion rotation_q; // w, x, y, z
@@ -161,7 +184,12 @@ private:
   nt::DoubleArrayPublisher baseLinkPublisher;
   nt::DoubleArrayPublisher timePublisher;
 
+  nt::StructArrayPublisher<frc::SwerveModuleState> SwerveStatepublisher = nt::NetworkTableInstance::GetDefault().GetStructArrayTopic<frc::SwerveModuleState>("/SwerveStates").Publish();
+
+
   /* Simulation */
   frc::Timer m_simTimer;
   ctre::phoenix6::sim::Pigeon2SimState m_pigeonSim;
+  frc::Rotation2d m_simAngle;
+  bool m_fieldRelative = true;
 };

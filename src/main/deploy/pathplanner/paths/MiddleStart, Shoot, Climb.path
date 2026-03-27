@@ -1,0 +1,81 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.542908963998336,
+        "y": 4.225636098779135
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.2208933548311447,
+        "y": 4.217125148598763
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.52,
+        "y": 4.22
+      },
+      "prevControl": {
+        "x": 1.7699838319631676,
+        "y": 4.222843194859807
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "BlueTopClimb"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.1781515831758032,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 0.5,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Shoot",
+      "waypointRelativePos": 0.2790421195652174,
+      "endWaypointRelativePos": 0.9369978733459352,
+      "command": null
+    },
+    {
+      "name": "",
+      "waypointRelativePos": 0.28,
+      "endWaypointRelativePos": 0.94,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 90.0
+  },
+  "reversed": false,
+  "folder": "OtherPaths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 90.0
+  },
+  "useDefaultConstraints": true
+}

@@ -102,14 +102,11 @@ namespace DriveConstants
     // inline constexpr std::string_view mk4i_l2 = "mk4i_l2";
     // inline constexpr std::string_view mk4i_l3 = "mk4i_l3";
 
+    // const SDSModuleType kSDSModule = mk4i_l3;
     const SDSModuleType kSDSModule = mk4i_l2plus;
-    // const SDSModuleType kSDSModule = mk4i_l1plus;
 
-    const auto kTrackwidthMeters = 0.4_m; // Add to shuffleboard
-    const auto kWheelbaseMeters = 0.4_m;
-
-    // const auto kTrackwidthMeters = 0.762_m; // Kitbot 
-    // const auto kWheelbaseMeters = 0.635_m;  
+    const auto kTrackwidthMeters = 0.546_m; // Add to shuffleboard
+    const auto kWheelbaseMeters = 0.546_m;  // Add to shuffleboard
 
     const double kDefaultAxisDeadband = 0.15;
     const units::meters_per_second_t kMaxTranslationalVelocity{4}; // Add to shuffleboard
@@ -220,3 +217,29 @@ namespace MathUtilNK
     }
 
 } // namespace MathUtilNK
+
+namespace FieldConstants {
+
+
+    const frc::Translation2d kBlueHub{4.625594_m, 4.034536_m};
+    const frc::Translation2d kRedHub{11.915394_m, 4.034536_m};
+
+    struct FieldZone {
+        frc::Translation2d min;
+        frc::Translation2d max;
+
+        // Helper function to check if a robot is inside this zone
+        bool IsInside(frc::Translation2d point) const {
+            return point.X() >= min.X() && point.X() <= max.X() &&
+                   point.Y() >= min.Y() && point.Y() <= max.Y();
+        }
+    };
+
+    const FieldZone kBlueAllianceZone{{0.0_m, 0.0_m}, {4.625594_m, 8.069326_m}};
+    const FieldZone kRedAllianceZone{{11.915394_m, 0.0_m}, {16.540988_m, 8.069326_m}};
+    const FieldZone kNeutralZone{{4.625594_m, 0.0_m}, {11.915394_m, 8.069326_m}};
+
+    const FieldZone kBlueNeutralZone{{4.625594_m, 0.0_m}, {16.540988_m, 8.069326_m}};
+    const FieldZone kRedNeutralZone{{0.0_m, 0.0_m}, {11.915394_m, 8.069326_m}};
+
+}

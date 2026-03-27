@@ -6,7 +6,11 @@
 
 #include <frc2/command/SubsystemBase.h>
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
-// #include <ctre/phoenix6/configs/Configs.hpp>
+#include <rev/SparkMax.h>
+#include <rev/config/SparkMaxConfig.h>
+#include <ctre/phoenix6/configs/Configurator.hpp>
+#include <ctre/phoenix6/TalonFX.hpp>
+#include <ctre/phoenix6/configs/Configuration.hpp>
 
 class TurretIntake : public frc2::SubsystemBase
 {
@@ -23,7 +27,10 @@ public:
   void Periodic() override;
 
 private:
-  ctre::phoenix::motorcontrol::can::VictorSPX m_intakeMotor{8};
+  // ctre::phoenix::motorcontrol::can::VictorSPX m_intakeMotor{8};
+  // rev::spark::SparkMax m_intakeMotor{8, rev::spark::SparkLowLevel::MotorType::kBrushless};
+  ctre::phoenix6::hardware::TalonFX m_intakeMotor{8};
+  
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
