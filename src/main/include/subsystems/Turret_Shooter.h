@@ -56,15 +56,15 @@ namespace Turret_ShooterConstants {
   static constexpr double kSpindexerS = 0.1;
   static constexpr double kSpindexerV = 1.3;
 
-  static constexpr double kIndexerP = 0.0001;
+  static constexpr double kIndexerP = 0.002;
   static constexpr double kIndexerI = 0.0;
   static constexpr double kIndexerD = 0.0;
-  static constexpr double kIndexerkV = 0.00015;
+  static constexpr double kIndexerkV = 0.003;
 
   // Spindexer operates on a 5:1 gearbox. 
   // Native RPS is measured at the motor.
-  static constexpr units::turns_per_second_t kSpindexerShootVelocity = -37_tps;
-  static constexpr double kIndexerShootVelocityRPM = -5800;
+  static constexpr units::turns_per_second_t kSpindexerShootVelocity = -20_tps;
+  static constexpr double kIndexerShootVelocityRPM = -2000;
 }
 
 class Turret_Shooter : public frc2::SubsystemBase
