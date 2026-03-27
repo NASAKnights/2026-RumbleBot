@@ -72,7 +72,7 @@ SwerveModule::SwerveModule(int driveMotorID, int steerMotorID,
   driveCurrentLimitConfig.SupplyCurrentLimit = units::ampere_t{kDrivePeakCurrentLimit};
   driveCurrentLimitConfig.SupplyCurrentLowerLimit = units::ampere_t{kDriveContinuousCurrentLimit};
   driveCurrentLimitConfig.SupplyCurrentLowerTime = units::second_t{kDrivePeakCurrentDuration};
-  
+
   steerCurrentLimitConfig.SupplyCurrentLimitEnable = kSteerEnableCurrentLimit;
   steerCurrentLimitConfig.SupplyCurrentLimit = units::ampere_t{kSteerPeakCurrentLimit};
   steerCurrentLimitConfig.SupplyCurrentLowerLimit = units::ampere_t{kSteerContinuousCurrentLimit};
@@ -138,6 +138,10 @@ void SwerveModule::SimulationPeriodic()
 
 frc::SwerveModuleState SwerveModule::GetCurrentState()
 {
+  if constexpr (frc::RobotBase::IsSimulation())
+  {
+    return {frc::SwerveModuleState(units::meters_per_second_t{m_driveSimVelocity}, units::degree_t{m_steerSimPosition})};
+  }
   return {m_driveMotor.GetVelocity().GetValue() * kDriveConversion,
           GetRotation()};
 }

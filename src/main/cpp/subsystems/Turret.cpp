@@ -45,6 +45,7 @@ Turret::Turret() : m_controller(
     config.SmartCurrentLimit(30, 0, 20000);
 
     m_hood.SetBounds(units::microsecond_t{2000},units::microsecond_t{1550},units::microsecond_t{1500},units::microsecond_t{1450},units::microsecond_t{1000});
+    m_hood2.SetBounds(units::microsecond_t{2000},units::microsecond_t{1550},units::microsecond_t{1500},units::microsecond_t{1450},units::microsecond_t{1000});
 
     m_controller.SetIZone(TurretConstants::kIZone);
     m_controller.SetTolerance(TurretConstants::kTolerancePos.value(), TurretConstants::kToleranceVel.value());
@@ -301,6 +302,7 @@ units::degrees_per_second_t Turret::GetVelocity()
 
 void Turret::SetHood(double extension){
     m_hood.Set(extension);
+    m_hood2.Set(extension);
 }
 
 void Turret::ChangeHoodAngle(units::meter_t distance)
@@ -350,6 +352,7 @@ void Turret::ChangeHoodAngle(units::meter_t distance)
         servoExtention = 0.08;
     }
     m_hood.Set(servoExtention);
+    m_hood2.Set(servoExtention);
 }
 
 double Turret::GetHoodAngle(){
@@ -376,6 +379,7 @@ void Turret::ChangeHoodAngle(double ballLaunchAngleDegrees)
     }
     frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
     m_hood.Set(servoExtention);
+    m_hood2.Set(servoExtention);
 }
 
 void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::meter_t distance)
@@ -424,6 +428,7 @@ void Turret::ChangeHoodAngle(units::angle::radian_t ballLaunchAngle, units::mete
     }
     frc::SmartDashboard::PutNumber("/Turret/Hood/Launch Angle", ballLaunchAngleDegrees);
     m_hood.Set(servoExtention);
+    m_hood2.Set(servoExtention);
 }
 
 void Turret::ChangeHoodMapValue(double newOffsetValue){

@@ -283,7 +283,7 @@ private:
   frc::sim::DIOSim m_magSwitchSim{m_magSwitch};
 
   frc::Servo m_hood{7};
-
+  frc::Servo m_hood2{8};
   
   frc::ArmFeedforward m_feedforward;
   wpi::log::DoubleLogEntry m_AngleLog;
