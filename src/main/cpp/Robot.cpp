@@ -2,6 +2,9 @@
 
 #include "Robot.hpp"
 
+#include <exception>
+
+#include <frc/Errors.h>
 
 Robot::Robot() : networkTableInst(nt::NetworkTableInstance::GetDefault())
 {
@@ -27,7 +30,18 @@ void Robot::RobotInit()
     frc::SmartDashboard::PutData("Set", autoWheelOffsetsCommand.get());
     frc::SmartDashboard::PutNumber("hoodAngle", 1.0);
     
-    autoChooser = pathplanner::AutoBuilder::buildAutoChooser();
+    try
+    {
+        autoChooser = pathplanner::AutoBuilder::buildAutoChooser();
+    }
+    catch (const std::exception& e)
+    {
+        FRC_ReportWarning("Failed to load PathPlanner autos: {}", e.what());
+    }
+    catch (...)
+    {
+        FRC_ReportWarning("Failed to load PathPlanner autos: unknown error");
+    }
 
     frc::SmartDashboard::PutData("Auto Chooser", &autoChooser);
     
@@ -41,6 +55,13 @@ void Robot::RobotPeriodic()
     frc2::CommandScheduler::GetInstance().Run();
     this->UpdateDashboard();
     m_POVloop.Poll();
+
+    if (frc::SmartDashboard::GetBoolean("/Turret/Shooter/Allow Shooting",false)){
+        m_pdh.SetSwitchableChannel(true);
+    }
+    else{
+        m_pdh.SetSwitchableChannel(false);
+    }
     
     m_VoltageLog.Append(m_pdh.GetVoltage());
     m_CurrentLog.Append(m_pdh.GetTotalCurrent());
@@ -66,20 +87,12 @@ void Robot::RobotPeriodic()
                                         0.45_m,
                                         frc::Rotation3d(0.0_rad, 0.0_rad, units::radian_t{m_turret.GetMeasurement()}));
 
-    // frc::Pose3d ShooterPose3D = frc::Pose3d(pose.X()-0.18_m,
-    //                                     pose.Y()+0.18_m,
-    //                                     0.45_m,
-    //                                     frc::Rotation3d(0.0_rad, 0.0_rad, 0.0_rad));
 
-    frc::Pose3d HoodPose3D = frc::Pose3d(ShooterPose3D.X() + units::meter_t{TurretConstants::kHoodXOffset *(std::cos(double(m_turret.GetMeasurement() - 90_deg)))},
-                                        ShooterPose3D.Y() + units::meter_t{TurretConstants::kHoodYOffset *(std::sin(double(m_turret.GetMeasurement() - 90_deg)))},
+    frc::Pose3d HoodPose3D = frc::Pose3d(units::meter_t{ 1 * TurretConstants::kHoodXOffset *(std::cos(double(m_turret.GetMeasurement()) - 90))},
+                                        units::meter_t{ 1 * TurretConstants::kHoodXOffset *(std::sin(double(m_turret.GetMeasurement()) - 90))},
                                         0.545_m,
                                         frc::Rotation3d(0.0_rad, units::radian_t{((90 - m_turret.GetHoodAngle())*3.14159)/180} , units::radian_t{m_turret.GetMeasurement()}));
 
-    // frc::Pose3d HoodPose3D = frc::Pose3d(ShooterPose3D.X() + units::meter_t{TurretConstants::kHoodXOffset *(std::cos(0.0))},
-    //                                     ShooterPose3D.Y() + units::meter_t{TurretConstants::kHoodYOffset *(std::sin(0.0))},
-    //                                     0.545_m,
-    //                                     frc::Rotation3d(0.0_rad, units::radian_t{((90 - m_turret.GetHoodAngle())*3.14159)/180} , 0.0_rad));
 
     std::vector<frc::Pose3d> modelPoses = {
         ShooterPose3D,
@@ -93,31 +106,15 @@ void Robot::RobotPeriodic()
 // This function is called once each time the robot enters Disabled mode.
 void Robot::DisabledInit()
 {
-    // m_LED_Controller.DefaultAnimation();
     if constexpr (frc::RobotBase::IsSimulation())
     {
         m_swerveDrive.ResetPose(frc::Pose2d());
         m_swerveDrive.ResetDriveEncoders();
     }
 
-    auto turretMap = m_turret.GetCurrentMapState();
-    auto hoodMap = m_turret.m_turret_shooter.GetCurrentMapState();
-
-    frc::SmartDashboard::PutBoolean("HELP/", firstBoot);
-    if(!firstBoot){
-        std::ofstream writeFile(csvName);
-
-        for (const auto& [distance, speed] : turretMap)
-        {
-            double hood = hoodMap[distance];
-            writeFile << distance << "," << speed << "," << hood << "\n";
-        }
-        writeFile.close();
-    }
-    else {
-        LoadCSVToMap(csvName);
-    }
-    firstBoot = false;
+    m_turret.SaveLaunchMapToFile();
+    m_turret.PublishLaunchMap();
+    m_led.DefaultAnimation();
 }
 
 void Robot::SetAutonomousCommand(std::string a)
@@ -132,7 +129,7 @@ void Robot::AutonomousInit()
     auto m_autonomousCommand = autoChooser.GetSelected();
     m_swerveDrive.ResetPose(autoStartPose);
 
-    m_swerveDrive.InvertHeading();
+    // m_swerveDrive.InvertHeading();
 
     if (m_autonomousCommand)
     {
@@ -144,6 +141,7 @@ void Robot::AutonomousPeriodic() {}
 
 void Robot::AutonomousExit()
 {
+    m_swerveDrive.InvertHeading();
 }
 
 void Robot::TeleopInit()
@@ -153,6 +151,7 @@ void Robot::TeleopInit()
     // continue until interrupted by another command, remove
     // this line or comment it out.
     // m_wrist.HoldPosition();
+    m_led.TeleopInit();
     m_turret.Reset();
     /*
     if (m_wrist.GetState() != WristConstants::WristState::ZEROING)
@@ -171,7 +170,7 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-
+    m_led.TeleopPeriodic();
 }
 
 void Robot::TeleopExit()
@@ -198,68 +197,17 @@ void Robot::SimulationPeriodic() {}
  */
 void Robot::CreateRobot()
 {
-    // NOTE: THIS WAS FOR REEFSCAPE PSEDUO-AUTO ALIGNMENT WITH THE REEF,
-    //  WE SHOULD LATER ATTEMPT TO SEPARATE THIS FROM THE ROBOT.CPP AND MAKE IT MORE FLEXABLE FOR MORE GENERAL ALIGNMENT TO POI's
-    //  scoreClosest = frc2::CommandPtr(
-    //      frc2::cmd::RunOnce(
-    //          [&]()
-    //          {
-    //              using namespace pathplanner;
-    //              using namespace frc;
-    //              Pose2d currentPose = this->m_swerveDrive.GetPose();
-    //              // Select Left or Right Branch
-    //              frc::Transform2d offset = m_driverController.GetRawButton(7) ?
-    //                  frc::Transform2d(0.0_m, 0.35_m, frc::Rotation2d()) :
-    //                  frc::Transform2d(0.0_m, 0.0_m, frc::Rotation2d());
-
-    //             // The rotation component in these poses represents the direction of travel
-    //             Pose2d startPos = Pose2d(currentPose.Translation(), Rotation2d());
-    //             Pose2d endPos = m_poiGenerator.GetClosestPOI().TransformBy(offset);
-
-    //             auto transformedEndPos = endPos.TransformBy(Transform2d(0.25_m, 0_m, 0_rad));
-    //             std::vector<Waypoint> waypoints = PathPlannerPath::waypointsFromPoses({startPos, endPos, transformedEndPos});
-    //             // Paths must be used as shared pointers
-    //             auto path = std::make_shared<PathPlannerPath>(
-    //                 waypoints,
-    //                 std::vector<RotationTarget>({RotationTarget(0.25, endPos.Rotation())}),
-    //                 std::vector<PointTowardsZone>(),
-    //                 std::vector<ConstraintsZone>(),
-    //                 std::vector<EventMarker>(),
-    //                 PathConstraints(1_mps, 1.5_mps_sq, 360_deg_per_s, 940_deg_per_s_sq),
-    //                 // PathConstraints(1_mps, 2.0_mps_sq, 360_deg_per_s, 940_deg_per_s_sq),
-    //                 std::nullopt, // Ideal starting state can be nullopt for on-the-fly paths
-    //                 GoalEndState(0_mps, endPos.Rotation()),
-    //                 false
-    //             );
-
-    //             // Prevent this path from being flipped on the red alliance, since the given positions are already correct
-    //             path->preventFlipping = true;
-
-    //             m_pathfind = frc2::CommandPtr(AutoBuilder::followPath(path).Unwrap());
-    //             m_pathfind.Schedule(); })
-    //         .Unwrap());
-
     pathplanner::NamedCommands::registerCommand("Intake", Intake(&m_intake, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("FlattenMoonKnight", FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("HalfRaiseIntake", HalfRaiseIntake(&m_intake, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("Shoot", Shoot(&m_turret, true).ToPtr());
     pathplanner::NamedCommands::registerCommand("NoShoot", Shoot(&m_turret, false).ToPtr());
-    // pathplanner::NamedCommands::registerCommand("ExtendClimb", Climb(&m_climber, true).ToPtr());
-    // pathplanner::NamedCommands::registerCommand("RetractClimb", Climb(&m_climber, false).ToPtr());
-
-    // pathplanner::NamedCommands::registerCommand("StopShoot", );
-
-    // pathplanner::EventTrigger("Intake").WhileTrue(std::move(Intake(&m_intake, &m_wrist).ToPtr()));
-    // pathplanner::EventTrigger("FlattenMoonKnight").WhileTrue(std::move(FlattenMoonKnight(&m_turret, &m_wrist).ToPtr()));
-    // pathplanner::EventTrigger("Shoot").WhileTrue(std::move(Shoot(&m_turret).ToPtr()));
-
-    // pathplanner::EventTrigger("ExtendClimb").WhileTrue(std::move(Climb(&m_climber, true).ToPtr()));
-    // pathplanner::EventTrigger("RetractClimb").WhileTrue(std::move(Climb(&m_climber, false).ToPtr()));
+    pathplanner::NamedCommands::registerCommand("BetterHalfRaise", BetterHalfRaise(&m_intake, &m_wrist).ToPtr());
 
     m_swerveDrive.SetDefaultCommand(frc2::RunCommand(
         [this]
         {
-            auto controllerIn = m_driverController.GetRawButton(5);
+            auto controllerIn = m_driverController.GetRawButton(4);
             // bool approach = 0;
 
             auto leftXAxis = MathUtilNK::calculateAxis(m_driverController.GetRawAxis(1),
@@ -274,9 +222,9 @@ void Robot::CreateRobot()
             if (controllerIn)
                 // Robot-Oriented Drive
                 m_swerveDrive.Drive(frc::ChassisSpeeds::FromFieldRelativeSpeeds(
-                    -leftXAxis * DriveConstants::kMaxTranslationalVelocity,
-                    -leftYAxis * DriveConstants::kMaxTranslationalVelocity,
-                    -rightXAxis * DriveConstants::kMaxRotationalVelocity, frc::Rotation2d()));
+                    -leftXAxis * 1.0_mps,
+                    -leftYAxis * 1.0_mps,
+                    -rightXAxis * 2.0_rad_per_s, m_swerveDrive.GetHeading()));
             else
             {
                 m_swerveDrive.Drive(frc::ChassisSpeeds::FromFieldRelativeSpeeds(
@@ -295,9 +243,6 @@ void Robot::CreateRobot()
     AddPeriodic([this]
                 { m_turret.Periodic(); },
                 5_ms, 1_ms);
-    // AddPeriodic([this]
-    //             { m_climber.Periodic(); },
-    //             20_ms, 2_ms);
 
     // Configure the button bindings
     BindCommands();
@@ -323,51 +268,17 @@ void Robot::BindCommands()
                                 { m_turret.FindLimitSwitch();
                                 return; })));
 
-    // frc2::JoystickButton(&m_driverController, 4)
-    //         .OnTrue(frc2::CommandPtr(
-    //             frc2::InstantCommand([this]
-    //                                 { m_wrist.SetAngle(90);
-    //                                 return; })));
-                                
-    
-    frc2::JoystickButton(&m_operatorController, 5)
-    .OnTrue(frc2::CommandPtr(
-                frc2::InstantCommand([this]
-                                    {m_swerveDrive.SetSlow();
-                                        return; })))
-            .OnFalse(frc2::CommandPtr(
-                frc2::InstantCommand([this]
-                                    { m_swerveDrive.SetFast();
-                                    return; })));
-    
-    
-
-    // frc2::JoystickButton(&m_driverController, 3)
-    //     .OnTrue(scoreClosest.get())
-    //     .OnFalse(frc2::CommandPtr(
-    //         frc2::InstantCommand([this]
-    //                              { return m_pathfind.Cancel(); })));
-
     // --------------OPERATOR BUTTONS--------------------------------
-
-    // frc2::JoystickButton(&m_operatorController,1)
-    //     .OnTrue(frc2::CommandPtr(
-        //         frc2::InstantCommand([this]
-        //                                     { double hoodAngle = 0.7;
-        //                                         return m_turret.ChangeHoodAngle(hoodAngle); }))) //0.004 is the smallest movement it can do
-        //     .OnFalse(frc2::CommandPtr(
-            //         frc2::InstantCommand([this]
-            //                                     { return m_turret.ChangeHoodAngle(0); })));
         
         frc2::JoystickButton(&m_operatorController, 1)
                 .OnTrue(frc2::CommandPtr(
                     frc2::InstantCommand([this]
-                                        { m_wrist.SetAngle(60);
+                                        { m_wrist.SetAngle(90);
                                         m_intake.Intake();
                                         return; })))
                 .OnFalse(frc2::CommandPtr(
                 frc2::InstantCommand([this]
-                                        { m_wrist.SetAngle(3);
+                                        { m_wrist.SetAngle(4);
                                         m_intake.StopIntake(); 
                                         return;})));
 
@@ -388,7 +299,7 @@ void Robot::BindCommands()
         frc2::JoystickButton(&m_operatorController, 6)
                 .OnTrue(frc2::CommandPtr(
                     frc2::InstantCommand([this]
-                                        { m_wrist.SetAngle(3.);
+                                        { m_wrist.SetAngle(4.);
                                         m_intake.Intake();
                                         return; })))
                 .OnFalse(frc2::CommandPtr(
@@ -412,7 +323,7 @@ void Robot::BindCommands()
         frc2::JoystickButton(&m_driverController, 6)
                 .OnTrue(frc2::CommandPtr(
                     frc2::InstantCommand([this]
-                                        { m_wrist.SetAngle(3.);
+                                        { m_wrist.SetAngle(4.);
                                         m_intake.Intake();
                                         return; })))
                 .OnFalse(frc2::CommandPtr(
@@ -444,11 +355,6 @@ void Robot::BindCommands()
                         frc2::CommandPtr(frc2::InstantCommand([this] {
                             m_swerveDrive.MakeX(false);
                         })));
-        
-        // frc2::POVButton(&m_operatorController, 0)
-        // .WhileTrue(Climb(&m_climber, true).ToPtr());
-        // frc2::POVButton(&m_operatorController, 180)
-        // .WhileTrue(Climb(&m_climber, false).ToPtr());
             
     frc2::JoystickButton(&m_operatorController, 4)
         .WhileTrue(frc2::CommandPtr(frc2::InstantCommand([this] { m_intake.Outtake(); })))
@@ -460,17 +366,6 @@ void Robot::BindCommands()
     .OnFalse(frc2::CommandPtr(
             frc2::InstantCommand([this]
                                     { return m_intake.StopIntake(); })));
-
-    // frc2::POVButton(&m_operatorController, 180)
-    //                 .OnTrue(
-    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
-    //                         m_turret.PresetShooting(true,"middle");
-    //                     })))
-    //                 .OnFalse(
-    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
-    //                         m_turret.PresetShooting(false,"middle");
-    //                     })));
-    
     
     frc::BooleanEvent downPOVBE = frc::BooleanEvent(
         &m_POVloop,
@@ -509,46 +404,12 @@ void Robot::BindCommands()
                         frc2::CommandPtr(frc2::InstantCommand([this] {
                             m_turret.PresetShooting(false,"left");
                         })));
-                
-
-    // frc2::POVButton(&m_operatorController, 180)
-    //                 .OnTrue(
-    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
-    //                         return m_turret.ChangeHoodMapValue(-1.0);
-    //                     }))
-    //                 );
-
-    // frc2::POVButton(&m_operatorController, 90)
-    //                 .OnTrue(
-    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
-    //                         return m_turret.m_turret_shooter.ChangeSpeedMapValue(5);
-    //                     }))
-    //                 );
-
-    // frc2::POVButton(&m_operatorController, 270)
-    //                 .OnTrue(
-    //                     frc2::CommandPtr(frc2::InstantCommand([this] {
-    //                         return m_turret.m_turret_shooter.ChangeSpeedMapValue(-5);
-    //                     }))
-    //                 );
-                    
-    // frc2::JoystickButton(&m_operatorController, 7)
-    //     .WhileTrue(frc2::CommandPtr(frc2::RunCommand([this] { m_climber.Zero(); })))
-    //     .OnFalse(frc2::CommandPtr(frc2::InstantCommand([this] { m_climber.stopMotor(); })));
-
-    // frc2::Trigger operatorRightTrigger([&m_operatorController]
-    // {
-    //     if (m_operatorController.GetRawAxis(3) > 0.05) return true;
-    //     /* code */   
-    //     else return false;
-    // });
-
-
     
 }
 
 void Robot::DisabledPeriodic()
 {
+    m_turret.PublishLaunchMap();
     std::string poiName = std::string("POI/") + frc::SmartDashboard::GetString("POIName", "");
     frc::SmartDashboard::PutBoolean("IsPersist", frc::SmartDashboard::IsPersistent(poiName));
 }
@@ -646,57 +507,6 @@ std::string Robot::CheckActiveHub()
         }
         
     } 
-
-}
-
-void Robot::LoadCSVToMap(const std::string& filename) {
-    if(!std::filesystem::exists(filename))
-    {
-        std::ofstream createFile(filename);
-
-        createFile <<
-        "1.0,5,70\n"
-        "1.5,10,68\n"
-        "2.0,50,65\n"
-        "2.5,70,60\n"
-        "3.0,100,55\n"
-        "3.5,105,53\n"
-        "4.0,110,50\n"
-        "4.5,115,48\n"
-        "5.0,120,45\n"
-        "5.5,120,43\n"
-        "6.0,120,40\n"
-        "6.5,120,38\n"
-        "7.0,120,35\n";
-
-        createFile.close();
-    }
-    
-    std::ifstream file(filename);
-
-    std::string line;
-
-    std::map<double, double> hoodAngleMap, flyWheelSpeedMap;
-    
-    // while (std::getline(file, line)) {
-    //     std::stringstream ss(line);
-    //     std::string distance, flywheelSpeed, hoodAngle;
-        
-    //     std::getline(ss, distance, ',');
-    //     std::getline(ss, flywheelSpeed, ',');
-    //     std::getline(ss, hoodAngle, ',');
-        
-    //     double key = std::stod(distance);
-    //     double flyWheelvalue = std::stod(flywheelSpeed);
-    //     double hoodValue = std::stod(hoodAngle);
-        
-    //     flyWheelSpeedMap.insert({key, flyWheelvalue});
-    //     hoodAngleMap.insert({key, hoodValue});
-    // }
-    
-    // m_turret.m_turret_shooter.SetCurrentMapState(hoodAngleMap);
-    // m_turret.SetCurrentMapState(flyWheelSpeedMap);
-    // file.close();
 }
 
 

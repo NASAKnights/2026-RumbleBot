@@ -6,9 +6,10 @@
 
 TurretIntake::TurretIntake()
 {
-    // rev::spark::SparkMaxConfig config;
-    // config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kCoast);
-    // config.SmartCurrentLimit(30);
+    wpi::log::DataLog& log = frc::DataLogManager::GetLog();
+    m_MotorCurrentLog = wpi::log::DoubleLogEntry(log, "/Turret/Intake/MotorCurrent");
+    m_MotorVoltageLog = wpi::log::DoubleLogEntry(log, "/Turret/Intake/MotorVoltage");
+
 
     ctre::phoenix6::configs::TalonFXConfiguration intakeConfig{};
     // m_intakeMotor.Configure(config, rev::spark::SparkMax::ResetMode::kResetSafeParameters, rev::spark::SparkMax::PersistMode::kPersistParameters);
@@ -24,7 +25,11 @@ TurretIntake::TurretIntake()
 }
 
 // This method will be called once per scheduler run
-void TurretIntake::Periodic() {}
+void TurretIntake::Periodic()
+{
+    m_MotorCurrentLog.Append(m_intakeMotor.GetSupplyCurrent().GetValue().value());
+    m_MotorVoltageLog.Append(m_intakeMotor.GetMotorVoltage().GetValue().value());
+}
 
 void TurretIntake::Intake()
 {

@@ -3,7 +3,6 @@
 #pragma once
 
 #include <optional>
-#include <fstream>
 
 #include "frc/DataLogManager.h"
 #include "wpi/DataLog.h"
@@ -43,11 +42,12 @@
 #include "subsystems/LEDController.h"
 
 #include "commands/AutoWheelOffsets.h"
-#include "commands/Climb.h"
+// #include "commands/Climb.h"
 #include "commands/FlattenMoonKnight.h"
 #include "commands/HalfRaiseIntake.h"
 #include "commands/Intake.h"
 #include "commands/Shoot.h"
+#include "commands/BetterHalfRaise.h"
 
 #include <cmath>
 
@@ -74,7 +74,6 @@ public:
     void SimulationPeriodic() override;
 
     std::string CheckActiveHub();
-    void LoadCSVToMap(const std::string& filename);
 
 private:
     // Have it empty by default so that if testing teleop it
@@ -98,6 +97,7 @@ private:
     // Climber m_climber;
     Turret m_turret;
     TurretIntake m_intake;
+    LEDController m_led;
 
     std::string_view baseLink = "base_link";
     nt::StructPublisher<frc::Pose3d> stageOne3dPOS;
@@ -111,7 +111,6 @@ private:
 
     std::string targetKey = "POI/Calibration POIs";
     std::string prevAuto = "";
-    std::string csvName = "/home/lvuser/data.csv";
 
     frc::PowerDistribution m_pdh =
         frc::PowerDistribution{1, frc::PowerDistribution::ModuleType::kRev};
@@ -143,8 +142,6 @@ private:
 
     frc2::CommandPtr autoWheelOffsetsCommand = AutoWheelOffsets(&m_swerveDrive).ToPtr().IgnoringDisable(true);
 
-    bool firstBoot = true;
-    
     // Robot Container methods
     void CreateRobot();
     void BindCommands();

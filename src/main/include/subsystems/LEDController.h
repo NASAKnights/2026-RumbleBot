@@ -5,10 +5,26 @@
 #pragma once
 
 #include <frc2/command/SubsystemBase.h>
-#include <ctre/phoenix/led/CANdle.h>
+#include <ctre/phoenix6/CANdle.hpp>
+#include <ctre/phoenix6/configs/CANdleFeaturesConfigs.hpp>
+#include <ctre/phoenix6/signals/RGBWColor.hpp>
+#include <ctre/phoenix6/controls/RainbowAnimation.hpp>
+#include <ctre/phoenix6/controls/EmptyAnimation.hpp>
+#include <ctre/phoenix6/signals/SpnEnums.hpp>
 #include <frc/DigitalInput.h>
 #include <frc2/command/button/Trigger.h>
 #include "subsystems/LED_Groups.h"
+#include <frc/DriverStation.h>
+#include <utility>
+#include <vector>
+
+using RGBWColor = ctre::phoenix6::signals::RGBWColor;
+enum LEDState
+{
+  STATIC,
+  BLINK,
+  FIRE
+};
 
 enum LEDIntakeState
 {
@@ -28,23 +44,45 @@ class LEDController : public frc2::SubsystemBase
 {
 public:
   LEDController();
-  void HandleIntakeState();
-  void HandleShooterState();
   void DefaultAnimation();
   void TeleopLED();
+  void RedAlliance();
+  void BlueAlliance();
+  void Last10SecondsRed();
+  void Last5SecondsRed();
+  void TeleopInit();
 
+  void SetStrobe(RGBWColor color, units::frequency::hertz_t speed);
+  void SetStatic(RGBWColor color);
+  void SetFire(units::frequency::hertz_t speed);
+
+  void ClearLEDs();
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
-  void Periodic() override;
+  void TeleopPeriodic();
 
   LEDIntakeState m_intakeState = LEDIntakeState::NO_NOTE;
   LEDShooterState m_shooterState = LEDShooterState::LED_BAD;
-  ctre::phoenix::led::CANdle candle{60};
+  ctre::phoenix6::hardware::CANdle m_candle{60, ctre::phoenix6::CANBus::RoboRIO()};
+  ctre::phoenix6::configs::CANdleConfiguration candleConfig;
+  frc::DriverStation::Alliance activeHub = frc::DriverStation::Alliance::kBlue;
 
 private:
   LEDIntakeState m_intakeStatePrev = LEDIntakeState::NO_NOTE;
   LEDShooterState m_shooterStatePrev = LEDShooterState::LED_BAD;
+
+  frc::Timer m_timer;
+  const std::vector<int> m_defaultTimes = {10, 15, 5, 5, 15, 5, 5, 15, 5, 5, 15, 5, 5, 30};
+  const std::vector<std::pair<LEDState, units::frequency::hertz_t>> m_defaultStates = {
+    {LEDState::STATIC, 5_Hz}, {LEDState::BLINK, 5_Hz}, {LEDState::BLINK, 10_Hz},
+    {LEDState::STATIC, 5_Hz}, {LEDState::BLINK, 5_Hz}, {LEDState::BLINK, 10_Hz},
+    {LEDState::STATIC, 5_Hz}, {LEDState::BLINK, 5_Hz}, {LEDState::BLINK, 10_Hz},
+    {LEDState::STATIC, 5_Hz}, {LEDState::BLINK, 5_Hz}, {LEDState::BLINK, 10_Hz},
+    {LEDState::FIRE, 2_Hz}    // Endgame
+  };
+  std::vector<int> times = m_defaultTimes;
+  std::vector<std::pair<LEDState, units::frequency::hertz_t>> states = m_defaultStates;
 
   units::time::second_t Time{0.2};
   units::time::second_t Speed{0.1};
@@ -54,24 +92,12 @@ private:
   int _b = 0;
   int i = 0;
 
+
+  static constexpr RGBWColor kBlue{11, 61, 145, 0};
+  static constexpr RGBWColor kRed{255, 0, 0, 0};
+  static constexpr RGBWColor kWhite{0, 0, 0, 255};
+
   bool P_state;
   bool C_state;
 
-  std::vector<int> group1 = {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22};
-  LED_Group ledGroup1 = LED_Group(&candle, group1, 0);
-
-  // std::vector<int> group2 = {34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59};
-  // LED_Group ledGroup2 = LED_Group(&candle, group2, 1);
-
-  // std::vector<int> group3 = {60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78};
-  // LED_Group ledGroup3 = LED_Group(&candle, group3, 2);
-
-  // std::vector<int> group4 = {79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104};
-  // LED_Group ledGroup4 = LED_Group(&candle, group4, 3);
-
-  // std::vector<int> group5 = {105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130};
-  // LED_Group ledGroup5 = LED_Group(&candle, group5, 4);
-
-  // std::vector<int> AllLeds = {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131};
-  // LED_Group AllLEDs = LED_Group(&candle, AllLeds, 5);
 };
