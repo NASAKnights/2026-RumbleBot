@@ -197,6 +197,42 @@ void Robot::SimulationPeriodic() {}
  */
 void Robot::CreateRobot()
 {
+    // NOTE: THIS WAS FOR REEFSCAPE PSEDUO-AUTO ALIGNMENT WITH THE REEF,
+    //  WE SHOULD LATER ATTEMPT TO SEPARATE THIS FROM THE ROBOT.CPP AND MAKE IT MORE FLEXABLE FOR MORE GENERAL ALIGNMENT TO POI's
+     scoreClosest = frc2::CommandPtr(
+         frc2::cmd::RunOnce(
+             [&]()
+             {
+                 using namespace pathplanner;
+                 using namespace frc;
+                 Pose2d currentPose = this->m_swerveDrive.GetPose();
+
+                // The rotation component in these poses represents the direction of travel
+                Pose2d startPos = Pose2d(currentPose.Translation(), Rotation2d());
+                Pose2d endPos = m_poiGenerator.GetClosestPOI();
+
+                std::vector<Waypoint> waypoints = PathPlannerPath::waypointsFromPoses({startPos, endPos});
+                // Paths must be used as shared pointers
+                auto path = std::make_shared<PathPlannerPath>(
+                    waypoints,
+                    std::vector<RotationTarget>({RotationTarget(0.25, endPos.Rotation())}),
+                    std::vector<PointTowardsZone>(),
+                    std::vector<ConstraintsZone>(),
+                    std::vector<EventMarker>(),
+                    PathConstraints(1_mps, 1.5_mps_sq, 360_deg_per_s, 940_deg_per_s_sq),
+                    // PathConstraints(1_mps, 2.0_mps_sq, 360_deg_per_s, 940_deg_per_s_sq),
+                    std::nullopt, // Ideal starting state can be nullopt for on-the-fly paths
+                    GoalEndState(0_mps, endPos.Rotation()),
+                    false
+                );
+
+                // Prevent this path from being flipped on the red alliance, since the given positions are already correct
+                path->preventFlipping = true;
+
+                m_pathfind = frc2::CommandPtr(AutoBuilder::followPath(path).Unwrap());
+                m_pathfind.Schedule(); })
+            .Unwrap());
+
     pathplanner::NamedCommands::registerCommand("Intake", Intake(&m_intake, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("FlattenMoonKnight", FlattenMoonKnight(&m_turret, &m_wrist).ToPtr());
     pathplanner::NamedCommands::registerCommand("HalfRaiseIntake", HalfRaiseIntake(&m_intake, &m_wrist).ToPtr());
