@@ -12,6 +12,7 @@
 #include <rev/SparkMax.h>
 #include <rev/AbsoluteEncoder.h>
 #include <rev/SparkAbsoluteEncoder.h>
+#include <ctre/phoenix6/TalonFX.hpp>
 #include <units/angle.h>
 #include <units/time.h>
 #include <units/acceleration.h>
@@ -101,7 +102,7 @@ public:
 private:
     WristConstants::WristState m_WristState;
     void printLog();
-    rev::spark::SparkMax m_motor;
+    ctre::phoenix6::hardware::TalonFX m_motor;
     frc::ArmFeedforward m_feedforward;
     wpi::log::DoubleLogEntry m_AngleLog;
     wpi::log::DoubleLogEntry m_SetPointLog;
