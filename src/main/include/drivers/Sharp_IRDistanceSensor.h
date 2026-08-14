@@ -11,6 +11,9 @@ class Sharp_IRDistanceSensor {
   Sharp_IRDistanceSensor(int channel);
   units::centimeter_t GetDistance();
 
+  static const units::centimeter_t max_distance;
+  static const units::centimeter_t min_distance;
+
  private:
   frc::AnalogInput m_input;
 };

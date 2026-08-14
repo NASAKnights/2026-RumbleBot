@@ -23,6 +23,7 @@
 #include <frc/Timer.h>
 #include <frc/simulation/SimDeviceSim.h>
 #include <frc/simulation/SingleJointedArmSim.h>
+#include <drivers/Sharp_IRDistanceSensor.h>
 
 namespace WristConstants
 {
@@ -124,4 +125,6 @@ private:
 
     hal::SimDouble m_WristSimVelocity;
     hal::SimDouble m_WristSimposition;
+
+    Sharp_IRDistanceSensor m_IRSensor;
 };
