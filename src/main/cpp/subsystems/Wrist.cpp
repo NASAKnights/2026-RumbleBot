@@ -19,7 +19,8 @@ Wrist::Wrist() : m_controller(
                  m_WristSim(WristConstants::kSimMotor, WristConstants::kGearRatio, WristConstants::kmoi,
                             WristConstants::kWristLength, WristConstants::kminAngle, WristConstants::kmaxAngle,
                             WristConstants::kGravity, WristConstants::kWristStartAngle),            
-                 m_IRSensor(1)
+                 m_IRSensor(1),
+                 m_CANRangeSensor(15)
 {
     m_controller.SetIZone(WristConstants::kIZone);
     rev::spark::SparkBaseConfig config;
@@ -148,6 +149,7 @@ void Wrist::Periodic()
     }
 
     frc::SmartDashboard::PutNumber("/Wrist/IR_Distance", double{m_IRSensor.GetDistance()});
+    frc::SmartDashboard::PutNumber("/Wrist/CAN_Range_Distance_Meters", m_CANRangeSensor.GetDistance().GetValue().value());
     
 }
 
