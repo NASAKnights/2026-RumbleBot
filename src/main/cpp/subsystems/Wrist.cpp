@@ -33,9 +33,23 @@ Wrist::Wrist() : m_controller(
     config.absoluteEncoder.Inverted(true);
     config.absoluteEncoder.ZeroCentered(true);
     config.SmartCurrentLimit(30, 0, 20000);
+    ctre::phoenix6::configs::CANrangeConfiguration toApply{};
+    toApply.ProximityParams.ProximityThreshold = units::meter_t{1.00};
+    toApply.ProximityParams.ProximityHysteresis = units::meter_t{0.02};
+    toApply.ToFParams.UpdateMode = ctre::phoenix6::signals::UpdateModeValue::ShortRange100Hz;
+
+
     
 
     m_motor.Configure(config, rev::spark::SparkMax::ResetMode::kResetSafeParameters, rev::spark::SparkMax::PersistMode::kPersistParameters);
+
+    m_CANRangeSensor.GetConfigurator().Apply(toApply);
+
+    // m_CANRangeSensor.GetDistance().SetUpdateFrequency(50_Hz);
+
+
+    units::length::meter_t distance = m_CANRangeSensor.GetDistance().GetValue();
+
 
     m_controller.SetTolerance(WristConstants::kTolerancePos, WristConstants::kToleranceVel);
     // Start m_arm in neutral position
@@ -150,6 +164,7 @@ void Wrist::Periodic()
 
     frc::SmartDashboard::PutNumber("/Wrist/IR_Distance", double{m_IRSensor.GetDistance()});
     frc::SmartDashboard::PutNumber("/Wrist/CAN_Range_Distance_Meters", m_CANRangeSensor.GetDistance().GetValue().value());
+    frc::SmartDashboard::PutNumber("/Wrist/CAN_Range_StdDiv", m_CANRangeSensor.GetDistanceStdDev().GetValue().value());
     
 }
 
