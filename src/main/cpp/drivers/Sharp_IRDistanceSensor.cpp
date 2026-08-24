@@ -35,7 +35,7 @@ units::centimeter_t Sharp_IRDistanceSensor::GetDistance()
     }
 
     // 3. Solve V = m * (1/d) + b  ==>  d = m / (V - b)
-    double distance_cm = 1 / (TRANSFER_SLOPE / (sensor_voltage - TRANSFER_INTERCEPT));
+    double distance_cm = (TRANSFER_SLOPE / (sensor_voltage - TRANSFER_INTERCEPT));
 
     // 4. Clamp within valid sensor operational range (10cm - 80cm)
     distance_cm = std::clamp(distance_cm, double{Sharp_IRDistanceSensor::min_distance}, 
@@ -43,4 +43,9 @@ units::centimeter_t Sharp_IRDistanceSensor::GetDistance()
 
     return units::centimeter_t{distance_cm};
     //return value
+}
+
+double Sharp_IRDistanceSensor::GetVoltage()
+{
+    return double {m_input.GetVoltage()};
 }

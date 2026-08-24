@@ -10,6 +10,7 @@ class Sharp_IRDistanceSensor {
  public:
   Sharp_IRDistanceSensor(int channel);
   units::centimeter_t GetDistance();
+  double GetVoltage();
 
   static const units::centimeter_t max_distance;
   static const units::centimeter_t min_distance;

@@ -163,6 +163,7 @@ void Wrist::Periodic()
     }
 
     frc::SmartDashboard::PutNumber("/Wrist/IR_Distance", double{m_IRSensor.GetDistance()});
+    frc::SmartDashboard::PutNumber("/Wrist/IR_Sensor_Raw_Voltage", double{m_IRSensor.GetVoltage()});
     frc::SmartDashboard::PutNumber("/Wrist/CAN_Range_Distance_Meters", m_CANRangeSensor.GetDistance().GetValue().value());
     frc::SmartDashboard::PutNumber("/Wrist/CAN_Range_StdDiv", m_CANRangeSensor.GetDistanceStdDev().GetValue().value());
     
