@@ -23,6 +23,8 @@
 #include <frc/Timer.h>
 #include <frc/simulation/SimDeviceSim.h>
 #include <frc/simulation/SingleJointedArmSim.h>
+#include <drivers/Sharp_IRDistanceSensor.h>
+#include <ctre/phoenix6/CANrange.hpp>
 
 namespace WristConstants
 {
@@ -124,4 +126,7 @@ private:
 
     hal::SimDouble m_WristSimVelocity;
     hal::SimDouble m_WristSimposition;
+
+    Sharp_IRDistanceSensor m_IRSensor;
+    ctre::phoenix6::hardware::CANrange m_CANRangeSensor;
 };
