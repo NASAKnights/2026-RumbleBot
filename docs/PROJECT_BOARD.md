@@ -55,9 +55,9 @@ and which fields are visible. Different views, same rows.
 
 ### Workflows — the automation
 
-Built-in rules, no YAML required, under **⋯ → Workflows**. They can set `Status` and add
-items. They **cannot** set custom fields like Subsystem or Priority — a human does that
-at triage.
+Built-in rules, no YAML required, under **⋯ → Settings → Workflows**. They can set
+`Status` and add items. They **cannot** set custom fields like Subsystem or Priority — a
+human does that at triage.
 
 ---
 
@@ -206,7 +206,15 @@ running Aug 31 through Oct 25. Rename them Sprint 1–8 if you like.
 
 ### 2. Turn on workflows
 
-Project → **⋯ → Workflows**. Enable and configure:
+Direct link: **https://github.com/orgs/NASAKnights/projects/3/workflows**
+
+Or: project → **⋯** (top right, next to the search box) → **Settings** → **Workflows** in
+the left sidebar. It's below Details, Fields, Views, and Manage access — easy to scroll
+past.
+
+The workflows already exist and are toggled **off**. You don't create them; you click one,
+set its action in the right-hand panel, and flip the **Enable** toggle at the top. Nothing
+happens until you flip it.
 
 | Workflow | Setting |
 |---|---|
@@ -216,7 +224,11 @@ Project → **⋯ → Workflows**. Enable and configure:
 | **Item closed** | Set Status → **Comp Ready** |
 | **Auto-archive items** | `is:closed updated:<@today-14d` |
 
-Auto-add only catches issues filed *after* you turn it on — add existing ones by hand once.
+Two gotchas:
+
+- If the repo picker under Auto-add is empty, the project doesn't have access to the repo
+  yet — set that under **Settings → Manage access** first.
+- Auto-add only catches issues filed *after* you turn it on. Add existing ones by hand once.
 
 ### 3. Build the views
 
