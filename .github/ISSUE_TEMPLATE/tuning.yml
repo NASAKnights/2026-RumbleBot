@@ -1,0 +1,73 @@
+name: Tuning / Calibration
+description: A constant, gain, or setpoint that needs to be dialed in on the real robot
+title: "[Subsystem] Tune <what>"
+labels: ["tuning"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Use this for work where the code is correct but the numbers aren't. If the code is
+        wrong, file a Bug instead.
+
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Subsystem
+      options:
+        - Swerve Drive
+        - Robot State
+        - Input
+        - Intake
+        - Extender
+        - Indexer
+        - Dumper
+        - Autonomous
+        - Vision/Pose
+        - FieldData
+    validations:
+      required: true
+
+  - type: input
+    id: constant
+    attributes:
+      label: Which constant?
+      description: Name it, and where it lives.
+      placeholder: kSteerP in src/main/include/Constants.hpp
+    validations:
+      required: true
+
+  - type: input
+    id: current
+    attributes:
+      label: Current value
+      placeholder: "120.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What is it doing now, and what should it do?
+      placeholder: Modules oscillate when holding a heading. Should settle within a quarter turn with no visible hunting.
+    validations:
+      required: true
+
+  - type: textarea
+    id: procedure
+    attributes:
+      label: Test procedure
+      description: How do we tell when it's right? This is the check before moving to Comp Ready.
+      placeholder: |
+        1. Robot on blocks, enable teleop.
+        2. Command a 90 degree heading change.
+        3. Watch for overshoot and oscillation; log the settle time.
+    validations:
+      required: true
+
+  - type: input
+    id: final
+    attributes:
+      label: Final value (fill in when done)
+      description: Record what you landed on so next year's team knows where it came from.
+    validations:
+      required: false

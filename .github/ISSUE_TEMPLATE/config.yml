@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: How the project board works
+    url: https://github.com/NASAKnights/2026-RumbleBot/blob/main/docs/PROJECT_BOARD.md
+    about: Board conventions, what each Status column means, and when to move a card.
+  - name: Road to Competition board
+    url: https://github.com/orgs/NASAKnights/projects/3
+    about: Every issue lands here automatically. Check it before filing a duplicate.

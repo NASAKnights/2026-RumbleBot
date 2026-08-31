@@ -1,0 +1,83 @@
+name: Bug
+description: The robot did something it shouldn't have
+title: "[Subsystem] Short description"
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Subsystem
+      options:
+        - Swerve Drive
+        - Robot State
+        - Input
+        - Intake
+        - Extender
+        - Indexer
+        - Dumper
+        - Autonomous
+        - Vision/Pose
+        - FieldData
+        - Build/Tooling
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How do we make it happen again?
+      description: If it only happened once and you can't reproduce it, say that. Intermittent bugs are still worth filing.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: when
+    attributes:
+      label: When did you see it?
+      options:
+        - On the bench / blocks
+        - Driving practice
+        - Simulation
+        - At an event
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: What code was on the robot?
+      description: Branch name or commit SHA, if you know it.
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Driver Station log / console output
+      description: Paste anything relevant. Errors, warnings, or the DS log file.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: This could damage the robot or injure someone (a mentor will add the `safety` label and prioritize it)
+          required: false

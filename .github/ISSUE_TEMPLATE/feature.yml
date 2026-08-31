@@ -1,0 +1,67 @@
+name: Feature / Task
+description: A new capability, a modeling task, or a piece of the rebuild
+title: "[Subsystem] Short description"
+body:
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Subsystem
+      description: Which class does this belong to? Use Build/Tooling for work that isn't a model class.
+      options:
+        - Swerve Drive
+        - Robot State
+        - Input
+        - Intake
+        - Extender
+        - Indexer
+        - Dumper
+        - Autonomous
+        - Vision/Pose
+        - FieldData
+        - Build/Tooling
+    validations:
+      required: true
+
+  - type: dropdown
+    id: work-type
+    attributes:
+      label: Work type
+      options:
+        - Model
+        - Code
+        - Tuning
+        - Infra
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What should it do?
+      description: Describe the behavior, not the implementation.
+      placeholder: When the operator holds the intake button, the arm extends and the roller runs until a ball is detected in the hopper.
+    validations:
+      required: true
+
+  - type: textarea
+    id: verify
+    attributes:
+      label: How will we verify this on the robot?
+      description: >
+        Required. This is what someone has to actually do before moving the card from
+        "Needs Robot Test" to "Comp Ready". Be specific enough that a person who didn't
+        write the code can run the test.
+      placeholder: |
+        1. Enable teleop on blocks.
+        2. Hold the intake button; confirm the arm extends fully and the roller spins inward.
+        3. Feed a ball; confirm it reaches the hopper and the roller stops.
+    validations:
+      required: true
+
+  - type: textarea
+    id: depends
+    attributes:
+      label: Blocked on anything?
+      description: Hardware not built yet, another issue, a decision nobody has made. Leave blank if nothing.
+    validations:
+      required: false
