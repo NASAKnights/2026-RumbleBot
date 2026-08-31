@@ -2,6 +2,8 @@
 
 This is the main robot code base for FRC 122 - NASA Knights for the 2026 season.
 
+**Planning and work tracking:** [Road to Competition board](https://github.com/orgs/NASAKnights/projects/3) — every issue lands there. Board conventions and the subsystem architecture are in [docs/PROJECT_BOARD.md](docs/PROJECT_BOARD.md).
+
 ## Changes of Note
 
 - CANBus for 2026 is now its own structure. It still requires the CANBus String name
