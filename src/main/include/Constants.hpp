@@ -97,13 +97,17 @@ namespace DriveConstants
     const SDSModuleType mk4i_l3plus{0.10033,
                                     (16.0 / 50.0) * (28.0 / 16.0) * (15.0 / 45.0), true,
                                     (14.0 / 50.0) * (10.0 / 60.0), false};
+    const SDSModuleType mk5i_r2{0.1016,
+                                (14.0 / 54.0) * (32.0 / 25.0) * (15.0 / 30.0), true,
+                                (1.0 / 26.0), false};
+
     // const std::map<std::string, SDSModuleType> moduleMap{{"mk4i_l1", mk4i_l1}, {"mk4i_l2", mk4i_l2}, {"mk4i_l3", mk4i_l3}};
     // inline constexpr std::string_view mk4i_l1 = "mk4i_l1";
     // inline constexpr std::string_view mk4i_l2 = "mk4i_l2";
     // inline constexpr std::string_view mk4i_l3 = "mk4i_l3";
 
     // const SDSModuleType kSDSModule = mk4i_l3;
-    const SDSModuleType kSDSModule = mk4i_l2plus;
+    const SDSModuleType kSDSModule = mk5i_r2;
 
     const auto kTrackwidthMeters = 0.546_m; // Add to shuffleboard
     const auto kWheelbaseMeters = 0.546_m;  // Add to shuffleboard
@@ -148,7 +152,7 @@ namespace ModuleConstants
     const auto kMaxSpeed = DriveConstants::kMaxTranslationalVelocity;
     // meters
     const auto kWheelDiameterMeters =
-        units::meter_t{0.092815210491};
+        units::meter_t{0.1016};
     // meters / turn
 
     const auto kWheelEffectiveDiameterCoeff = 1.11016;
