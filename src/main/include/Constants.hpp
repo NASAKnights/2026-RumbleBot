@@ -48,18 +48,22 @@ namespace OperatorConstants {
 
 namespace ElectricalConstants
 {
+    // Correspond to color Red
     const int kFrontLeftDriveMotorID = 10;
     const int kFrontLeftTurnMotorID = 11;
     const int kFrontLeftEncoderID = 12;
 
+    // Correspond to color Blue
     const int kFrontRightDriveMotorID = 20;
     const int kFrontRightTurnMotorID = 21;
     const int kFrontRightEncoderID = 22;
 
+    // Correspond to color Green
     const int kBackLeftDriveMotorID = 30;
     const int kBackLeftTurnMotorID = 31;
     const int kBackLeftEncoderID = 32;
 
+    // Correspond to color Yellow
     const int kBackRightDriveMotorID = 40;
     const int kBackRightTurnMotorID = 41;
     const int kBackRightEncoderID = 42;
