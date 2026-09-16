@@ -559,11 +559,13 @@ the default command resuming is what actually releases the lock.
 Run the Gate A block from Global Constraints.
 Expected: `EXIT=0`, `BUILD SUCCESSFUL`, `19 actionable tasks: 19 executed`, error count `0`.
 
-Expect one **new** warning, which is correct and expected: `CheckActiveHub` now produces `control reaches end of non-void function` where it previously did too. Confirm the count of `-Wreturn-type` warnings is unchanged at 2 (`GetHeading` and `CheckActiveHub`):
+Confirm the `-Wreturn-type` warning profile is unchanged from the pre-trim baseline. Count by **location**, not raw total — each site is reported twice because two targets compile it, so the raw total is 4, not 2:
 
 ```bash
-grep -c "Wreturn-type" /tmp/gateA.log
+grep -E "Wreturn-type" /tmp/gateA.log | grep -oE "[A-Za-z]+\.cpp:[0-9]+" | sort | uniq -c
 ```
+
+Expected: exactly two distinct sites, `Robot.cpp` (`CheckActiveHub`, still unfixed until Task 2) and `SwerveDrive.cpp:281` (`GetHeading`, bug B4, out of scope). The `Robot.cpp` line number will have moved from 510 as the file shrank; that is expected. No third site may appear.
 
 - [ ] **Step 4: Run Gate B**
 
@@ -833,12 +835,13 @@ In `src/main/cpp/Robot.cpp`, delete the entire `std::string Robot::CheckActiveHu
 Run the Gate A block from Global Constraints.
 Expected: `EXIT=0`, `BUILD SUCCESSFUL`, `N actionable tasks: N executed`, error count `0`.
 
-Confirm the `-Wreturn-type` warning count dropped from 2 to 1 — `CheckActiveHub` is fixed, `GetHeading` remains (out of scope, spec §11):
+Confirm `CheckActiveHub` no longer appears in the `-Wreturn-type` warnings. Count by location, since each site is reported twice:
 
 ```bash
-grep -c "Wreturn-type" /tmp/gateA.log
+grep -E "Wreturn-type" /tmp/gateA.log | grep -oE "[A-Za-z]+\.cpp:[0-9]+" | sort | uniq -c
 ```
-Expected: `1`.
+
+Expected: exactly one distinct site, `SwerveDrive.cpp:281` (`GetHeading`, bug B4, out of scope), with a raw total of 2. `Robot.cpp` and `FieldData.cpp` must not appear — their absence is what proves the B6 fix landed.
 
 - [ ] **Step 6: Run Gate B**
 
