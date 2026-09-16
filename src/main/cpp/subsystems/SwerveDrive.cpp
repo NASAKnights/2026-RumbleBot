@@ -372,7 +372,6 @@ void SwerveDrive::UpdatePoseEstimate()
     //     frc::LoadAprilTagLayoutField(frc::AprilTagField::k2025ReefscapeAndyMark)
     // };
     auto results1 = jetsonCamera1.GetAllUnreadResults();
-    m_poseEstimator.SetVisionMeasurementStdDevs({1.0, 1.0, 1.0});
     for (auto &result : results1){
         if(result.GetBestTarget().GetPoseAmbiguity() > 0.2)
         {
