@@ -12,22 +12,34 @@ yet applied) · `DISMISSED` (investigated, not a bug)
 
 | ID | Summary | Severity | Status |
 | --- | --- | --- | --- |
-| B1 | X-lock command declares no subsystem requirement | High | SCHEDULED |
-| B2 | Vision std devs overwritten every cycle | Medium | SCHEDULED |
+| B1 | X-lock command declares no subsystem requirement | High | FIXED `e88b8d4` |
+| B2 | Vision std devs overwritten every cycle | Medium | FIXED `4eaa4eb` |
 | B3 | Acceleration limiter stores state in NetworkTables | Medium | OPEN |
 | B4 | `GetHeading()` has a path returning an indeterminate value | Medium | OPEN |
 | B5 | `CheckActiveHub()` throws when no alliance is known | Medium | OPEN |
-| B6 | `CheckActiveHub()` missing return path | Low | SCHEDULED |
-| B7 | Simulation destroys shooter tuning CSV | Low | SCHEDULED |
+| B6 | `CheckActiveHub()` missing return path | Low | FIXED `f9cb0a8` |
+| B7 | Simulation destroys shooter tuning CSV | Low | FIXED `e88b8d4` |
 | B8 | Dead PID code with inverted logic | Cosmetic | OPEN |
 | B9 | `Drive()` suspected of producing NaN on zero input | — | DISMISSED |
+| B10 | PathPlanner GUI config still draws a turret outline | Cosmetic | OPEN |
+
+**Open items after the drivebase-only trim:** B3, B4, B5, B8, B10. B4 and B5 are
+the two that matter, because both are currently unreachable and will become
+reachable as the rebuild adds callers.
 
 ---
 
 ## B1 — X-lock command declares no subsystem requirement
 
-**Severity:** High · **Status:** SCHEDULED (Task 1 of the drivebase-only trim)
-**Location:** `src/main/cpp/Robot.cpp:350` · **Verified:** by inspection
+**Severity:** High · **Status:** FIXED in `e88b8d4` · **Verified:** by inspection
+
+> **Fix applied.** The `RunCommand` now declares `{&m_swerveDrive}`, so it
+> interrupts the drive default command instead of running alongside it.
+> **Still needs on-robot confirmation:** simulation proves it does not crash, but
+> only a driver holding the D-pad with a real controller can confirm the lock
+> actually holds. Put this on the Oct 24 bring-up checklist.
+
+**Location:** `src/main/cpp/Robot.cpp:350` (pre-fix)
 
 The D-pad-down X-lock binding creates a `RunCommand` with no requirements:
 
@@ -51,8 +63,14 @@ jitter or ignore the X rather than locking.
 
 ## B2 — Vision standard deviations overwritten every cycle
 
-**Severity:** Medium · **Status:** SCHEDULED (Task 4 of the drivebase-only trim)
-**Location:** `src/main/cpp/subsystems/SwerveDrive.cpp:375` · **Verified:** by inspection
+**Severity:** Medium · **Status:** FIXED in `4eaa4eb` · **Verified:** by inspection
+
+> **Fix applied.** The per-cycle override is gone; `SetVisionMeasurementStdDevs`
+> now appears exactly once, in the constructor. **Still needs on-robot
+> confirmation:** validating that pose estimation actually improved requires
+> cameras and AprilTags, which simulation does not provide.
+
+**Location:** `src/main/cpp/subsystems/SwerveDrive.cpp:375` (pre-fix)
 
 The constructor sets deliberate asymmetric values at line 62:
 
@@ -162,8 +180,14 @@ branch on the optional and return `"None"` when the alliance is unknown.
 
 ## B6 — `CheckActiveHub()` missing return path
 
-**Severity:** Low (latent) · **Status:** SCHEDULED (Task 2 of the drivebase-only trim)
-**Location:** `Robot::CheckActiveHub()` · **Verified:** by compiler
+**Severity:** Low (latent) · **Status:** FIXED in `f9cb0a8` · **Verified:** by compiler
+
+> **Fix applied and compiler-confirmed.** After the `FieldData` extraction, the
+> `-Wreturn-type` warnings list only `SwerveDrive.cpp:281` (B4). `Robot.cpp` has
+> dropped off the list and `FieldData.cpp` never appears, which is the direct
+> evidence the fix landed.
+
+**Location:** `Robot::CheckActiveHub()` (pre-fix)
 
 ```
 warning: control reaches end of non-void function [-Wreturn-type]
@@ -180,8 +204,15 @@ extraction.
 
 ## B7 — Simulation destroys shooter tuning CSV
 
-**Severity:** Low · **Status:** SCHEDULED (resolved by Task 3 of the drivebase-only trim)
-**Location:** `Robot::DisabledInit()` → `Turret::SaveLaunchMapToFile()` · **Verified:** reproduced
+**Severity:** Low · **Status:** FIXED in `e88b8d4` · **Verified:** reproduced, then confirmed gone
+
+> **Resolved one task earlier than predicted.** The spec expected this to persist
+> until `Turret` was deleted in Task 3. In fact it was gone after Task 1: once
+> `Robot` stopped constructing `Turret`, `DisabledInit()` no longer called
+> `SaveLaunchMapToFile()`. Every simulation run from Task 1 onward left the
+> working tree clean with no manual revert. The file itself was deleted in Task 3.
+
+**Location:** `Robot::DisabledInit()` → `Turret::SaveLaunchMapToFile()` (pre-fix)
 
 Running simulation calls `DisabledInit()`, which saves the turret launch map to
 `src/main/deploy/LaunchCalculator_Points.csv`. The map is empty in simulation,
@@ -220,6 +251,26 @@ Additionally, `SetReference()` and `InitializePID()` have no callers at all.
 **Suggested action:** leave it. This is dead code that the model-first rebuild
 will replace. Recorded so nobody mistakes it for a working reference
 implementation.
+
+---
+
+## B10 — PathPlanner GUI config still draws a turret outline
+
+**Severity:** Cosmetic · **Status:** OPEN
+**Location:** `src/main/deploy/pathplanner/settings.json` · **Verified:** by inspection
+
+The PathPlanner GUI robot-outline config still contains a shape named `Turret`:
+
+```json
+{"name":"Turret","type":"circle","data":{"center":{"x":-0.3,"y":0.3},"radius":0.15,...}}
+```
+
+This is a GUI visualization asset, not code, so it has no runtime effect. It
+will draw a turret circle on a robot that no longer has one when someone opens
+PathPlanner.
+
+**Suggested action:** update it alongside the real robot geometry once the new
+chassis is assembled, rather than editing it now against an unknown layout.
 
 ---
 
