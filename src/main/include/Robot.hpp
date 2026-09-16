@@ -23,29 +23,17 @@
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/RunCommand.h>
 #include <frc2/command/button/JoystickButton.h>
-#include <frc2/command/button/POVButton.h>
 #include <frc2/command/button/Trigger.h>
 
 #include <pathplanner/lib/auto/AutoBuilder.h>
-#include <pathplanner/lib/auto/NamedCommands.h>
 #include <pathplanner/lib/commands/PathPlannerAuto.h>
-#include <pathplanner/lib/auto/AutoBuilder.h>
 
 #include <units/angular_velocity.h>
 #include <units/velocity.h>
 
 #include "subsystems/SwerveDrive.hpp"
-#include "subsystems/Wrist.h"
-#include "subsystems/Turret.h"
-#include "subsystems/TurretIntake.h"
-#include "subsystems/LEDController.h"
 
 #include "commands/AutoWheelOffsets.h"
-#include "commands/FlattenMoonKnight.h"
-#include "commands/HalfRaiseIntake.h"
-#include "commands/Intake.h"
-#include "commands/Shoot.h"
-#include "commands/BetterHalfRaise.h"
 
 #include <cmath>
 
@@ -80,31 +68,15 @@ private:
 
     std::map<int, std::pair<pathplanner::PathPlannerAuto, frc::Pose2d>> autoMap;
 
-    // LEDController m_LED_Controller;
-
     // Subsystems
 
     frc::SendableChooser<std::string> m_chooser;
     frc::AnalogInput batteryShunt{0};
 
     ctre::phoenix6::CANBus NKCANBus{"NKCANivore"};
-    // ctre::phoenix6::CANBus RioCANBus{"rio"};
     SwerveDrive m_swerveDrive{NKCANBus};
-    // SwerveDrive m_swerveDrive{RioCANBus};
-    Wrist m_wrist;
-    Turret m_turret;
-    TurretIntake m_intake;
-    LEDController m_led;
 
     std::string_view baseLink = "base_link";
-    nt::StructPublisher<frc::Pose3d> stageOne3dPOS;
-    nt::StructPublisher<frc::Pose3d> carage3dPOS;
-    nt::StructPublisher<frc::Pose3d> wrist3dPOS;
-    nt::StructPublisher<frc::Pose3d> wristPOS;
-    nt::StructPublisher<frc::Pose3d> climb3dPOS;
-    nt::StructArrayPublisher<frc::Pose3d> modelPosePublisher;
-    nt::NetworkTableInstance networkTableInst;
-    units::angle::radian_t testingRotation = 0.0_rad;
 
     std::string targetKey = "POI/Calibration POIs";
     std::string prevAuto = "";
@@ -114,7 +86,6 @@ private:
 
     // PS4 controllers
     frc::Joystick m_driverController{DriveConstants::kDriverPort};
-    frc::Joystick m_operatorController{DriveConstants::kOperatorPort};
     frc::Joystick m_DebugController{DriveConstants::kDebugControllerPort};
 
     // Power Distribution
@@ -147,8 +118,6 @@ private:
 
     frc2::CommandPtr GetAutonomousCommand();
     void SetAutonomousCommand(std::string a);
-    // std::function<void(std::string)> SetAutonomousCommand(std::string a);
-    // void SetTAutonomousCommand(std::string a);
     void UpdateDashboard();
     frc::EventLoop m_POVloop{};
 };
