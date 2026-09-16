@@ -264,6 +264,13 @@ A full clean build takes roughly five minutes.
 - `SwerveDrive::GetHeading()` has a no-return path in its NavX branch, currently
   unreachable because `m_usingPigeon` is hardcoded true. Worth fixing, but it is
   drivebase code and outside a trim.
+- `CheckActiveHub()` calls `frc::DriverStation::GetAlliance().value()` on an
+  optional that is empty whenever no alliance is known, such as a bench robot
+  with no driver station attached. That throws `std::bad_optional_access`. This
+  is pre-existing behavior carried into `FieldData` verbatim, and unreachable
+  today because nothing calls the method. It must be fixed before the first
+  caller is added. It is deliberately not fixed during the trim, which the
+  design scopes to exactly one behavioral change.
 - `REVLib.json` and the Phoenix 5 vendordep become unused once their only
   consumers are deleted, and could be dropped.
 - Remaining modeled classes: Robot State, Input, Intake, Extender, Indexer,
