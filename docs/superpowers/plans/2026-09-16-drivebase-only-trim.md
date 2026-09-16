@@ -49,6 +49,28 @@ git status --short
 
 Pass: `EXIT=124` (stayed alive), startup marker count `1`, crash count `0`, the only `Error at` category is `PrintLoopOverrunMessage`, **and `git status` is clean**.
 
+**MANDATORY cleanup — run immediately after every Gate B, before anything else:**
+
+```powershell
+Stop-Process -Name "frcUserProgram" -Force -ErrorAction SilentlyContinue
+Get-Process -Name "frcUserProgram*" -ErrorAction SilentlyContinue
+```
+
+The second command must print nothing.
+
+`timeout` kills Gradle, but the simulation runs as a *grandchild* process and survives.
+The orphan keeps roughly twenty DLLs open under
+`build/install/frcUserProgram/windowsx86-64/release/lib/`, so the **next task's
+`clean` fails** with:
+
+```
+Execution failed for task ':clean'.
+> java.io.IOException: Unable to delete directory '...\build'
+```
+
+That failure is this leak, not a code defect. If Gate A ever fails at `:clean`,
+kill the orphan and re-run Gate A rather than investigating the source tree.
+
 > **Data-loss warning for Tasks 1 and 2.** On pre-Task-3 code, `DisabledInit()` calls `m_turret.SaveLaunchMapToFile()`, which writes an empty table over `src/main/deploy/LaunchCalculator_Points.csv` in simulation, destroying all 15 rows of shooter tuning. If `git status` shows that file modified after Gate B, run `git checkout -- src/main/deploy/LaunchCalculator_Points.csv` before committing. This stops being possible after Task 3.
 
 ### Pre-existing dead code — knowingly left alone
