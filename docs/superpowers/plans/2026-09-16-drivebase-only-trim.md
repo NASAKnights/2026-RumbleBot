@@ -931,10 +931,27 @@ The surviving namespaces in `Constants.hpp` are `ElectricalConstants`, `DriveCon
 
 - [ ] **Step 3: Verify nothing references the deleted code**
 
+Check for real code references, not string matches. A plain case-insensitive
+grep over `src/main` produces expected non-failures — a comment in `Robot.cpp`
+explaining the PDH change, the PathPlanner GUI robot-outline in
+`deploy/pathplanner/settings.json`, and doc-comment examples in
+`DeployFileUtils.h` and `NetworkTableMap.h` that use `"LaunchCalculator/Points"`
+to illustrate the filename transform. None are code.
+
+Run both checks; both must report nothing:
+
 ```bash
-grep -ri "turret\|wrist\|LEDController\|LED_Groups\|LaunchCalculator\|BallisticsInterpolator\|FuelConstants\|OperatorConstants" src/main
+# A. No include of any deleted header
+grep -rnE '#include.*(Turret|Wrist|LEDController|LED_Groups|LaunchCalculator|BallisticsInterpolator|ballistics_rv)' src/
+
+# B. No deleted type or namespace used in code (comment lines filtered out)
+grep -rnE '\b(Turret|Turret_Shooter|TurretIntake|Wrist|LEDController|LED_Groups|LaunchCalculator|BallisticsInterpolator|TurretConstants|WristConstants|FuelConstants|OperatorConstants)\b' \
+  src/ --include=*.cpp --include=*.h --include=*.hpp \
+  | grep -vE '^\s*[^:]+:[0-9]+:\s*(//|\*|/\*)'
 ```
-Expected: no output.
+
+Gate A is the authoritative check regardless: any genuine dangling reference
+fails compilation.
 
 - [ ] **Step 4: Run Gate A**
 
