@@ -13,8 +13,14 @@ piece of the xUML model to land in the tree.
 
 **Non-goals.**
 
-- No behavior change to the drivebase. Driving after the trim must be
-  indistinguishable from driving before it.
+- No behavior change to the drivebase, with two separately approved exceptions
+  recorded in `docs/BUGS.md`: **B1**, adding the missing `{&m_swerveDrive}`
+  requirement to the X-lock command so it interrupts the drive default command
+  rather than fighting it, and **B2**, removing the per-cycle override that
+  discarded the constructor's tuned vision standard deviations. Both are
+  one-line fixes to code the trim already touches or directly affects. Apart
+  from these, driving after the trim must be indistinguishable from driving
+  before it.
 - No re-tuning of PID or feedforward constants.
 - No re-architecting `SwerveDrive` or `SwerveModule`.
 - No swerve module offset calibration. The offsets in `Constants.hpp` are all
@@ -261,16 +267,11 @@ A full clean build takes roughly five minutes.
 
 - Swerve module offset calibration via `AutoWheelOffsets` — required before the
   robot drives correctly, and gated on assembled hardware.
-- `SwerveDrive::GetHeading()` has a no-return path in its NavX branch, currently
-  unreachable because `m_usingPigeon` is hardcoded true. Worth fixing, but it is
-  drivebase code and outside a trim.
-- `CheckActiveHub()` calls `frc::DriverStation::GetAlliance().value()` on an
-  optional that is empty whenever no alliance is known, such as a bench robot
-  with no driver station attached. That throws `std::bad_optional_access`. This
-  is pre-existing behavior carried into `FieldData` verbatim, and unreachable
-  today because nothing calls the method. It must be fixed before the first
-  caller is added. It is deliberately not fixed during the trim, which the
-  design scopes to exactly one behavioral change.
+- Open defects **B3, B4, B5 and B8**, catalogued with reproduction details in
+  `docs/BUGS.md`. B4 (`GetHeading()` no-return path) and B5
+  (`GetAlliance().value()` on an empty optional) are the two that become
+  dangerous rather than merely untidy once someone changes the surrounding
+  code, and both should be settled before the rebuild adds callers.
 - `REVLib.json` and the Phoenix 5 vendordep become unused once their only
   consumers are deleted, and could be dropped.
 - Remaining modeled classes: Robot State, Input, Intake, Extender, Indexer,

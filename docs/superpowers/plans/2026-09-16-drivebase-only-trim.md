@@ -16,7 +16,10 @@
 - Never use `-x test`. C++ has no `test` task; it fails the build outright.
 - Never pipe Gradle into `tail`/`head` — the pager replaces Gradle's exit code.
 - A build is only valid evidence if it reports `N actionable tasks: N executed`. A cached `UP-TO-DATE` proves nothing.
-- No behavior change to the drivebase. No PID/feedforward re-tuning.
+- No behavior change to the drivebase, **except two separately approved bug
+  fixes**: B1 (X-lock subsystem requirement, in Task 1) and B2 (vision standard
+  deviation override, in Task 4). No other behavioral edits. No PID/feedforward
+  re-tuning.
 - Swerve module offsets in `Constants.hpp` stay zero. Calibration is hardware bring-up, out of scope.
 - **No new unit tests.** The spec explicitly chose "pure relocation + bug fix" over the tests variant. Verification is Gate A + Gate B per task. `NetworkTableMapTest` must keep passing as a regression check.
 
@@ -63,6 +66,7 @@ Do **not** remove these. They are dead but unrelated to scoring mechanisms, and 
 | `src/main/include/subsystems/FieldData.h` | Create | 2026 field geometry and game-state logic |
 | `src/main/cpp/subsystems/FieldData.cpp` | Create | `CheckActiveHub` implementation |
 | `src/main/include/Constants.hpp` | Modify | Electrical/Drive/Module/MathUtilNK only |
+| `src/main/cpp/subsystems/SwerveDrive.cpp` | Modify | One line removed (bug B2, Task 4) |
 | 22 subsystem/command/ballistics files | Delete | — |
 | `src/main/deploy/LaunchCalculator_Points.csv` | Delete | — |
 
@@ -409,7 +413,7 @@ void Robot::BindCommands()
     POVDownTrigBR.WhileTrue(
                     frc2::CommandPtr(frc2::RunCommand([this] {
                         m_swerveDrive.MakeX(true);
-                    })))
+                    }, {&m_swerveDrive})))
                 .OnFalse(
                     frc2::CommandPtr(frc2::InstantCommand([this] {
                         m_swerveDrive.MakeX(false);
@@ -528,6 +532,28 @@ int main()
 
 `CheckActiveHub` is copied verbatim here, still carrying its missing-return defect. Task 2 moves it and fixes it. Keeping it unchanged in this task keeps each commit to one concern.
 
+**One deliberate behavior change: bug B1.** The X-lock binding gains the
+`{&m_swerveDrive}` requirement it was missing:
+
+```cpp
+frc2::RunCommand([this] { m_swerveDrive.MakeX(true); }, {&m_swerveDrive})
+```
+
+Previously this command declared no requirements, so it never interrupted the
+drive default command. Both ran every scheduler cycle and both called
+`SetDesiredState` on all four modules, so they fought and X-lock did not hold.
+With the requirement declared, scheduling it interrupts the default command, and
+releasing the D-pad ends it so the default command resumes.
+
+This is an exception to the plan's "no behavior change" constraint, approved
+separately. It is folded into this task rather than a later one because this
+task rewrites `BindCommands()` wholesale — deliberately writing the known-broken
+version here only to repair it later would be pointless churn.
+
+The `OnFalse` handler calling `MakeX(false)` is left as-is. `MakeX(false)` does
+nothing (the function body is guarded by `if(make_x)`), but it is harmless, and
+the default command resuming is what actually releases the lock.
+
 - [ ] **Step 3: Run Gate A**
 
 Run the Gate A block from Global Constraints.
@@ -573,6 +599,11 @@ use was building the SmartDashboard table for the model poses.
 
 Pin the PDH switchable channel off, since the turret shooting flag that
 drove it no longer has a writer.
+
+Fix bug B1 while rewriting BindCommands: the X-lock RunCommand declared no
+subsystem requirement, so it never interrupted the drive default command.
+Both ran every cycle and both wrote module states, so X-lock did not hold.
+It now requires m_swerveDrive.
 
 The subsystem and command files still exist and still compile; they are
 deleted in a later commit."
@@ -928,19 +959,100 @@ turret specific, along with the NetworkTableMapTest coverage they carry."
 
 ---
 
+## Task 4: Restore tuned vision standard deviations (bug B2)
+
+**Files:**
+- Modify: `src/main/cpp/subsystems/SwerveDrive.cpp:375`
+
+**Interfaces:**
+- Consumes: the tree produced by Task 3.
+- Produces: no API change. `SwerveDrive`'s public surface is untouched.
+
+This is a deliberate behavior change, approved separately from the trim, and
+kept in its own commit because it is the only edit in this plan that touches
+drivebase logic.
+
+- [ ] **Step 1: Delete the overriding call**
+
+In `src/main/cpp/subsystems/SwerveDrive.cpp`, inside `UpdatePoseEstimate()`,
+delete this line:
+
+```cpp
+    m_poseEstimator.SetVisionMeasurementStdDevs({1.0, 1.0, 1.0});
+```
+
+It sits immediately after `auto results1 = jetsonCamera1.GetAllUnreadResults();`
+and immediately before the `for (auto &result : results1)` loop. Delete only
+that one line; leave both neighbours intact.
+
+**Why.** The constructor sets deliberate asymmetric values at line 62:
+
+```cpp
+auto visionStdDevs = wpi::array<double, 3U>{0.2, 0.2, 0.9};
+```
+
+Lower numbers mean more trust, so this trusts vision X/Y strongly and vision
+heading weakly — correct, because the Pigeon 2 measures heading far better than
+AprilTag geometry does. `UpdatePoseEstimate()` runs every `Periodic()` while
+vision is on, so the `{1.0, 1.0, 1.0}` call overwrote that tuning on every
+single cycle, making the constructor's value dead code. Removing the override
+restores the tuned behavior.
+
+Do **not** replace it with a call setting `{0.2, 0.2, 0.9}`. The constructor
+already does that once, which is the correct place for it.
+
+- [ ] **Step 2: Verify the constructor value is now the only setter**
+
+```bash
+grep -n "SetVisionMeasurementStdDevs" src/main/cpp/subsystems/SwerveDrive.cpp
+```
+Expected: exactly one result, at line 62 in the constructor.
+
+- [ ] **Step 3: Run Gate A**
+
+Run the Gate A block from Global Constraints.
+Expected: `EXIT=0`, `BUILD SUCCESSFUL`, `N actionable tasks: N executed`, error count `0`.
+
+- [ ] **Step 4: Run Gate B**
+
+Run the Gate B block from Global Constraints.
+Expected: `EXIT=124`, startup marker `1`, crash count `0`, only `PrintLoopOverrunMessage`, `git status` clean.
+
+Gate B exercises this code path: `Periodic()` calls `UpdatePoseEstimate()` every
+cycle because `useVision` defaults true. The cameras are absent in simulation, so
+the result loops are empty and no vision measurement is added — but the call
+still runs, which is what confirms the edit did not break the path.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/main/cpp/subsystems/SwerveDrive.cpp
+git commit -m "Restore tuned vision standard deviations
+
+UpdatePoseEstimate set vision measurement std devs to {1.0, 1.0, 1.0} on
+every Periodic, overwriting the {0.2, 0.2, 0.9} the constructor sets. The
+constructor's tuning was therefore dead code, and vision heading was
+trusted far more than intended relative to the Pigeon.
+
+Remove the per-cycle override so the constructor value stands."
+```
+
+---
+
 ## Post-Plan Verification
 
-After Task 3, confirm the end state:
+After Task 4, confirm the end state:
 
 ```bash
 export JAVA_HOME="/c/Users/Public/wpilib/2026/jdk"
 ./gradlew clean build --console=plain 2>&1 | grep -E "^BUILD|actionable"
 ls -la build/exe/frcUserProgram/linuxathena/release/frcUserProgram
 wc -l src/main/cpp/Robot.cpp src/main/include/Robot.hpp
-git log --oneline -3
+grep -c "SetVisionMeasurementStdDevs" src/main/cpp/subsystems/SwerveDrive.cpp
+git log --oneline -4
 ```
 
-Expected: `BUILD SUCCESSFUL`, the roboRIO binary present, `Robot.cpp` around 200 lines, and three commits.
+Expected: `BUILD SUCCESSFUL`, the roboRIO binary present, `Robot.cpp` around 200 lines, exactly `1` std-dev setter, and four commits.
 
 ## Known Issues Left In Place
 
