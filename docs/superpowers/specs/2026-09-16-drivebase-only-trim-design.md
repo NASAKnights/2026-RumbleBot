@@ -207,6 +207,19 @@ device (`CANdle`) lives in `LED_Groups`. After the trim the baseline's
 `SparkBase::SetInverted` warning and all Phoenix 5 deprecation warnings should
 disappear. Their absence is positive evidence the removal was complete.
 
+**Simulation currently destroys tuning data — check the working tree after every
+Gate B run until stage 3 lands.** On the pre-trim code, `DisabledInit()` calls
+`m_turret.SaveLaunchMapToFile()`. The launch map is empty in simulation, so this
+writes an empty table over `src/main/deploy/LaunchCalculator_Points.csv`,
+silently discarding all fifteen rows of shooter tuning. This was observed while
+capturing the baseline and reverted with `git checkout --`.
+
+Two consequences. First, `git status` must be checked after each Gate B run on
+stages 1 and 2, and any modification to that CSV reverted. Second, this is an
+independent argument for the trim: removing `Turret` removes the call, and the
+footgun disappears with it. Until then, anyone running simulation on this branch
+loses that tuning without warning.
+
 **Known gap.** Disabled-mode simulation does not execute `TeleopInit` or
 `TeleopPeriodic`, so teleop-only paths are not covered at runtime. Those are
 compile-time references, so a missed one fails Gate A instead. Driving the
