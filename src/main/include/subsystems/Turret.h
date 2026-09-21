@@ -359,22 +359,6 @@ private:
       {7.0, 19.}
   };
 
-  std::map<double, double> kHoodAngleMap = {
-      {1.0, 70.},
-      {1.5, 68.},
-      {2.0, 65},
-      {2.5, 60},
-      {3.0, 57.},
-      {3.5, 54.5}, //8 deg extra
-      {4.0, 51.75},
-      {4.5, 50.5}, //10 deg extra
-      {5.0, 47.},
-      {5.5, 43.},
-      {6.0, 40.},
-      {6.5, 38.},
-      {7.0, 35.}
-  };
-
   std::map<double, double> kShotTOFMap = {
       {1.0, 1.2574},
       {1.5, 1.3077},
@@ -408,6 +392,5 @@ private:
   };
 
   std::vector<std::pair<double, double>> kHoodAngleVector;
-  // std::map<double, double> kHoodAngleMap;
 
 };
