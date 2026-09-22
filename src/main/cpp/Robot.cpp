@@ -262,12 +262,6 @@ void Robot::BindCommands()
             frc2::InstantCommand([this]
                                  { return m_swerveDrive.ResetHeading(); })));
 
-    frc2::JoystickButton(&m_driverController, 1)
-        .OnTrue(frc2::CommandPtr(
-            frc2::InstantCommand([this]
-                                { m_turret.FindLimitSwitch();
-                                return; })));
-
     // --------------OPERATOR BUTTONS--------------------------------
         
         frc2::JoystickButton(&m_operatorController, 1)
